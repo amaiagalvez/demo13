@@ -33,11 +33,12 @@ services:
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public
+            LARAVEL_INSTALLER_NO_NODE: "true"
             GIT_CONFIG_COUNT: 1
             GIT_CONFIG_KEY_0: safe.directory
             GIT_CONFIG_VALUE_0: /docker
         command: bash -c "
-            rm -Rf vendor/iztkoop
+            rm -Rf vendor
             && rm -f composer.lock
             && composer install --no-progress
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor
