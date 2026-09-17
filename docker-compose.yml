@@ -1,0 +1,199 @@
+services:
+    laravel13:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        user: "${DC_UID:-1000}:${DC_GID:-1000}"
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        ports:
+            - "80:80"
+            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+            CONTAINER_UID: 1000
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: safe.directory
+            GIT_CONFIG_VALUE_0: /docker
+            XDEBUG_CLIENT_HOST: 172.17.0.1
+            XDEBUG_CLIENT_PORT: 9000
+            XDEBUG_START_WITH_REQUEST: "trigger"
+            XDEBUG_SESSION: VSCODE
+            XDEBUG_MODE: "debug,develop,coverage,trace,profile"
+            PHP_MEMORY_LIMIT: 9064M
+        depends_on:
+            - db
+        networks:
+            - frontend
+
+    laravel13-composer:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        profiles: ["composer"]
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: safe.directory
+            GIT_CONFIG_VALUE_0: /docker
+        command: bash -c "
+            rm -Rf vendor/iztkoop
+            && rm -f composer.lock
+            && composer install --no-progress
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor
+            && chown ${DC_UID:-1000}:${DC_GID:-1000} composer.lock
+            && composer show | grep izt"
+        networks:
+            - frontend
+
+    laravel13-reformat:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        profiles: ["reformat"]
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+        command: bash -c "
+            ./vendor/bin/pint"
+        networks:
+            - frontend
+
+    laravel13-npm-all:
+        image: node:${DC_NODE:-24-bullseye}
+        profiles: ["npm-all"]
+        volumes:
+            - ./:/docker
+        ports:
+            - "3000:3000"
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+        command: bash -c "
+            npm install -g npm@latest
+            && npm --version
+            && npm config set update-notifier false
+            && rm -f package-lock.json
+            && rm -Rf node_modules
+            && npm install
+            && npm run build
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} node_modules
+            && chown ${DC_UID:-1000}:${DC_GID:-1000} package-lock.json
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} public"
+        networks:
+            - frontend
+
+    laravel13-npm:
+        image: node:${DC_NODE:-24-bullseye}
+        profiles: ["npm"]
+        volumes:
+            - ./:/docker
+        ports:
+            - "3000:3000"
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+        command: bash -c "
+            npm install -g npm@latest
+            && npm --version
+            && npm config set update-notifier false
+            && npm install
+            && npm run build
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} node_modules
+            && chown ${DC_UID:-1000}:${DC_GID:-1000} package-lock.json
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} public"
+        networks:
+            - frontend
+
+    laravel13-migrate-all:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        profiles: ["migrate-all"]
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: safe.directory
+            GIT_CONFIG_VALUE_0: /docker
+        command: bash -c "
+            composer install --no-progress
+            && php artisan migrate:fresh
+            && php artisan izt:basics-migrations-seeds
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
+        depends_on:
+            - db
+        networks:
+            - frontend
+
+    laravel13-migrate:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        profiles: ["migrate"]
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: safe.directory
+            GIT_CONFIG_VALUE_0: /docker
+        command: bash -c "
+            composer install --no-progress
+            && php artisan izt:basics-migrations-seeds
+            && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
+        depends_on:
+            - db
+        networks:
+            - frontend
+
+    laravel13-phpunit:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        profiles: ["phpunit"]
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: safe.directory
+            GIT_CONFIG_VALUE_0: /docker
+        command: bash -c "XDEBUG_MODE='coverage' composer test"
+        networks:
+            - frontend
+
+    db:
+        image: mariadb:11.7
+        command: --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --sql-mode=""
+        environment:
+            MYSQL_ROOT_PASSWORD: tormenta
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: laravel
+        volumes:
+            - ./dc-data/mysql:/var/lib/mysql
+            - ./dc-data/mysqldumps:/mysqldumps
+        networks:
+            - frontend
+        ports:
+            - 13306:3306
+
+    laravel13-myadmin:
+        image: phpmyadmin:latest
+        ports:
+            - 4000:80
+        environment:
+            UPLOAD_LIMIT: 64M
+        links:
+            - db:db
+        networks:
+            - frontend
+
+    mailhog:
+        image: mailhog/mailhog:latest
+        ports:
+            - ${MAILHOG_PORT:-8025}:8025
+        networks:
+            - frontend
+
+networks:
+    frontend: null
