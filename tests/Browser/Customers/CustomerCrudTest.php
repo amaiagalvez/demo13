@@ -15,8 +15,8 @@ class CustomerCrudTest extends DuskTestCase
     public function test_customer_list_can_be_searched_and_cleared(): void
     {
         $user = User::factory()->create();
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
-        Customer::query()->create(['name' => 'Jon Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Jon Bezeroa']);
 
         $this->browse(function (Browser $browser) use ($user): void {
             $browser->loginAs($user)
@@ -38,7 +38,7 @@ class CustomerCrudTest extends DuskTestCase
     public function test_cancel_clears_the_create_and_edit_forms(): void
     {
         $user = User::factory()->create();
-        $customer = Customer::query()->create(['name' => 'Original Customer']);
+        $customer = Customer::factory()->create(['name' => 'Original Customer']);
 
         $this->browse(function (Browser $browser) use ($user, $customer): void {
             $browser->loginAs($user)
@@ -76,7 +76,7 @@ class CustomerCrudTest extends DuskTestCase
     public function test_duplicate_name_error_is_visible_in_the_create_modal(): void
     {
         $user = User::factory()->create();
-        Customer::query()->create(['name' => 'Existing Customer']);
+        Customer::factory()->create(['name' => 'Existing Customer']);
 
         $this->browse(function (Browser $browser) use ($user): void {
             $browser->loginAs($user)
@@ -113,8 +113,8 @@ class CustomerCrudTest extends DuskTestCase
     public function test_edit_validation_error_does_not_leak_into_the_create_form(): void
     {
         $user = User::factory()->create();
-        Customer::query()->create(['name' => 'Existing Customer']);
-        $customer = Customer::query()->create(['name' => 'Editable Customer']);
+        Customer::factory()->create(['name' => 'Existing Customer']);
+        $customer = Customer::factory()->create(['name' => 'Editable Customer']);
 
         $this->browse(function (Browser $browser) use ($user, $customer): void {
             $browser->loginAs($user)
@@ -185,7 +185,7 @@ class CustomerCrudTest extends DuskTestCase
     public function test_customer_can_be_created_updated_and_deleted_from_the_drawer(): void
     {
         $user = User::factory()->create();
-        $untouchedCustomer = Customer::query()->create(['name' => 'Untouched Customer']);
+        $untouchedCustomer = Customer::factory()->create(['name' => 'Untouched Customer']);
         $customerId = null;
 
         $this->browse(function (Browser $browser) use ($user, &$customerId): void {
@@ -243,10 +243,8 @@ class CustomerCrudTest extends DuskTestCase
     public function test_customer_can_be_restored_or_permanently_deleted_from_trash(): void
     {
         $user = User::factory()->create();
-        $restorableCustomer = Customer::query()->create(['name' => 'Restorable Customer']);
-        $deletableCustomer = Customer::query()->create(['name' => 'Deletable Customer']);
-        $restorableCustomer->delete();
-        $deletableCustomer->delete();
+        $restorableCustomer = Customer::factory()->trashed()->create(['name' => 'Restorable Customer']);
+        $deletableCustomer = Customer::factory()->trashed()->create(['name' => 'Deletable Customer']);
 
         $this->browse(function (Browser $browser) use ($user, $restorableCustomer, $deletableCustomer): void {
             $browser->loginAs($user)

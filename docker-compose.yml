@@ -189,7 +189,7 @@ services:
             GIT_CONFIG_COUNT: 1
             GIT_CONFIG_KEY_0: safe.directory
             GIT_CONFIG_VALUE_0: /docker
-        command: bash -c "XDEBUG_MODE='coverage' composer test"
+        command: bash docker/run-phpunit-with-coverage.sh
         depends_on:
             db:
                 condition: service_healthy

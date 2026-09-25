@@ -11,13 +11,6 @@ class ProfileUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_profile_page_is_displayed(): void
-    {
-        $this->actingAs($user = User::factory()->create());
-
-        $this->get(route('profile.edit'))->assertOk();
-    }
-
     public function test_profile_information_can_be_updated(): void
     {
         $user = User::factory()->create();

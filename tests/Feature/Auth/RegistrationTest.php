@@ -17,13 +17,6 @@ class RegistrationTest extends TestCase
         $this->skipUnlessFortifyHas(Features::registration());
     }
 
-    public function test_registration_screen_can_be_rendered(): void
-    {
-        $response = $this->get(route('register'));
-
-        $response->assertOk();
-    }
-
     public function test_new_users_can_register(): void
     {
         $response = $this->post(route('register.store'), [

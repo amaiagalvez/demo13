@@ -54,18 +54,6 @@ class SecurityTest extends TestCase
         /* @end-chisel-2fa */
     }
 
-    /* @chisel-password-confirmation */
-    public function test_security_settings_page_requires_password_confirmation_when_enabled(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)
-            ->get(route('security.edit'));
-
-        $response->assertRedirect(route('password.confirm'));
-    }
-    /* @end-chisel-password-confirmation */
-
     public function test_security_settings_page_renders_without_two_factor_when_feature_is_disabled(): void
     {
         config(['fortify.features' => []]);

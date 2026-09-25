@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Customers;
+namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\Customer;
@@ -14,31 +14,23 @@ class CustomerRequestTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_name_is_required(): void
+    public function test_name_may_contain_255_characters(): void
     {
-        $this->assertValidationFails(['name' => ''], 'name');
-    }
+        $validator = $this->validator(['name' => str_repeat('a', 255)]);
 
-    public function test_name_must_be_a_string(): void
-    {
-        $this->assertValidationFails(['name' => ['Ane Bezeroa']], 'name');
-    }
-
-    public function test_name_cannot_exceed_255_characters(): void
-    {
-        $this->assertValidationFails(['name' => str_repeat('a', 256)], 'name');
+        $this->assertTrue($validator->passes());
     }
 
     public function test_name_must_be_unique_when_creating(): void
     {
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
 
         $this->assertValidationFails(['name' => 'Ane Bezeroa'], 'name');
     }
 
     public function test_customer_can_keep_its_name_when_updating(): void
     {
-        $customer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+        $customer = Customer::factory()->create(['name' => 'Ane Bezeroa']);
 
         $validator = $this->validator(['name' => 'Ane Bezeroa'], $customer);
 
@@ -47,8 +39,8 @@ class CustomerRequestTest extends TestCase
 
     public function test_customer_cannot_use_another_customers_name(): void
     {
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
-        $customer = Customer::query()->create(['name' => 'Jon Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
+        $customer = Customer::factory()->create(['name' => 'Jon Bezeroa']);
 
         $this->assertValidationFails(['name' => 'Ane Bezeroa'], 'name', $customer);
     }

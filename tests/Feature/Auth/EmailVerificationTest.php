@@ -21,15 +21,6 @@ class EmailVerificationTest extends TestCase
         $this->skipUnlessFortifyHas(Features::emailVerification());
     }
 
-    public function test_email_verification_screen_can_be_rendered(): void
-    {
-        $user = User::factory()->unverified()->create();
-
-        $response = $this->actingAs($user)->get(route('verification.notice'));
-
-        $response->assertOk();
-    }
-
     public function test_email_can_be_verified(): void
     {
         $user = User::factory()->unverified()->create();

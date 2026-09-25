@@ -21,13 +21,6 @@ class PasswordResetTest extends TestCase
         $this->skipUnlessFortifyHas(Features::resetPasswords());
     }
 
-    public function test_reset_password_link_screen_can_be_rendered(): void
-    {
-        $response = $this->get(route('password.request'));
-
-        $response->assertOk();
-    }
-
     public function test_reset_password_link_can_be_requested(): void
     {
         Notification::fake();

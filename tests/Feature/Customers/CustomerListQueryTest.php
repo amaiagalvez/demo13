@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Customers;
+namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\Customer;
@@ -13,9 +13,8 @@ class CustomerListQueryTest extends TestCase
 
     public function test_active_list_filters_out_deleted_customers(): void
     {
-        $activeCustomer = Customer::query()->create(['name' => 'Active Customer']);
-        $deletedCustomer = Customer::query()->create(['name' => 'Deleted Customer']);
-        $deletedCustomer->delete();
+        $activeCustomer = Customer::factory()->create();
+        $deletedCustomer = Customer::factory()->trashed()->create();
 
         $customers = app(CustomerListQuery::class)->active('');
 
@@ -24,8 +23,8 @@ class CustomerListQueryTest extends TestCase
 
     public function test_active_list_is_ordered_by_name_ascending(): void
     {
-        Customer::query()->create(['name' => 'Jon Bezeroa']);
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Jon Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
 
         $customers = app(CustomerListQuery::class)->active('');
 
@@ -34,9 +33,8 @@ class CustomerListQueryTest extends TestCase
 
     public function test_trashed_list_only_contains_deleted_customers(): void
     {
-        Customer::query()->create(['name' => 'Active Customer']);
-        $deletedCustomer = Customer::query()->create(['name' => 'Deleted Customer']);
-        $deletedCustomer->delete();
+        Customer::factory()->create();
+        $deletedCustomer = Customer::factory()->trashed()->create();
 
         $customers = app(CustomerListQuery::class)->trashed('');
 
@@ -45,11 +43,9 @@ class CustomerListQueryTest extends TestCase
 
     public function test_trashed_list_shows_most_recently_deleted_customers_first(): void
     {
-        $olderCustomer = Customer::query()->create(['name' => 'Older Customer']);
-        $newerCustomer = Customer::query()->create(['name' => 'Newer Customer']);
-        $olderCustomer->delete();
+        $olderCustomer = Customer::factory()->trashed()->create();
+        $newerCustomer = Customer::factory()->trashed()->create();
         $olderCustomer->forceFill(['deleted_at' => now()->subDay()])->saveQuietly();
-        $newerCustomer->delete();
 
         $customers = app(CustomerListQuery::class)->trashed('');
 
@@ -61,8 +57,8 @@ class CustomerListQueryTest extends TestCase
 
     public function test_lists_can_be_filtered_and_keep_the_search_in_pagination_urls(): void
     {
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
-        Customer::query()->create(['name' => 'Jon Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Jon Bezeroa']);
 
         $customers = app(CustomerListQuery::class)->active('Ane');
 
@@ -72,9 +68,7 @@ class CustomerListQueryTest extends TestCase
 
     public function test_lists_are_paginated_by_five_customers(): void
     {
-        foreach (range(1, 6) as $number) {
-            Customer::query()->create(['name' => "Customer {$number}"]);
-        }
+        Customer::factory()->count(6)->create();
 
         $customers = app(CustomerListQuery::class)->active('');
 

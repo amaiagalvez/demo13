@@ -68,11 +68,18 @@
         "types:check": [
             "phpstan analyse"
         ],
-        "test": [
+        "test:prepare": [
             "@php artisan config:clear --ansi",
             "@lint:check",
-            "@types:check",
+            "@types:check"
+        ],
+        "test": [
+            "@test:prepare",
             "@php artisan test"
+        ],
+        "test:coverage": [
+            "@test:prepare",
+            "@php artisan test --coverage"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

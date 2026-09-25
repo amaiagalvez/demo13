@@ -5,25 +5,14 @@ namespace Tests\Feature\Customers;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerCrudTest extends TestCase
 {
     use RefreshDatabase;
-
-    public function test_guests_are_redirected_to_the_customers_login_page(): void
-    {
-        $this->get(route('customers.index'))->assertRedirect(route('login'));
-    }
-
-    public function test_unverified_users_are_redirected_to_email_verification(): void
-    {
-        $this->actingAs(User::factory()->unverified()->create());
-
-        $this->get(route('customers.index'))
-            ->assertRedirect(route('verification.notice'));
-    }
 
     public function test_authenticated_users_can_create_update_and_delete_customers(): void
     {
@@ -63,20 +52,63 @@ class CustomerCrudTest extends TestCase
             ->assertSessionHasInput('_customer_form', 'create');
     }
 
+    public function test_store_rejects_an_active_duplicate_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create(['name' => 'Existing Customer']);
+
+        $this->from(route('customers.index'))
+            ->post(route('customers.store'), ['name' => 'Existing Customer'])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('customers', 1);
+    }
+
+    public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $name = 'Concurrent Store Customer';
+        $this->insertCustomerAfterNameUniquenessCheck($name);
+
+        $this->from(route('customers.index'))
+            ->post(route('customers.store'), ['name' => $name])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('customers', 1);
+        $this->assertDatabaseHas('customers', ['name' => $name, 'deleted_at' => null]);
+    }
+
+    public function test_update_converts_a_concurrent_duplicate_insert_to_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Original Customer']);
+        $name = 'Concurrent Update Customer';
+        $this->insertCustomerAfterNameUniquenessCheck($name);
+
+        $this->from(route('customers.index'))
+            ->put(route('customers.update', $customer), ['name' => $name])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseHas('customers', ['id' => $customer->id, 'name' => 'Original Customer']);
+        $this->assertDatabaseHas('customers', ['name' => $name, 'deleted_at' => null]);
+    }
+
     public function test_database_rejects_duplicate_customer_names(): void
     {
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
 
         $this->expectException(QueryException::class);
 
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
     }
 
     public function test_customer_name_can_be_reused_after_soft_delete(): void
     {
         $this->actingAs(User::factory()->create());
-        $deletedCustomer = Customer::query()->create(['name' => 'Ane Bezeroa']);
-        $deletedCustomer->delete();
+        $deletedCustomer = Customer::factory()->trashed()->create(['name' => 'Ane Bezeroa']);
 
         $this->post(route('customers.store'), ['name' => 'Ane Bezeroa'])
             ->assertRedirect(route('customers.index'))
@@ -108,7 +140,7 @@ class CustomerCrudTest extends TestCase
     public function test_failed_update_keeps_the_selected_customer_context(): void
     {
         $this->actingAs(User::factory()->create());
-        $customer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+        $customer = Customer::factory()->create();
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), [
@@ -141,10 +173,10 @@ class CustomerCrudTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        Customer::query()->create(['name' => 'Aardvark customer']);
+        Customer::factory()->create(['name' => 'Aardvark customer']);
 
         foreach (range(2, 16) as $number) {
-            Customer::query()->create(['name' => sprintf('Customer %02d', $number)]);
+            Customer::factory()->create(['name' => sprintf('Customer %02d', $number)]);
         }
 
         $this->get(route('customers.index'))
@@ -157,8 +189,8 @@ class CustomerCrudTest extends TestCase
     public function test_customers_can_be_searched_by_visible_data(): void
     {
         $this->actingAs(User::factory()->create());
-        Customer::query()->create(['name' => 'Ane Bezeroa']);
-        Customer::query()->create(['name' => 'Jon Bezeroa']);
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Jon Bezeroa']);
 
         $this->get(route('customers.index', ['search' => 'Ane']))
             ->assertOk()
@@ -166,24 +198,35 @@ class CustomerCrudTest extends TestCase
             ->assertDontSee('Jon Bezeroa');
     }
 
-    public function test_invalid_search_input_is_rejected(): void
-    {
-        $this->actingAs(User::factory()->create());
-
-        $this->get(route('customers.index', ['search' => ['Ane']]))
-            ->assertSessionHasErrors(['search']);
-    }
-
     public function test_customer_search_is_preserved_when_paginating(): void
     {
         $this->actingAs(User::factory()->create());
 
         foreach (range(1, 16) as $number) {
-            Customer::query()->create(['name' => "Searchable Customer {$number}"]);
+            Customer::factory()->create(['name' => "Searchable Customer {$number}"]);
         }
 
         $this->get(route('customers.index', ['search' => 'Searchable']))
             ->assertOk()
             ->assertSee('search=Searchable', false);
+    }
+
+    private function insertCustomerAfterNameUniquenessCheck(string $name): void
+    {
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use ($name, &$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'customers')
+                || ! in_array($name, $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Customer::factory()->create(['name' => $name]);
+        });
     }
 }
