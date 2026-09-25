@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+workspace_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+php_args=()
+
+for argument in "$@"; do
+    if [[ "$argument" == "$workspace_root/"* ]]; then
+        php_args+=("/docker/${argument#"$workspace_root/"}")
+    else
+        php_args+=("$argument")
+    fi
+done
+
+exec /usr/bin/docker compose -f "$workspace_root/docker-compose.yml" exec -T -e XDEBUG_MODE=off laravel13 php "${php_args[@]}"
