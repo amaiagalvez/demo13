@@ -29,6 +29,28 @@ services:
         networks:
             - frontend
 
+    laravel13-dusk:
+        image: demo13-laravel13-dusk
+        user: "${DC_UID:-1000}:${DC_GID:-1000}"
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            HOME: /tmp
+            APP_URL: http://laravel13-dusk
+            DB_CONNECTION: mysql
+            DB_HOST: db
+            DB_PORT: 3306
+            DB_DATABASE: laravel_test
+            DB_USERNAME: laravel
+            DB_PASSWORD: laravel
+            WEB_DOCUMENT_ROOT: /docker/public
+            CONTAINER_UID: 1000
+        depends_on:
+            - db
+        networks:
+            - frontend
+
     laravel13-composer:
         image: webdevops/php-apache-dev:${DC_PHP:-8.4}
         profiles: ["composer"]

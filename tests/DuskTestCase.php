@@ -11,6 +11,11 @@ use PHPUnit\Framework\Attributes\BeforeClass;
 
 abstract class DuskTestCase extends BaseTestCase
 {
+    protected function baseUrl(): string
+    {
+        return rtrim(env('DUSK_BASE_URL', config('app.url')), '/');
+    }
+
     protected function getEnvironmentSetUp($app): void
     {
         $app['config']->set('database.default', 'mysql');

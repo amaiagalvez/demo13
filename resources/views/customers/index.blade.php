@@ -67,13 +67,29 @@
 
     <flux:modal name="customer-create" variant="flyout" position="right"
         class="customer-drawer max-w-none">
-        @include('customers._form', ['customer' => null, 'inDrawer' => true])
+        @include('customers.form', [
+            'customer' => null,
+            'formTitle' => __('New customer'),
+            'formSubtitle' => __('Add a customer to your records.'),
+            'formAction' => route('customers.store'),
+            'formMethod' => 'POST',
+            'submitLabel' => __('Save customer'),
+            'inDrawer' => true,
+        ])
     </flux:modal>
 
     @foreach ($customers as $customer)
         <flux:modal name="customer-edit-{{ $customer->id }}" variant="flyout" position="right"
             class="customer-drawer max-w-none">
-            @include('customers._form', ['customer' => $customer, 'inDrawer' => true])
+            @include('customers.form', [
+                'customer' => $customer,
+                'formTitle' => __('Edit customer'),
+                'formSubtitle' => __('Update the customer details.'),
+                'formAction' => route('customers.update', $customer),
+                'formMethod' => 'PUT',
+                'submitLabel' => __('Update customer'),
+                'inDrawer' => true,
+            ])
         </flux:modal>
     @endforeach
 </x-layouts::app>
