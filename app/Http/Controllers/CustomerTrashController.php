@@ -27,14 +27,18 @@ class CustomerTrashController extends Controller
 
     public function restore(int $customer): RedirectResponse
     {
-        Customer::onlyTrashed()->findOrFail($customer)->restore();
+        $customer = Customer::onlyTrashed()->findOrFail($customer);
+        $this->authorize('restore', $customer);
+        $customer->restore();
 
         return to_route('customers.trash.index')->with('status', __('Customer restored successfully.'));
     }
 
     public function destroy(int $customer): RedirectResponse
     {
-        Customer::onlyTrashed()->findOrFail($customer)->forceDelete();
+        $customer = Customer::onlyTrashed()->findOrFail($customer);
+        $this->authorize('forceDelete', $customer);
+        $customer->forceDelete();
 
         return to_route('customers.trash.index')->with('status', __('Customer permanently deleted.'));
     }

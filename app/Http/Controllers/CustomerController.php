@@ -42,6 +42,8 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer): RedirectResponse
     {
+        $this->authorize('delete', $customer);
+
         $customer->delete();
 
         return to_route('customers.index')->with('status', __('Customer moved to trash.'));
