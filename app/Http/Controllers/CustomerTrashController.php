@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CustomerListRequest;
 use App\Models\Customer;
+use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class CustomerTrashController extends Controller
 {

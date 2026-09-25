@@ -1,8 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerTrashController;
-use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 

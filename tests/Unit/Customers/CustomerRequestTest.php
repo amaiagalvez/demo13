@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Customers;
 
-use App\Http\Requests\CustomerRequest;
-use App\Models\Customer;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Routing\Route;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Validator as LaravelValidator;
 use Tests\TestCase;
+use App\Models\Customer;
+use Illuminate\Routing\Route;
+use App\Http\Requests\CustomerRequest;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\Validator as LaravelValidator;
 
 class CustomerRequestTest extends TestCase
 {

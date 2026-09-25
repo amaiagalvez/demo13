@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Fortify\Features;
 use Tests\TestCase;
+use App\Models\User;
+use Laravel\Fortify\Features;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TwoFactorChallengeTest extends TestCase
 {

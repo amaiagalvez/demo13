@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Customers;
 
+use Tests\TestCase;
 use App\Models\Customer;
 use App\Queries\Customers\CustomerListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class CustomerListQueryTest extends TestCase
 {

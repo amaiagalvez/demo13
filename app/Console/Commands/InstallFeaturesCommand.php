@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use Laravel\Chisel\Chisel;
-use Laravel\Chisel\Question;
 use Laravel\Chisel\Script;
+use Laravel\Chisel\Question;
+use Illuminate\Console\Command;
 
-use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\multiselect;
 
 class InstallFeaturesCommand extends Command
 {

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Fortify\Features;
-use Livewire\Livewire;
 use Tests\TestCase;
+use App\Models\User;
+use Livewire\Livewire;
+use Laravel\Fortify\Features;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SecurityTest extends TestCase
 {

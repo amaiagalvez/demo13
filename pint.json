@@ -1,7 +1,10 @@
 {
     "preset": "laravel",
     "rules": {
-        "indentation_type": true
+        "indentation_type": true,
+        "ordered_imports": {
+            "sort_algorithm": "length"
+        }
     },
     "exclude": [
         "dc-data",

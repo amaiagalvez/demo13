@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
 use Tests\TestCase;
+use App\Models\User;
+use Livewire\Livewire;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProfileUpdateTest extends TestCase
 {

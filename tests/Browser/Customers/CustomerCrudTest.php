@@ -2,11 +2,11 @@
 
 namespace Tests\Browser\Customers;
 
-use App\Models\Customer;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
+use App\Models\Customer;
+use Laravel\Dusk\Browser;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class CustomerCrudTest extends DuskTestCase
 {

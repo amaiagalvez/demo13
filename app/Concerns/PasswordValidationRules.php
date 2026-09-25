@@ -2,8 +2,8 @@
 
 namespace App\Concerns;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Contracts\Validation\ValidationRule;
 
 trait PasswordValidationRules
 {

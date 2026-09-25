@@ -4,10 +4,11 @@ require getenv('LARAVEL_INSTALLER_AUTOLOADER') ?: __DIR__.'/vendor/autoload.php'
 
 use Laravel\Chisel\Chisel;
 use Laravel\Chisel\Question;
-use Laravel\Prompts\Support\Logger;
-use Symfony\Component\Process\Process;
 
 use function Laravel\Prompts\task;
+
+use Laravel\Prompts\Support\Logger;
+use Symfony\Component\Process\Process;
 
 function chiselRun(array $command, string $label): void
 {

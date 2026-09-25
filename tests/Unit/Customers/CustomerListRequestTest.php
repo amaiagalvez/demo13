@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Customers;
 
-use App\Http\Requests\CustomerListRequest;
-use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\CustomerListRequest;
 
 class CustomerListRequestTest extends TestCase
 {
