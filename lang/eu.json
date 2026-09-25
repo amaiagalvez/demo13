@@ -1,0 +1,22 @@
+{
+    "Actions": "Ekintzak",
+    "Add a customer to your records.": "Gehitu bezero bat zure erregistroetara.",
+    "Cancel": "Utzi",
+    "Created at": "Sortze-data",
+    "Customer created successfully.": "Bezeroa behar bezala sortu da.",
+    "Customer deleted successfully.": "Bezeroa behar bezala ezabatu da.",
+    "Customer updated successfully.": "Bezeroa behar bezala eguneratu da.",
+    "Customers": "Bezeroak",
+    "Delete": "Ezabatu",
+    "Edit": "Editatu",
+    "Edit customer": "Editatu bezeroa",
+    "Manage your customers.": "Kudeatu zure bezeroak.",
+    "Name": "Izena",
+    "New customer": "Bezero berria",
+    "No customers yet.": "Oraindik ez dago bezerorik.",
+    "Save customer": "Gorde bezeroa",
+    "Update customer": "Eguneratu bezeroa",
+    "Update the customer details.": "Eguneratu bezeroaren datuak.",
+    "validation.required": ":attribute eremua nahitaezkoa da.",
+    "validation.string": ":attribute testua izan behar da."
+}

@@ -1,0 +1,22 @@
+{
+    "Actions": "Actions",
+    "Add a customer to your records.": "Ajoutez un client à vos dossiers.",
+    "Cancel": "Annuler",
+    "Created at": "Créé le",
+    "Customer created successfully.": "Client créé avec succès.",
+    "Customer deleted successfully.": "Client supprimé avec succès.",
+    "Customer updated successfully.": "Client mis à jour avec succès.",
+    "Customers": "Clients",
+    "Delete": "Supprimer",
+    "Edit": "Modifier",
+    "Edit customer": "Modifier le client",
+    "Manage your customers.": "Gérez vos clients.",
+    "Name": "Nom",
+    "New customer": "Nouveau client",
+    "No customers yet.": "Aucun client pour le moment.",
+    "Save customer": "Enregistrer le client",
+    "Update customer": "Mettre à jour le client",
+    "Update the customer details.": "Mettez à jour les données du client.",
+    "validation.required": "Le champ :attribute est obligatoire.",
+    "validation.string": "Le champ :attribute doit être une chaîne de caractères."
+}

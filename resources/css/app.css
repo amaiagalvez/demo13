@@ -61,6 +61,16 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
+.customer-drawer {
+    width: 100vw !important;
+}
+
+@media (min-width: 768px) {
+    .customer-drawer {
+        width: 50vw !important;
+    }
+}
+
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */

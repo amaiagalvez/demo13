@@ -140,6 +140,7 @@ services:
             GIT_CONFIG_VALUE_0: /docker
         command: bash -c "
             composer install --no-progress
+            && php artisan migrate
             && php artisan izt:basics-migrations-seeds
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
