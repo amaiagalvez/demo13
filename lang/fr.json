@@ -10,6 +10,7 @@
     "Customer moved to trash.": "Client déplacé vers la corbeille.",
     "Customer permanently deleted.": "Client supprimé définitivement.",
     "Customer restored successfully.": "Client restauré avec succès.",
+    "Customer restored successfully. No new customer was created with the repeated name.": "Client restauré avec succès. Aucun nouveau client n'a été créé avec le nom répété.",
     "Customer trash": "Corbeille des clients",
     "Customer updated successfully.": "Client mis à jour avec succès.",
     "Customer name already in trash": "Le nom du client est déjà dans la corbeille",

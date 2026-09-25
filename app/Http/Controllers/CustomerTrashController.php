@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CustomerTrashController extends Controller
@@ -25,13 +26,17 @@ class CustomerTrashController extends Controller
         ]);
     }
 
-    public function restore(int $customer): RedirectResponse
+    public function restore(Request $request, int $customer): RedirectResponse
     {
         $customer = Customer::onlyTrashed()->findOrFail($customer);
         $this->authorize('restore', $customer);
         $customer->restore();
 
-        return to_route('customers.trash.index')->with('status', __('Customer restored successfully.'));
+        $message = $request->boolean('resolve_name_conflict')
+            ? __('Customer restored successfully. No new customer was created with the repeated name.')
+            : __('Customer restored successfully.');
+
+        return to_route('customers.trash.index')->with('status', $message);
     }
 
     public function destroy(int $customer): RedirectResponse

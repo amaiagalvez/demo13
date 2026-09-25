@@ -10,6 +10,7 @@
     "Customer moved to trash.": "Bezeroa zakarrontzira eraman da.",
     "Customer permanently deleted.": "Bezeroa behin betiko ezabatu da.",
     "Customer restored successfully.": "Bezeroa behar bezala berreskuratu da.",
+    "Customer restored successfully. No new customer was created with the repeated name.": "Bezeroa behar bezala berreskuratu da. Ez da izen errepikatuarekin beste bezerorik sortu.",
     "Customer trash": "Bezeroen zakarrontzia",
     "Customer updated successfully.": "Bezeroa behar bezala eguneratu da.",
     "Customer name already in trash": "Bezeroaren izena zakarrontzian dago",

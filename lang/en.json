@@ -10,6 +10,7 @@
     "Customer moved to trash.": "Customer moved to trash.",
     "Customer permanently deleted.": "Customer permanently deleted.",
     "Customer restored successfully.": "Customer restored successfully.",
+    "Customer restored successfully. No new customer was created with the repeated name.": "Customer restored successfully. No new customer was created with the repeated name.",
     "Customer trash": "Customer trash",
     "Customer updated successfully.": "Customer updated successfully.",
     "Customer name already in trash": "Customer name already in trash",

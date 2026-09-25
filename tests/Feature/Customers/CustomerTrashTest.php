@@ -41,9 +41,33 @@ class CustomerTrashTest extends TestCase
         $customer->delete();
 
         $this->patch(route('customers.trash.restore', $customer->id))
-            ->assertRedirect(route('customers.trash.index'));
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionHas('status', __('Customer restored successfully.'));
 
         $this->assertNotSoftDeleted($customer);
+    }
+
+    public function test_conflict_restore_confirms_no_duplicate_was_created(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+        $customer->delete();
+
+        $this->patch(route('customers.trash.restore', $customer->id), [
+            'resolve_name_conflict' => '1',
+        ])
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionHas(
+                'status',
+                __('Customer restored successfully. No new customer was created with the repeated name.'),
+            );
+
+        $this->assertDatabaseCount('customers', 1);
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'name' => 'Ane Bezeroa',
+            'deleted_at' => null,
+        ]);
     }
 
     public function test_deleted_customer_can_be_permanently_deleted(): void

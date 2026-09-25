@@ -215,6 +215,7 @@
                                 action="{{ route('customers.trash.restore', $deletedCustomerConflict['id']) }}">
                                 @csrf
                                 <input type="hidden" name="_method" value="PATCH">
+                                <input type="hidden" name="resolve_name_conflict" value="1">
                                 <flux:button type="submit" variant="ghost" class="w-full"
                                     data-test="customer-conflict-restore">
                                     {{ __('Restore the deleted customer instead') }}
