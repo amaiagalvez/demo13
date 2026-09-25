@@ -70,6 +70,24 @@ class CustomerTrashTest extends TestCase
         ]);
     }
 
+    public function test_deleted_customer_cannot_be_restored_when_name_is_active(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedCustomer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+        $deletedCustomer->delete();
+        $activeCustomer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+
+        $this->patch(route('customers.trash.restore', $deletedCustomer->id))
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Customer cannot be restored while another active customer uses this name.'),
+            );
+
+        $this->assertSoftDeleted($deletedCustomer);
+        $this->assertModelExists($activeCustomer);
+    }
+
     public function test_deleted_customer_can_be_permanently_deleted(): void
     {
         $this->actingAs(User::factory()->create());

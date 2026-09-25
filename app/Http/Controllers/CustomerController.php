@@ -7,7 +7,9 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CustomerController extends Controller
@@ -43,14 +45,34 @@ class CustomerController extends Controller
                 ]);
         }
 
-        Customer::create($request->validated());
+        try {
+            Customer::create($request->validated());
+        } catch (QueryException $exception) {
+            if (! $this->isUniqueConstraintViolation($exception)) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages([
+                'name' => __('The name has already been taken.'),
+            ]);
+        }
 
         return to_route('customers.index')->with('status', __('Customer created successfully.'));
     }
 
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse
     {
-        $customer->update($request->validated());
+        try {
+            $customer->update($request->validated());
+        } catch (QueryException $exception) {
+            if (! $this->isUniqueConstraintViolation($exception)) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages([
+                'name' => __('The name has already been taken.'),
+            ]);
+        }
 
         return to_route('customers.index')->with('status', __('Customer updated successfully.'));
     }
@@ -62,5 +84,13 @@ class CustomerController extends Controller
         $customer->delete();
 
         return to_route('customers.index')->with('status', __('Customer moved to trash.'));
+    }
+
+    private function isUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $errorInfo = $exception->errorInfo;
+
+        return ($errorInfo[0] ?? $exception->getCode()) === '23000'
+            && in_array((int) ($errorInfo[1] ?? 0), [19, 1062], true);
     }
 }

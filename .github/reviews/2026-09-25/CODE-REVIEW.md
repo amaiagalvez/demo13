@@ -5,21 +5,7 @@ Mode: READ-ONLY
 
 ## Executive Summary
 
-The Laravel customer CRUD and trash flows are covered by passing isolated tests, use authenticated and verified routes, and show no confirmed security vulnerability in the reviewed surface. PHPStan, Pint and Composer audit pass. Dusk is configured as a separate critical CI job and requires one GitHub Actions run for confirmation.
-
-## Detected Stack
-
-- PHP 8.4.25 in Docker; Composer 2.10.3.
-- Laravel 13.33.0, Fortify 1.40.0, Livewire 4.4.6, Flux 2.20.0.
-- MariaDB 11.7/MySQL-compatible database; database queue, database cache and database sessions.
-# Code Review
-
-Audit date: 2026-09-25
-Mode: READ-ONLY
-
-## Executive Summary
-
-The application is a small Laravel 13 customer directory with a coherent structure and passing static checks and isolated tests. Two correctness/security findings need priority: email verification is configured on routes but is not enforced by the `User` model, and restoring a deleted customer can raise an unhandled uniqueness exception after its name is reused. The review also found deployment reproducibility and database-readiness risks in the local Compose setup.
+The selected review findings have been fixed and validated. Email verification is now enforced, restore conflicts return a controlled response, duplicate-key races are converted into validation errors, unsafe migration rollback is rejected before schema mutation, and the Dusk/password-reset follow-up work is in place. Lockfile reproducibility remains open in the current Compose file.
 
 ## Detected Stack
 
@@ -40,7 +26,7 @@ The application is a small Laravel 13 customer directory with a coherent structu
 | `vendor/bin/phpstan analyse --no-progress` in Docker | PASS; no errors |
 | `vendor/bin/pint --test` in Docker | PASS; 73 files checked |
 | `composer audit --no-interaction --format=plain` in Docker | PASS; no advisories |
-| `DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --compact` in Docker | PASS; 72 tests, 212 assertions |
+| `DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --compact` in Docker | PASS; 74 tests, 221 assertions |
 | Frontend build | NOT RUN; host has Node 18 while CI declares Node 22, and the build writes generated assets |
 | Dusk | NOT RUN locally; CI job is configured but no isolated browser session was available |
 
@@ -59,6 +45,7 @@ Category: Security / Authentication
 File: `app/Models/User.php`
 Line: 27
 Confidence: HIGH
+Status: RESOLVED
 
 Problem:
 
@@ -83,6 +70,7 @@ Category: Correctness / Data integrity
 File: `app/Http/Controllers/CustomerTrashController.php`
 Line: 33
 Confidence: HIGH
+Status: RESOLVED
 
 Problem:
 
@@ -109,6 +97,7 @@ Category: Database / Concurrency
 File: `app/Http/Controllers/CustomerController.php`
 Line: 32
 Confidence: HIGH
+Status: RESOLVED
 
 Problem:
 
@@ -133,6 +122,7 @@ Category: Database / Deployment
 File: `database/migrations/2026_09_25_090000_allow_reusing_deleted_customer_names.php`
 Line: 47
 Confidence: HIGH
+Status: RESOLVED
 
 Problem:
 
@@ -157,6 +147,7 @@ Category: DevOps / Supply chain
 File: `docker-compose.yml`
 Line: 68
 Confidence: HIGH
+Status: OPEN
 
 Problem:
 
@@ -181,6 +172,7 @@ Category: Production readiness
 File: `docker-compose.yml`
 Line: 27
 Confidence: HIGH
+Status: RESOLVED
 
 Problem:
 
@@ -207,6 +199,7 @@ Category: DevOps / Local security
 File: `docker-compose.yml`
 Line: 225
 Confidence: HIGH
+Status: RESOLVED
 
 Problem:
 
@@ -230,15 +223,15 @@ No additional accepted informational findings. The application has no API routes
 
 ## Security
 
-The main confirmed security issue is SEC-001. Customer policy methods returning `true` were not treated as a finding because the architecture explicitly permits every authenticated verified user and defines no tenant or role boundary. Customer inputs are validated and fillable fields are limited; no SQL injection, unsafe upload, SSRF, command injection, or unescaped customer output was identified.
+SEC-001 is resolved. Customer policy methods returning `true` were not treated as a finding because the architecture explicitly permits every authenticated verified user and defines no tenant or role boundary. Customer inputs are validated and fillable fields are limited; no SQL injection, unsafe upload, SSRF, command injection, or unescaped customer output was identified.
 
 ## Bugs / Correctness
 
-COR-001 is confirmed by the controller/database interaction. The existing test named `test_conflict_restore_confirms_no_duplicate_was_created` does not create an active duplicate, so it does not exercise the failure state.
+COR-001 is resolved by rejecting the restore before mutation when an active duplicate exists, handling a concurrent unique violation, and covering the failure state with a feature test.
 
 ## Database
 
-The active-name constraint, soft deletes and force-delete path are present. The remaining risks are the unhandled uniqueness race and rollback incompatibility documented above. No foreign-key or N+1 defect was confirmed.
+The active-name constraint, soft deletes and force-delete path are present. DB-001 now converts duplicate-key races into validation errors. DB-002 now refuses rollback before changing the schema when duplicate names exist; a deployment must still treat that rollback as unavailable for such data. No foreign-key or N+1 defect was confirmed.
 
 ## Performance
 
@@ -250,7 +243,7 @@ The customer flow is separated into controllers, Form Requests, policy, query ob
 
 ## Testing
 
-The isolated PHPUnit suite passed 72 tests and 212 assertions. Coverage should be added for the active-name restore conflict and unverified users; the former is part of COR-001. The password-reset success test also checks redirect/errors but not authentication with the new password. Dusk remains configured in CI and was not run locally.
+The isolated PHPUnit suite passed 74 tests and 221 assertions. New coverage verifies unverified users are redirected, active-name restore conflicts preserve database state, and password reset persists the new password while rejecting the old one. Dusk now waits for `/up` before launching, but remains unexecuted locally.
 
 ## Production
 
@@ -272,7 +265,7 @@ PHPStan and Pint pass. The restore policy is documented as technical debt in the
 ## Action Plan
 
 - P0: None.
-- P1: Implement and test the verified-user boundary; implement controlled restore conflict handling.
-- P2: Handle duplicate-key races and make the name-uniqueness migration rollback-safe or explicitly irreversible. Preserve lockfiles and add Compose database readiness.
-- P3: Bind MailHog to loopback, add the missing verification/password-reset tests, and confirm the Dusk CI job.
+- P1: RESOLVED — enforce and test the verified-user boundary; implement controlled restore conflict handling.
+- P2: PARTIAL — duplicate-key races, unsafe rollback and Compose database readiness are addressed. Preserve lockfiles and use `npm ci` remains open in the current Compose file.
+- P3: RESOLVED — bind MailHog to loopback, add verification/restore/password-reset coverage, and make Dusk wait for application readiness. Remaining: confirm the Dusk CI job.
 

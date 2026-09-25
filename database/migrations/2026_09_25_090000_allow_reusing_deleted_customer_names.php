@@ -35,6 +35,17 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::table('customers')
+            ->select('name')
+            ->groupBy('name')
+            ->havingRaw('COUNT(*) > 1')
+            ->exists()
+        ) {
+            throw new RuntimeException(
+                'Cannot roll back active customer-name uniqueness while duplicate names exist.',
+            );
+        }
+
         if (in_array(DB::connection()->getDriverName(), ['sqlite', 'pgsql'], true)) {
             DB::statement('DROP INDEX customers_active_name_unique');
         } else {

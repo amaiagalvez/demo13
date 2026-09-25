@@ -129,5 +129,16 @@ jobs:
       - name: Start application
         run: php artisan serve --host=127.0.0.1 --port=8000 > /tmp/laravel.log 2>&1 &
 
+      - name: Wait for application
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/up > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/laravel.log
+          exit 1
+
       - name: Run Dusk
         run: php artisan dusk

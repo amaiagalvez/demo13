@@ -99,6 +99,11 @@
                 data-test="customer-status">{{ session('status') }}</flux:callout>
         @endif
 
+        @if (session('error'))
+            <flux:callout icon="exclamation-triangle" variant="danger" data-test="customer-error">
+                {{ session('error') }}</flux:callout>
+        @endif
+
         <form method="GET" action="{{ $list['search']['action'] }}"
             class="flex w-full items-end gap-2 sm:max-w-xl">
             <flux:input name="search" :label="__('Search')"

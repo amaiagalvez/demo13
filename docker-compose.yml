@@ -25,7 +25,8 @@ services:
             XDEBUG_MODE: "debug,develop,coverage,trace,profile"
             PHP_MEMORY_LIMIT: 9064M
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - frontend
 
@@ -47,7 +48,8 @@ services:
             WEB_DOCUMENT_ROOT: /docker/public
             CONTAINER_UID: 1000
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - frontend
 
@@ -149,7 +151,8 @@ services:
             && php artisan izt:basics-migrations-seeds
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - frontend
 
@@ -170,7 +173,8 @@ services:
             && php artisan izt:basics-migrations-seeds
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - frontend
 
@@ -187,7 +191,8 @@ services:
             GIT_CONFIG_VALUE_0: /docker
         command: bash -c "XDEBUG_MODE='coverage' composer test"
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - frontend
 
@@ -203,6 +208,11 @@ services:
             - ./dc-data/mysql:/var/lib/mysql
             - ./dc-data/mysqldumps:/mysqldumps
             - ./docker/mysql/init:/docker-entrypoint-initdb.d
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
         networks:
             - frontend
         ports:
@@ -222,7 +232,7 @@ services:
     mailhog:
         image: mailhog/mailhog:latest
         ports:
-            - ${MAILHOG_PORT:-8025}:8025
+            - "127.0.0.1:${MAILHOG_PORT:-8025}:8025"
         networks:
             - frontend
 

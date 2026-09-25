@@ -17,6 +17,14 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index'))->assertRedirect(route('login'));
     }
 
+    public function test_unverified_users_are_redirected_to_email_verification(): void
+    {
+        $this->actingAs(User::factory()->unverified()->create());
+
+        $this->get(route('customers.index'))
+            ->assertRedirect(route('verification.notice'));
+    }
+
     public function test_authenticated_users_can_create_update_and_delete_customers(): void
     {
         $this->actingAs(User::factory()->create());
@@ -30,7 +38,7 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index'))
             ->assertOk()
             ->assertSee('customer-create')
-            ->assertSee('customer-edit-'.$customer->id);
+            ->assertSee('customer-edit-' . $customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
             ->assertRedirect(route('customers.index'));
@@ -104,13 +112,13 @@ class CustomerCrudTest extends TestCase
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), [
-                '_customer_form' => 'edit-'.$customer->id,
+                '_customer_form' => 'edit-' . $customer->id,
                 '_customer_id' => $customer->id,
                 'name' => '',
             ])
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name'])
-            ->assertSessionHasInput('_customer_form', 'edit-'.$customer->id)
+            ->assertSessionHasInput('_customer_form', 'edit-' . $customer->id)
             ->assertSessionHasInput('_customer_id', (string) $customer->id);
     }
 
