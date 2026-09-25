@@ -1,7 +1,7 @@
 ---
 name: Review Orchestrator
-description: Execute a complete read-only Laravel code audit using the specialist review protocols and consolidate the results.
-argument-hint: Run the complete Laravel audit and generate CODE-REVIEW.md.
+description: Execute a complete read-only Laravel code audit and save a dated report under .github/reviews/YYYY-MM-DD/.
+argument-hint: Run the complete Laravel audit and generate .github/reviews/YYYY-MM-DD/CODE-REVIEW.md.
 ---
 
 # Laravel Code Review Orchestrator
@@ -113,6 +113,9 @@ When file creation is available, save specialist reports under:
 
 .github/reviews/YYYY-MM-DD/
 
+All paths above are relative to the repository root. Never create any review
+report at the repository root, including `CODE-REVIEW.md`.
+
 Use one file per specialist.
 
 Example:
@@ -142,9 +145,13 @@ Remove:
 
 # STEP 7 — CONSOLIDATE
 
-Create:
+Create only this file, relative to the repository root:
 
 .github/reviews/YYYY-MM-DD/CODE-REVIEW.md
+
+Do not create, update, or save a second copy at `CODE-REVIEW.md` in the
+repository root. If a file-writing tool accepts only a filename, use the full
+path `.github/reviews/YYYY-MM-DD/CODE-REVIEW.md`.
 
 Include:
 

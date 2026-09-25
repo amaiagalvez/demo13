@@ -1,5 +1,5 @@
 ---
-description: Run a complete read-only Laravel technical audit and produce CODE-REVIEW.md
+description: Run a complete read-only Laravel technical audit and produce a dated CODE-REVIEW.md report
 ---
 
 # FULL LARAVEL CODE REVIEW
@@ -152,9 +152,12 @@ Remove unsupported findings.
 
 # PHASE 5 — REPORT
 
-Create or update:
+Create or update only this path, relative to the repository root:
 
 .github/reviews/YYYY-MM-DD/CODE-REVIEW.md
+
+Never create or update `CODE-REVIEW.md` in the repository root. The report
+must not be saved in the workspace home directory or any other location.
 
 Include:
 

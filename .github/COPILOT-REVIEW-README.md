@@ -55,7 +55,7 @@ Fixes selected findings only.
 2. Write tests.
 3. Run local tests.
 4. Run Review Orchestrator.
-5. Inspect CODE-REVIEW.md.
+5. Inspect `.github/reviews/YYYY-MM-DD/CODE-REVIEW.md`.
 6. Select findings.
 7. Start a new Copilot Agent session.
 8. Use fix-review.prompt.md.

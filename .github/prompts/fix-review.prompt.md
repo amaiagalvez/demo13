@@ -1,5 +1,5 @@
 ---
-description: Safely implement selected findings from CODE-REVIEW.md
+description: Safely implement selected findings from a dated CODE-REVIEW.md report
 ---
 
 # FIX SELECTED CODE REVIEW FINDINGS
