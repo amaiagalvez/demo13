@@ -1,6 +1,9 @@
 services:
     laravel13:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        build:
+            context: .
+            dockerfile: Dockerfile.dusk
+        image: demo13-laravel13-dusk
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/docker
@@ -9,6 +12,7 @@ services:
             - "80:80"
             - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
+            HOME: /tmp
             WEB_DOCUMENT_ROOT: /docker/public
             CONTAINER_UID: 1000
             GIT_CONFIG_COUNT: 1
@@ -160,6 +164,8 @@ services:
             GIT_CONFIG_KEY_0: safe.directory
             GIT_CONFIG_VALUE_0: /docker
         command: bash -c "XDEBUG_MODE='coverage' composer test"
+        depends_on:
+            - db
         networks:
             - frontend
 
@@ -174,6 +180,7 @@ services:
         volumes:
             - ./dc-data/mysql:/var/lib/mysql
             - ./dc-data/mysqldumps:/mysqldumps
+            - ./docker/mysql/init:/docker-entrypoint-initdb.d
         networks:
             - frontend
         ports:

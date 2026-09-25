@@ -6,7 +6,7 @@
                 <flux:subheading>{{ __('Manage your customers.') }}</flux:subheading>
             </div>
             <flux:modal.trigger name="customer-create">
-                <flux:button variant="primary" icon="plus">
+                <flux:button variant="primary" icon="plus" data-test="customer-create-button">
                     {{ __('New customer') }}
                 </flux:button>
             </flux:modal.trigger>
@@ -35,7 +35,8 @@
                                 <div class="flex justify-end gap-2">
                                     <flux:modal.trigger name="customer-edit-{{ $customer->id }}">
                                         <flux:button size="sm" variant="ghost"
-                                            icon="pencil-square">
+                                            icon="pencil-square"
+                                            data-test="customer-edit-{{ $customer->id }}">
                                             {{ __('Edit') }}
                                         </flux:button>
                                     </flux:modal.trigger>
@@ -44,7 +45,8 @@
                                         @csrf
                                         @method('DELETE')
                                         <flux:button size="sm" variant="ghost" icon="trash"
-                                            type="submit" class="text-red-600">
+                                            type="submit" class="text-red-600"
+                                            data-test="customer-delete-{{ $customer->id }}">
                                             {{ __('Delete') }}
                                         </flux:button>
                                     </form>

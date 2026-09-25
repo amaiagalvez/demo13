@@ -19,7 +19,8 @@
             @method('PUT')
         @endif
         <flux:input name="name" :label="__('Name')"
-            :value="old('name', $customer->name ?? null)" required autofocus />
+            :value="old('name', $customer->name ?? null)" required autofocus
+            data-test="customer-name" />
         <div class="flex justify-end gap-3">
             @if ($inDrawer)
                 <flux:modal.close>
@@ -29,7 +30,7 @@
                 <flux:button variant="ghost" :href="route('customers.index')" wire:navigate>
                     {{ __('Cancel') }}</flux:button>
             @endif
-            <flux:button variant="primary" type="submit">
+            <flux:button variant="primary" type="submit" data-test="customer-submit">
                 {{ $isEditing ? __('Update customer') : __('Save customer') }}
             </flux:button>
         </div>
