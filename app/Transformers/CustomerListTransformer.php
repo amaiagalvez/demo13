@@ -28,7 +28,7 @@ class CustomerListTransformer
                 'test' => 'customer-trash-link',
             ],
             'create' => true,
-            'rows' => collect($customers->items())->map(fn(Customer $customer): array => [
+            'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 'id' => $customer->id,
                 'name' => $customer->name,
                 'date' => $customer->created_at->format('Y-m-d'),
@@ -37,14 +37,14 @@ class CustomerListTransformer
                         'type' => 'form-modal',
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
-                        'test' => 'customer-edit-' . $customer->id,
+                        'test' => 'customer-edit-'.$customer->id,
                         'customer' => $customer->only(['id', 'name']),
                     ],
                     [
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
-                        'test' => 'customer-delete-' . $customer->id,
+                        'test' => 'customer-delete-'.$customer->id,
                         'danger' => true,
                         'action' => route('customers.destroy', $customer),
                         'method' => 'DELETE',
@@ -78,7 +78,7 @@ class CustomerListTransformer
                 'test' => null,
             ],
             'create' => false,
-            'rows' => collect($customers->items())->map(fn(Customer $customer): array => [
+            'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 'id' => $customer->id,
                 'name' => $customer->name,
                 'date' => $customer->deleted_at?->format('Y-m-d'),
@@ -87,7 +87,7 @@ class CustomerListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Restore'),
                         'icon' => 'arrow-path',
-                        'test' => 'customer-restore-' . $customer->id,
+                        'test' => 'customer-restore-'.$customer->id,
                         'danger' => false,
                         'action' => route('customers.trash.restore', $customer->id),
                         'method' => 'PATCH',
@@ -99,7 +99,7 @@ class CustomerListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete permanently'),
                         'icon' => 'trash',
-                        'test' => 'customer-force-delete-' . $customer->id,
+                        'test' => 'customer-force-delete-'.$customer->id,
                         'danger' => true,
                         'action' => route('customers.trash.destroy', $customer->id),
                         'method' => 'DELETE',

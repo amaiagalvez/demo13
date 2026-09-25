@@ -59,7 +59,7 @@ return new class extends Migration
 
         do {
             $suffix = $attempt === 1 ? " ({$id})" : " ({$id}-{$attempt})";
-            $candidate = Str::limit($name, 255 - Str::length($suffix), '') . $suffix;
+            $candidate = Str::limit($name, 255 - Str::length($suffix), '').$suffix;
             $attempt++;
         } while (DB::table('customers')->where('name', $candidate)->exists());
 

@@ -28,6 +28,21 @@ class CustomerController extends Controller
 
     public function store(CustomerRequest $request): RedirectResponse
     {
+        $name = $request->string('name')->toString();
+        $deletedCustomer = Customer::onlyTrashed()
+            ->where('name', $name)
+            ->latest('deleted_at')
+            ->first();
+
+        if ($deletedCustomer && ! $request->boolean('reuse_deleted_name')) {
+            return to_route('customers.index')
+                ->withInput()
+                ->with('deleted_customer_conflict', [
+                    'id' => $deletedCustomer->id,
+                    'name' => $deletedCustomer->name,
+                ]);
+        }
+
         Customer::create($request->validated());
 
         return to_route('customers.index')->with('status', __('Customer created successfully.'));

@@ -1,5 +1,6 @@
 @php
     $editingCustomer = $list['create'] && str_starts_with(old('_customer_form', ''), 'edit-');
+    $deletedCustomerConflict = session('deleted_customer_conflict');
     $initialForm = $list['create']
         ? [
             'id' => $editingCustomer ? old('_customer_id') : null,
@@ -21,6 +22,7 @@
 <x-layouts::app :title="$list['title']">
     <div x-data="{
         form: @js($initialForm),
+        deletedConflict: @js($deletedCustomerConflict),
         confirmation: {
             action: '',
             method: 'DELETE',
@@ -65,7 +67,9 @@
             };
         },
     }"
-        @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-form' }))" @endif
+        @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-form' }))"
+        @elseif ($deletedCustomerConflict)
+            x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-name-conflict' }))" @endif
         class="flex flex-col gap-6">
         <div class="flex items-center justify-between gap-4">
             <div>
@@ -183,6 +187,43 @@
                 class="customer-drawer max-w-none">
                 @include('customers.form')
             </flux:modal>
+
+            @if ($deletedCustomerConflict)
+                <flux:modal name="customer-name-conflict" class="max-w-md">
+                    <div class="flex flex-col gap-6">
+                        <div>
+                            <flux:heading size="lg">
+                                {{ __('Customer name already in trash') }}
+                            </flux:heading>
+                            <flux:text class="mt-2">
+                                {{ __('A deleted customer already uses this name.', ['name' => $deletedCustomerConflict['name']]) }}
+                            </flux:text>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <form method="POST" action="{{ route('customers.store') }}">
+                                @csrf
+                                <input type="hidden" name="name"
+                                    value="{{ old('name', $deletedCustomerConflict['name']) }}">
+                                <input type="hidden" name="reuse_deleted_name" value="1">
+                                <flux:button type="submit" variant="primary" class="w-full"
+                                    data-test="customer-conflict-create-new">
+                                    {{ __('Create a new customer') }}
+                                </flux:button>
+                            </form>
+                            <form method="POST"
+                                action="{{ route('customers.trash.restore', $deletedCustomerConflict['id']) }}">
+                                @csrf
+                                <input type="hidden" name="_method" value="PATCH">
+                                <flux:button type="submit" variant="ghost" class="w-full"
+                                    data-test="customer-conflict-restore">
+                                    {{ __('Restore the deleted customer instead') }}
+                                </flux:button>
+                            </form>
+                        </div>
+                    </div>
+                </flux:modal>
+            @endif
         @endif
 
         <flux:modal name="customer-confirm" class="max-w-md">
@@ -203,13 +244,15 @@
                         <input type="hidden" name="_method" x-bind:value="confirmation.method">
                         <template x-if="confirmation.danger">
                             <flux:button variant="danger" type="submit"
-                                x-bind:disabled="isSubmitting" data-test="customer-confirm-submit">
+                                x-bind:disabled="isSubmitting"
+                                data-test="customer-confirm-submit">
                                 <span x-text="confirmation.label"></span>
                             </flux:button>
                         </template>
                         <template x-if="!confirmation.danger">
                             <flux:button variant="primary" type="submit"
-                                x-bind:disabled="isSubmitting" data-test="customer-confirm-submit">
+                                x-bind:disabled="isSubmitting"
+                                data-test="customer-confirm-submit">
                                 <span x-text="confirmation.label"></span>
                             </flux:button>
                         </template>

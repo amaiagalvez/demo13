@@ -22,7 +22,7 @@ class CustomerCrudTest extends DuskTestCase
             $browser->loginAs($user)
                 ->visit('/customers')
                 ->type('[data-test="customer-search"]', 'Ane')
-                ->waitForReload(fn(Browser $browser) => $browser->click(
+                ->waitForReload(fn (Browser $browser) => $browser->click(
                     '[data-test="customer-search-submit"]'
                 ))
                 ->assertQueryStringHas('search', 'Ane')
@@ -84,7 +84,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->click('[data-test="customer-create-button"]')
                 ->waitFor('dialog[open]')
                 ->type('dialog[open] [data-test="customer-name"]', 'Existing Customer')
-                ->waitForReload(fn(Browser $browser) => $browser->click(
+                ->waitForReload(fn (Browser $browser) => $browser->click(
                     'dialog[open] [data-test="customer-submit"]'
                 ))
                 ->assertPresent('dialog[open]')
@@ -123,7 +123,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitFor('dialog[open]')
                 ->clear('dialog[open] [data-test="customer-name"]')
                 ->type('dialog[open] [data-test="customer-name"]', 'Existing Customer')
-                ->waitForReload(fn(Browser $browser) => $browser->click(
+                ->waitForReload(fn (Browser $browser) => $browser->click(
                     'dialog[open] [data-test="customer-submit"]'
                 ))
                 ->assertSeeIn(
@@ -261,13 +261,13 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertSee('Restorable Customer')
                 ->click("[data-test='customer-restore-{$restorableCustomer->id}']")
                 ->waitFor('dialog[open]')
-                ->waitForReload(fn(Browser $browser) => $browser->click(
+                ->waitForReload(fn (Browser $browser) => $browser->click(
                     "dialog[open] [data-test='customer-confirm-submit']"
                 ))
                 ->assertDontSee('Restorable Customer')
                 ->click("[data-test='customer-force-delete-{$deletableCustomer->id}']")
                 ->waitFor('dialog[open]')
-                ->waitForReload(fn(Browser $browser) => $browser->click(
+                ->waitForReload(fn (Browser $browser) => $browser->click(
                     "dialog[open] [data-test='customer-confirm-submit']"
                 ))
                 ->assertDontSee('Deletable Customer');

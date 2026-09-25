@@ -30,7 +30,7 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index'))
             ->assertOk()
             ->assertSee('customer-create')
-            ->assertSee('customer-edit-' . $customer->id);
+            ->assertSee('customer-edit-'.$customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
             ->assertRedirect(route('customers.index'));
@@ -64,6 +64,39 @@ class CustomerCrudTest extends TestCase
         Customer::query()->create(['name' => 'Ane Bezeroa']);
     }
 
+    public function test_customer_name_can_be_reused_after_soft_delete(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedCustomer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+        $deletedCustomer->delete();
+
+        $this->post(route('customers.store'), ['name' => 'Ane Bezeroa'])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('deleted_customer_conflict', [
+                'id' => $deletedCustomer->id,
+                'name' => 'Ane Bezeroa',
+            ]);
+
+        $this->get(route('customers.index'))
+            ->assertOk()
+            ->assertSee('customer-conflict-create-new')
+            ->assertSee('customer-conflict-restore')
+            ->assertSee(__('Customer name already in trash'));
+
+        $this->assertDatabaseCount('customers', 1);
+
+        $this->post(route('customers.store'), [
+            'name' => 'Ane Bezeroa',
+            'reuse_deleted_name' => '1',
+        ])->assertRedirect(route('customers.index'));
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Ane Bezeroa',
+            'deleted_at' => null,
+        ]);
+        $this->assertSoftDeleted($deletedCustomer);
+    }
+
     public function test_failed_update_keeps_the_selected_customer_context(): void
     {
         $this->actingAs(User::factory()->create());
@@ -71,13 +104,13 @@ class CustomerCrudTest extends TestCase
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), [
-                '_customer_form' => 'edit-' . $customer->id,
+                '_customer_form' => 'edit-'.$customer->id,
                 '_customer_id' => $customer->id,
                 'name' => '',
             ])
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name'])
-            ->assertSessionHasInput('_customer_form', 'edit-' . $customer->id)
+            ->assertSessionHasInput('_customer_form', 'edit-'.$customer->id)
             ->assertSessionHasInput('_customer_id', (string) $customer->id);
     }
 
