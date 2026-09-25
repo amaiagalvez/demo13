@@ -68,4 +68,18 @@ class CustomerTrashTest extends TestCase
 
     $this->assertDatabaseHas('customers', ['id' => $customer->id]);
   }
+
+  public function test_deleted_customers_can_be_searched_by_visible_data(): void
+  {
+    $this->actingAs(User::factory()->create());
+    $matchingCustomer = Customer::query()->create(['name' => 'Ane Bezeroa']);
+    $otherCustomer = Customer::query()->create(['name' => 'Jon Bezeroa']);
+    $matchingCustomer->delete();
+    $otherCustomer->delete();
+
+    $this->get(route('customers.trash.index', ['search' => 'Ane']))
+      ->assertOk()
+      ->assertSee('Ane Bezeroa')
+      ->assertDontSee('Jon Bezeroa');
+  }
 }

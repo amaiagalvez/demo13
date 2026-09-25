@@ -2,17 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CustomerListRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
+use App\Queries\Customers\CustomerListQuery;
+use App\Transformers\CustomerListTransformer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class CustomerController extends Controller
 {
-    public function index(): View
-    {
-        return view('customers.index', [
-            'customers' => Customer::query()->latest('id')->paginate(),
+    public function index(
+        CustomerListRequest $request,
+        CustomerListQuery $query,
+        CustomerListTransformer $transformer,
+    ): View {
+        $search = $request->search();
+        $customers = $query->active($search);
+
+        return view('customers.list', [
+            'customers' => $customers,
+            'list' => $transformer->active($customers, $search),
         ]);
     }
 
