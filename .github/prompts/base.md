@@ -5,7 +5,7 @@ Estoy desarrollando una aplicación web con:
 * Laravel 13
 * PHP 8.3+
 * Eloquent ORM
-* MySQL o PostgreSQL
+* MySQL
 * PHPUnit y/o Pest
 * Docker
 * Composer

@@ -8,6 +8,15 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CustomerRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $name = $this->input('name');
+
+        if (is_string($name)) {
+            $this->merge(['name' => trim($name)]);
+        }
+    }
+
     public function authorize(): bool
     {
         $customer = $this->route('customer');

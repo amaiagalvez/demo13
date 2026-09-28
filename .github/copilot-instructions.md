@@ -21,7 +21,6 @@ Possible technologies include:
 - Laravel
 - Eloquent
 - MySQL
-- PostgreSQL
 - Redis
 - Horizon
 - Queues
@@ -243,7 +242,6 @@ Review:
 - race conditions
 - data integrity
 - destructive migrations
-- MySQL/PostgreSQL differences
 
 ---
 

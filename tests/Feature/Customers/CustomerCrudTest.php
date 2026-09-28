@@ -27,7 +27,7 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index'))
             ->assertOk()
             ->assertSee('customer-create')
-            ->assertSee('customer-edit-'.$customer->id);
+            ->assertSee('customer-edit-' . $customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
             ->assertRedirect(route('customers.index'));
@@ -63,6 +63,29 @@ class CustomerCrudTest extends TestCase
             ->assertSessionHasErrors(['name']);
 
         $this->assertDatabaseCount('customers', 1);
+    }
+
+    public function test_store_trims_name_before_validation_and_saving(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
+
+        $this->from(route('customers.index'))
+            ->post(route('customers.store'), ['name' => '  Ane Bezeroa  '])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('customers', 1);
+    }
+
+    public function test_store_saves_name_without_surrounding_whitespace(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->post(route('customers.store'), ['name' => '  Ane Bezeroa  '])
+            ->assertRedirect(route('customers.index'));
+
+        $this->assertDatabaseHas('customers', ['name' => 'Ane Bezeroa']);
     }
 
     public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
@@ -144,14 +167,25 @@ class CustomerCrudTest extends TestCase
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), [
-                '_customer_form' => 'edit-'.$customer->id,
+                '_customer_form' => 'edit-' . $customer->id,
                 '_customer_id' => $customer->id,
                 'name' => '',
             ])
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name'])
-            ->assertSessionHasInput('_customer_form', 'edit-'.$customer->id)
+            ->assertSessionHasInput('_customer_form', 'edit-' . $customer->id)
             ->assertSessionHasInput('_customer_id', (string) $customer->id);
+    }
+
+    public function test_update_saves_name_without_surrounding_whitespace(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Original Customer']);
+
+        $this->put(route('customers.update', $customer), ['name' => '  Ane Bezeroa  '])
+            ->assertRedirect(route('customers.index'));
+
+        $this->assertDatabaseHas('customers', ['id' => $customer->id, 'name' => 'Ane Bezeroa']);
     }
 
     public function test_only_validated_attributes_are_persisted(): void
