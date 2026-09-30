@@ -33,7 +33,13 @@ class ProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:4', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'min:4',
+                'max:255',
+                Rule::unique(Project::class)->ignore($this->route('project')),
+            ],
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'customer_id' => [

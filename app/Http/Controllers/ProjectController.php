@@ -7,9 +7,11 @@ use App\Models\Customer;
 use Illuminate\View\View;
 use App\Http\Requests\ProjectRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
+use Illuminate\Validation\ValidationException;
 
 class ProjectController extends Controller
 {
@@ -30,14 +32,34 @@ class ProjectController extends Controller
 
     public function store(ProjectRequest $request): RedirectResponse
     {
-        Project::create($request->validated());
+        try {
+            Project::create($request->validated());
+        } catch (QueryException $exception) {
+            if (! $this->isUniqueConstraintViolation($exception)) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+        }
 
         return to_route('projects.index')->with('status', __('Project created successfully.'));
     }
 
     public function update(ProjectRequest $request, Project $project): RedirectResponse
     {
-        $project->update($request->validated());
+        try {
+            $project->update($request->validated());
+        } catch (QueryException $exception) {
+            if (! $this->isUniqueConstraintViolation($exception)) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+        }
 
         return to_route('projects.index')->with('status', __('Project updated successfully.'));
     }
@@ -48,5 +70,13 @@ class ProjectController extends Controller
         $project->delete();
 
         return to_route('projects.index')->with('status', __('Project moved to trash.'));
+    }
+
+    private function isUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $errorInfo = $exception->errorInfo;
+
+        return ($errorInfo[0] ?? $exception->getCode()) === '23000'
+            && in_array((int) ($errorInfo[1] ?? 0), [19, 1062], true);
     }
 }

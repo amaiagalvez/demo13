@@ -4,6 +4,7 @@ namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,6 +41,57 @@ class ProjectInputValidationTest extends TestCase
             ->assertSee(__('validation.min.string', ['attribute' => 'name', 'min' => 4]));
 
         $this->assertDatabaseMissing('projects', ['name' => 'Abc']);
+    }
+
+    public function test_project_name_must_be_unique(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['name' => 'Existing project']);
+
+        $this->from(route('projects.index'))
+            ->post(route('projects.store'), [
+                'name' => $project->name,
+                'start_date' => self::START_DATE,
+                'customer_id' => $project->customer_id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('projects', 1);
+    }
+
+    public function test_project_name_can_be_kept_when_updating_the_same_project(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['name' => 'Existing project']);
+
+        $this->put(route('projects.update', $project), [
+            'name' => $project->name,
+            'start_date' => self::START_DATE,
+            'customer_id' => $project->customer_id,
+        ])->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'name' => 'Existing project',
+        ]);
+    }
+
+    public function test_project_name_cannot_be_reused_after_soft_delete(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->trashed()->create(['name' => 'Deleted project']);
+
+        $this->from(route('projects.index'))
+            ->post(route('projects.store'), [
+                'name' => $project->name,
+                'start_date' => self::START_DATE,
+                'customer_id' => $project->customer_id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('projects', 1);
     }
 
     public function test_project_can_be_created_without_an_end_date(): void

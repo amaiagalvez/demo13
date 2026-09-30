@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectCrudTest extends TestCase
@@ -65,6 +66,16 @@ class ProjectCrudTest extends TestCase
 
         $this->assertCount(2, $customer->projects);
         $this->assertTrue($projects->every(fn (Project $project): bool => $project->customer->is($customer)));
+    }
+
+    public function test_database_rejects_duplicate_project_names(): void
+    {
+        $customer = Customer::factory()->create();
+        Project::factory()->for($customer)->create(['name' => 'Unique project']);
+
+        $this->expectException(QueryException::class);
+
+        Project::factory()->for($customer)->create(['name' => 'Unique project']);
     }
 
     public function test_projects_can_be_searched_by_customer_name(): void

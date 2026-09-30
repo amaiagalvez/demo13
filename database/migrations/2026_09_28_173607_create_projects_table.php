@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->date('start_date');
-            $table->date('end_date');
+            $table->date('end_date')->nullable();
             $table->foreignId('customer_id')->constrained()->restrictOnDelete();
             $table->timestamps();
             $table->softDeletes();
+            $table->unique('name');
         });
     }
 
