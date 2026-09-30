@@ -11,8 +11,13 @@
         <input type="hidden" name="_method" x-bind:value="form.method">
         <input type="hidden" name="_customer_form" x-bind:value="form.context">
         <input type="hidden" name="_customer_id" x-bind:value="form.id">
-        <flux:input name="name" :label="__('Name')" x-model="form.name" maxlength="255"
-            required autofocus data-test="customer-name" />
+        <flux:field>
+            <flux:label>{{ __('Name') }} <span class="text-red-600" aria-hidden="true">*</span>
+            </flux:label>
+            <flux:input name="name" x-model="form.name" maxlength="255" required autofocus
+                data-test="customer-name" />
+            <flux:error name="name" />
+        </flux:field>
         <div class="flex justify-end gap-3">
             <flux:modal.close>
                 <flux:button type="button" variant="ghost" data-test="customer-cancel">

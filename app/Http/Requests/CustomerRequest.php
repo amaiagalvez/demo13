@@ -36,6 +36,7 @@ class CustomerRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
+                'min:4',
                 Rule::unique(Customer::class)
                     ->ignore($this->route('customer'))
                     ->whereNull('deleted_at'),

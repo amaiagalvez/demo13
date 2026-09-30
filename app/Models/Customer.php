@@ -6,6 +6,7 @@ use App\Policies\CustomerPolicy;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,4 +17,9 @@ class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory, SoftDeletes;
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\CustomerRequest;
 use Illuminate\Database\QueryException;
@@ -28,7 +29,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function store(CustomerRequest $request): RedirectResponse
+    public function store(CustomerRequest $request): RedirectResponse|JsonResponse
     {
         $name = $request->string('name')->toString();
         $deletedCustomer = Customer::onlyTrashed()
@@ -37,6 +38,15 @@ class CustomerController extends Controller
             ->first();
 
         if ($deletedCustomer && ! $request->boolean('reuse_deleted_name')) {
+            if ($request->expectsJson()) {
+                $message = __('A deleted customer already uses this name.');
+
+                return response()->json([
+                    'message' => $message,
+                    'errors' => ['name' => [$message]],
+                ], 409);
+            }
+
             return to_route('customers.index')
                 ->withInput()
                 ->with('deleted_customer_conflict', [
@@ -46,7 +56,7 @@ class CustomerController extends Controller
         }
 
         try {
-            Customer::create($request->validated());
+            $customer = Customer::create($request->validated());
         } catch (QueryException $exception) {
             if (! $this->isUniqueConstraintViolation($exception)) {
                 throw $exception;
@@ -55,6 +65,10 @@ class CustomerController extends Controller
             throw ValidationException::withMessages([
                 'name' => __('The name has already been taken.'),
             ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json($customer->only(['id', 'name']), 201);
         }
 
         return to_route('customers.index')->with('status', __('Customer created successfully.'));

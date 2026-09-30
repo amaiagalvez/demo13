@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import 'select2/dist/css/select2.min.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -63,6 +64,60 @@ select:focus[data-flux-control] {
 
 .customer-drawer {
     width: 100vw !important;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-container--default .select2-selection--single {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    border: 1px solid var(--color-zinc-600);
+    border-radius: 0.375rem;
+    background-color: var(--color-zinc-800);
+    color: var(--color-zinc-100);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    padding-inline: 0.75rem 2rem;
+    color: inherit;
+    line-height: 1.5rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    top: 0.375rem;
+    right: 0.375rem;
+}
+
+.select2-dropdown {
+    z-index: 90;
+    overflow: hidden;
+    border: 1px solid var(--color-zinc-600);
+    border-radius: 0.375rem;
+    background-color: var(--color-zinc-800);
+    color: var(--color-zinc-100);
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--color-zinc-600);
+    border-radius: 0.25rem;
+    background-color: var(--color-zinc-900);
+    color: var(--color-zinc-100);
+}
+
+.select2-container--default .select2-results__option--selectable {
+    padding: 0.5rem 0.75rem;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--color-zinc-700);
+    color: white;
+}
+
+.select2-container--default .select2-results__option--selected {
+    background-color: var(--color-zinc-900);
 }
 
 @media (min-width: 768px) {

@@ -8,9 +8,9 @@ Update it when important architectural decisions are made.
 
 ## System Purpose
 
-Authenticated users manage a customer directory. Customers can be created, edited,
-searched, paginated, soft-deleted, restored, and permanently deleted from a trash
-view.
+Authenticated users manage customers and their projects. Both resources can be
+created, edited, searched, paginated, soft-deleted, restored, and permanently
+deleted from a trash view.
 
 ---
 
@@ -18,6 +18,9 @@ view.
 
 - Customer management: controllers, Form Requests, policy, query object, transformer,
   Eloquent model, active list, and trash list.
+- Project management: controllers, Form Requests, policy, query object, transformer,
+  Eloquent model, active list, and trash list. Each project belongs to one customer;
+  a customer may have many projects.
 - Authentication and account settings: Laravel Fortify, email verification, passkeys,
   two-factor authentication, profile and password management.
 
@@ -26,10 +29,11 @@ view.
 ## Authentication / Authorization
 
 - Fortify provides authentication and account security features.
-- Customer routes require `auth` and `verified` middleware.
+- Customer and project routes require `auth` and `verified` middleware.
 - `CustomerPolicy` is the authorization boundary for customer list, create, update,
   delete, restore, and force-delete actions. The current product scope permits every
   authenticated verified user to perform these actions.
+- `ProjectPolicy` applies the same authorization boundary to project actions.
 
 ---
 
@@ -40,7 +44,9 @@ tests.
 
 Important constraints: customer names are unique among active customers. Soft-deleted
 customer names may be reused. Restoring a deleted record whose name is already used by
-an active customer requires an explicit conflict policy.
+an active customer requires an explicit conflict policy. Projects require one customer
+and have a date range whose end cannot precede its start. Customers with projects
+cannot be permanently deleted.
 
 Important transactions: no multi-step business transaction or queued write flow exists
 currently.
@@ -72,9 +78,12 @@ Blade / Livewire / Vue / Inertia:
 
 ## Important Architectural Decisions
 
-- Keep customer list querying and presentation transformation separate from controllers.
+- Keep customer and project list querying and presentation transformation separate
+	from controllers.
 - Enforce active customer-name uniqueness in both Form Request validation and the
 	database; soft-deleted names are reusable.
+- Enforce the project-to-customer relationship with a non-null foreign key and an
+	Eloquent `belongsTo` / `hasMany` relationship.
 - Keep browser tests in a separate CI job because they require a browser and a test
 	database.
 

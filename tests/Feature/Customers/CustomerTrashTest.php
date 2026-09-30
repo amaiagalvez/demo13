@@ -4,6 +4,7 @@ namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Events\QueryExecuted;
@@ -123,6 +124,20 @@ class CustomerTrashTest extends TestCase
             ->assertRedirect(route('customers.trash.index'));
 
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
+    }
+
+    public function test_customer_with_a_project_cannot_be_permanently_deleted(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->trashed()->create();
+        $project = Project::factory()->for($customer)->create();
+
+        $this->delete(route('customers.trash.destroy', $customer->id))
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionHas('error', __('Customer cannot be permanently deleted while it has projects.'));
+
+        $this->assertSoftDeleted($customer);
+        $this->assertModelExists($project);
     }
 
     public function test_active_customer_cannot_be_restored_or_permanently_deleted(): void

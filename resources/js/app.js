@@ -1,3 +1,9 @@
+import $ from 'jquery';
+import select2 from 'select2';
+
+window.$ = window.jQuery = $;
+select2(window, $);
+
 export function clearForm(form) {
     if (!(form instanceof HTMLFormElement)) {
         return;
@@ -34,8 +40,107 @@ export function clearForm(form) {
 
     form.querySelectorAll('[data-invalid]').forEach((field) => {
         field.removeAttribute('aria-invalid');
-        field.removeAttribute('data-invalid');
+        delete field.dataset.invalid;
     });
 }
+
+window.initializeProjectCustomerSelect = (element) => {
+    const select = $(element);
+    const root = document.querySelector('[data-project-form-root]');
+
+    if (!root || select.hasClass('select2-hidden-accessible')) {
+        return;
+    }
+
+    select.select2({
+        width: '100%',
+        dropdownParent: $(element.closest('dialog')),
+        placeholder: element.dataset.placeholder,
+        allowClear: true,
+        tags: true,
+        language: {
+            noResults: () => element.dataset.noResultsLabel,
+        },
+        createTag: (params) => {
+            const name = params.term.trim();
+
+            if (!name || Array.from(element.options).some((option) =>
+                option.text.trim().toLocaleLowerCase() === name.toLocaleLowerCase()
+            )) {
+                return null;
+            }
+
+            return {
+                id: `new-customer:${name}`,
+                text: `${element.dataset.createLabel}: ${name}`,
+                newTag: true,
+                customerName: name,
+            };
+        },
+    }).on('select2:select', async (event) => {
+        const customerOption = event.params.data;
+        const projectForm = window.Alpine.$data(root);
+
+        if (!customerOption.newTag) {
+            projectForm.form.customerCreateError = '';
+
+            return;
+        }
+
+        const form = element.closest('form');
+        const temporaryValue = String(customerOption.id);
+        const csrfToken = form.querySelector('input[name="_token"]').value;
+
+        projectForm.form.customerCreateError = '';
+        projectForm.form.customerCreating = true;
+
+        try {
+            const response = await fetch(element.dataset.customerStoreUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ name: customerOption.customerName }),
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.errors?.name?.[0] ?? result.message ?? element.dataset.createError);
+            }
+
+            element.querySelector(`option[value="${CSS.escape(temporaryValue)}"]`)?.remove();
+
+            const option = new Option(result.name, String(result.id), true, true);
+            element.add(option);
+            select.val(String(result.id));
+            element.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (error) {
+            element.querySelector(`option[value="${CSS.escape(temporaryValue)}"]`)?.remove();
+            select.val(null).trigger('change.select2');
+            element.dispatchEvent(new Event('change', { bubbles: true }));
+            projectForm.form.customerCreateError = error.message || element.dataset.createError;
+        } finally {
+            projectForm.form.customerCreating = false;
+        }
+    });
+};
+
+const initializeProjectCustomerSelects = () => {
+    document.querySelectorAll('[data-project-customer-select]').forEach((element) => {
+        window.initializeProjectCustomerSelect(element);
+    });
+};
+
+const projectCustomerSelectObserver = new MutationObserver(initializeProjectCustomerSelects);
+
+projectCustomerSelectObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+});
+
+initializeProjectCustomerSelects();
 
 window.clearForm = clearForm;

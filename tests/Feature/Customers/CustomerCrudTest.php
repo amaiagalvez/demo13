@@ -27,7 +27,7 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index'))
             ->assertOk()
             ->assertSee('customer-create')
-            ->assertSee('customer-edit-' . $customer->id);
+            ->assertSee('customer-edit-'.$customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
             ->assertRedirect(route('customers.index'));
@@ -36,6 +36,29 @@ class CustomerCrudTest extends TestCase
         $this->delete(route('customers.destroy', $customer))
             ->assertRedirect(route('customers.index'));
         $this->assertSoftDeleted($customer);
+    }
+
+    public function test_customer_store_returns_created_customer_as_json(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson(route('customers.store'), ['name' => 'Select2 Customer'])
+            ->assertCreated()
+            ->assertJsonPath('name', 'Select2 Customer');
+
+        $this->assertDatabaseHas('customers', ['name' => 'Select2 Customer']);
+    }
+
+    public function test_json_customer_store_reports_deleted_name_conflicts(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->trashed()->create(['name' => 'Deleted Select2 Customer']);
+
+        $this->postJson(route('customers.store'), ['name' => 'Deleted Select2 Customer'])
+            ->assertStatus(409)
+            ->assertJsonPath('errors.name.0', __('A deleted customer already uses this name.'));
+
+        $this->assertDatabaseCount('customers', 1);
     }
 
     public function test_customer_name_is_required(): void
@@ -50,6 +73,20 @@ class CustomerCrudTest extends TestCase
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name'])
             ->assertSessionHasInput('_customer_form', 'create');
+    }
+
+    public function test_customer_name_shorter_than_three_characters_displays_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->followingRedirects()
+            ->from(route('customers.index'))
+            ->post(route('customers.store'), [
+                '_customer_form' => 'create',
+                'name' => 'Al',
+            ])
+            ->assertOk()
+            ->assertSee(__('validation.min.string', ['attribute' => 'name', 'min' => 3]));
     }
 
     public function test_store_rejects_an_active_duplicate_name(): void
@@ -167,13 +204,13 @@ class CustomerCrudTest extends TestCase
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), [
-                '_customer_form' => 'edit-' . $customer->id,
+                '_customer_form' => 'edit-'.$customer->id,
                 '_customer_id' => $customer->id,
                 'name' => '',
             ])
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name'])
-            ->assertSessionHasInput('_customer_form', 'edit-' . $customer->id)
+            ->assertSessionHasInput('_customer_form', 'edit-'.$customer->id)
             ->assertSessionHasInput('_customer_id', (string) $customer->id);
     }
 
