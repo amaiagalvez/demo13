@@ -12,6 +12,7 @@ use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
 use Illuminate\Validation\ValidationException;
+use App\Support\Database\UniqueConstraintViolation;
 
 class CustomerController extends Controller
 {
@@ -58,12 +59,12 @@ class CustomerController extends Controller
         try {
             $customer = Customer::create($request->validated());
         } catch (QueryException $exception) {
-            if (! $this->isUniqueConstraintViolation($exception)) {
+            if (! UniqueConstraintViolation::causedBy($exception)) {
                 throw $exception;
             }
 
             throw ValidationException::withMessages([
-                'name' => __('The name has already been taken.'),
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
             ]);
         }
 
@@ -79,12 +80,12 @@ class CustomerController extends Controller
         try {
             $customer->update($request->validated());
         } catch (QueryException $exception) {
-            if (! $this->isUniqueConstraintViolation($exception)) {
+            if (! UniqueConstraintViolation::causedBy($exception)) {
                 throw $exception;
             }
 
             throw ValidationException::withMessages([
-                'name' => __('The name has already been taken.'),
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
             ]);
         }
 
@@ -98,13 +99,5 @@ class CustomerController extends Controller
         $customer->delete();
 
         return to_route('customers.index')->with('status', __('Customer moved to trash.'));
-    }
-
-    private function isUniqueConstraintViolation(QueryException $exception): bool
-    {
-        $errorInfo = $exception->errorInfo;
-
-        return ($errorInfo[0] ?? $exception->getCode()) === '23000'
-            && in_array((int) ($errorInfo[1] ?? 0), [19, 1062], true);
     }
 }

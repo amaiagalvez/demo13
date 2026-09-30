@@ -38,7 +38,9 @@ class ProjectRequest extends FormRequest
                 'string',
                 'min:4',
                 'max:255',
-                Rule::unique(Project::class)->ignore($this->route('project')),
+                Rule::unique(Project::class)
+                    ->ignore($this->route('project'))
+                    ->whereNull('deleted_at'),
             ],
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date'],

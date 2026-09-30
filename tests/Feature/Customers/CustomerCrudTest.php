@@ -75,7 +75,7 @@ class CustomerCrudTest extends TestCase
             ->assertSessionHasInput('_customer_form', 'create');
     }
 
-    public function test_customer_name_shorter_than_three_characters_displays_validation_error(): void
+    public function test_customer_name_shorter_than_four_characters_displays_validation_error(): void
     {
         $this->actingAs(User::factory()->create());
 
@@ -83,10 +83,12 @@ class CustomerCrudTest extends TestCase
             ->from(route('customers.index'))
             ->post(route('customers.store'), [
                 '_customer_form' => 'create',
-                'name' => 'Al',
+                'name' => 'Abc',
             ])
             ->assertOk()
-            ->assertSee(__('validation.min.string', ['attribute' => 'name', 'min' => 3]));
+            ->assertSee(__('validation.min.string', ['attribute' => 'name', 'min' => 4]));
+
+        $this->assertDatabaseMissing('customers', ['name' => 'Abc']);
     }
 
     public function test_store_rejects_an_active_duplicate_name(): void
@@ -134,7 +136,9 @@ class CustomerCrudTest extends TestCase
         $this->from(route('customers.index'))
             ->post(route('customers.store'), ['name' => $name])
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHasErrors(['name']);
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
 
         $this->assertDatabaseCount('customers', 1);
         $this->assertDatabaseHas('customers', ['name' => $name, 'deleted_at' => null]);
@@ -150,7 +154,9 @@ class CustomerCrudTest extends TestCase
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), ['name' => $name])
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHasErrors(['name']);
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
 
         $this->assertDatabaseHas('customers', ['id' => $customer->id, 'name' => 'Original Customer']);
         $this->assertDatabaseHas('customers', ['name' => $name, 'deleted_at' => null]);

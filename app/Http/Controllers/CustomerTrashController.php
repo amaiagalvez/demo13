@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
+use App\Support\Database\UniqueConstraintViolation;
 
 class CustomerTrashController extends Controller
 {
@@ -39,7 +40,7 @@ class CustomerTrashController extends Controller
         try {
             $customer->restore();
         } catch (QueryException $exception) {
-            if (! $this->isUniqueConstraintViolation($exception)) {
+            if (! UniqueConstraintViolation::causedBy($exception)) {
                 throw $exception;
             }
 
@@ -72,13 +73,5 @@ class CustomerTrashController extends Controller
     {
         return to_route('customers.trash.index')
             ->with('error', __('Customer cannot be restored while another active customer uses this name.'));
-    }
-
-    private function isUniqueConstraintViolation(QueryException $exception): bool
-    {
-        $errorInfo = $exception->errorInfo;
-
-        return ($errorInfo[0] ?? $exception->getCode()) === '23000'
-            && in_array((int) ($errorInfo[1] ?? 0), [19, 1062], true);
     }
 }

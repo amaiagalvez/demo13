@@ -42,11 +42,11 @@ deleted from a trash view.
 Engine: MySQL-compatible MariaDB in Docker; SQLite is used for isolated in-memory
 tests.
 
-Important constraints: customer names are unique among active customers. Soft-deleted
-customer names may be reused. Restoring a deleted record whose name is already used by
-an active customer requires an explicit conflict policy. Projects require one customer
-and have a date range whose end cannot precede its start. Customers with projects
-cannot be permanently deleted.
+Important constraints: customer and project names are unique among active records.
+Soft-deleted names may be reused. Restoring a deleted record whose name is already
+used by an active record is rejected with a conflict message. Projects require one
+customer and have a nullable end date that cannot precede the required start date.
+Customers with projects cannot be permanently deleted.
 
 Important transactions: no multi-step business transaction or queued write flow exists
 currently.
@@ -81,7 +81,12 @@ Blade / Livewire / Vue / Inertia:
 - Keep customer and project list querying and presentation transformation separate
 	from controllers.
 - Enforce active customer-name uniqueness in both Form Request validation and the
-	database; soft-deleted names are reusable.
+	database; soft-deleted names may be reused. During creation, if a name is in the
+	trash, the user can choose to create a new record or restore the existing one.
+- Enforce project-name uniqueness in both Form Request validation and the database,
+	while allowing names belonging to soft-deleted projects to be reused. During
+	creation, if a name is in the trash, the user can choose to create a new record or
+	restore the existing one.
 - Enforce the project-to-customer relationship with a non-null foreign key and an
 	Eloquent `belongsTo` / `hasMany` relationship.
 - Keep browser tests in a separate CI job because they require a browser and a test
@@ -110,7 +115,5 @@ Record patterns that should not be introduced without a concrete new requirement
 
 ## Known Technical Debt
 
-- The restore flow needs a defined user-facing response when an active customer
-	already uses the deleted customer's name.
 - CI now includes Dusk, but the browser job must be observed once in GitHub Actions to
 	confirm the runner's Chrome/ChromeDriver paths.

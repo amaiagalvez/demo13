@@ -6,7 +6,9 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectCrudTest extends TestCase
@@ -78,6 +80,71 @@ class ProjectCrudTest extends TestCase
         Project::factory()->for($customer)->create(['name' => 'Unique project']);
     }
 
+    public function test_database_allows_project_name_reuse_after_soft_delete(): void
+    {
+        $customer = Customer::factory()->create();
+        $deletedProject = Project::factory()->for($customer)->trashed()->create([
+            'name' => 'Reusable project name',
+        ]);
+
+        $activeProject = Project::factory()->for($customer)->create([
+            'name' => 'Reusable project name',
+        ]);
+
+        $this->assertSoftDeleted($deletedProject);
+        $this->assertModelExists($activeProject);
+    }
+
+    public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $name = 'Concurrent project';
+        $this->insertProjectAfterNameUniquenessCheck($name);
+
+        $this->from(route('projects.index'))
+            ->post(route('projects.store'), [
+                'name' => $name,
+                'start_date' => '2026-10-01',
+                'customer_id' => $customer->id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+
+        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseHas('projects', ['name' => $name, 'deleted_at' => null]);
+    }
+
+    public function test_update_converts_a_concurrent_duplicate_insert_to_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['name' => 'Original project']);
+        $name = 'Concurrent project update';
+        $this->insertProjectAfterNameUniquenessCheck($name);
+
+        $this->from(route('projects.index'))
+            ->put(route('projects.update', $project), [
+                'name' => $name,
+                'start_date' => '2026-10-01',
+                'customer_id' => $project->customer_id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'name' => 'Original project',
+        ]);
+        $this->assertDatabaseHas('projects', [
+            'name' => $name,
+            'deleted_at' => null,
+        ]);
+    }
+
     public function test_projects_can_be_searched_by_customer_name(): void
     {
         $this->actingAs(User::factory()->create());
@@ -91,6 +158,23 @@ class ProjectCrudTest extends TestCase
             ->assertSee('Website redesign')
             ->assertSee('Northwind Studio')
             ->assertDontSee('Mobile application');
+    }
+
+    public function test_projects_cannot_be_searched_by_their_unshown_creation_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        Project::factory()->for($customer)->create([
+            'name' => 'Website redesign',
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-11-01',
+            'created_at' => '2001-02-03 12:00:00',
+        ]);
+
+        $this->get(route('projects.index', ['search' => '2001-02-03']))
+            ->assertOk()
+            ->assertSee(__('No projects match your search.'))
+            ->assertDontSee('Website redesign');
     }
 
     public function test_projects_are_ordered_by_start_date_end_date_and_customer_name(): void
@@ -129,8 +213,50 @@ class ProjectCrudTest extends TestCase
             ]);
     }
 
+    public function test_projects_with_matching_dates_and_customer_are_ordered_by_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Same customer']);
+
+        Project::factory()->for($customer)->create([
+            'name' => 'Zulu project',
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-05',
+        ]);
+        Project::factory()->for($customer)->create([
+            'name' => 'Alpha project',
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-05',
+        ]);
+
+        $this->get(route('projects.index'))
+            ->assertSeeInOrder([
+                'Alpha project',
+                'Zulu project',
+            ]);
+    }
+
     public function test_guests_are_redirected_to_login_from_the_projects_list(): void
     {
         $this->get(route('projects.index'))->assertRedirect(route('login'));
+    }
+
+    private function insertProjectAfterNameUniquenessCheck(string $name): void
+    {
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use ($name, &$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'projects')
+                || ! in_array($name, $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Project::factory()->create(['name' => $name]);
+        });
     }
 }

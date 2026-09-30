@@ -1,5 +1,6 @@
 @php
     $editingProject = $list['create'] && str_starts_with(old('_project_form', ''), 'edit-');
+    $deletedProjectConflict = session('deleted_project_conflict');
     $initialForm = $list['create']
         ? [
             'id' => $editingProject ? old('_project_id') : null,
@@ -77,7 +78,11 @@
             };
         },
     }"
-        @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-form' }))" @endif
+        @if ($errors->any())
+            x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-form' }))"
+        @elseif ($deletedProjectConflict)
+            x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-name-conflict' }))"
+        @endif
         class="flex flex-col gap-6">
         <div class="flex items-center justify-between gap-4">
             <div>
@@ -210,6 +215,25 @@
                 class="project-drawer max-w-none">
                 @include('projects.form')
             </flux:modal>
+
+            @if ($deletedProjectConflict)
+                <x-name-conflict-modal
+                    name="project-name-conflict"
+                    :title="__('Project name already in trash')"
+                    :message="__('A deleted project already uses this name.', ['name' => $deletedProjectConflict['name']])"
+                    :create-action="route('projects.store')"
+                    :restore-action="route('projects.trash.restore', $deletedProjectConflict['id'])"
+                    :create-fields="[
+                        'name' => old('name', $deletedProjectConflict['name']),
+                        'start_date' => old('start_date'),
+                        'end_date' => old('end_date'),
+                        'customer_id' => old('customer_id'),
+                    ]"
+                    :create-label="__('Create a new project')"
+                    :restore-label="__('Restore the deleted project instead')"
+                    create-test="project-conflict-create-new"
+                    restore-test="project-conflict-restore" />
+            @endif
         @endif
 
         <flux:modal name="project-confirm" class="max-w-md">

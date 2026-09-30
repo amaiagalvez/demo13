@@ -5,6 +5,8 @@ namespace Tests\Feature\Projects;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectTrashTest extends TestCase
@@ -42,5 +44,89 @@ class ProjectTrashTest extends TestCase
         $this->delete(route('projects.trash.destroy', $deletedProject->id))
             ->assertRedirect(route('projects.trash.index'));
         $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
+    }
+
+    public function test_project_restore_conflict_resolution_reports_that_no_duplicate_was_created(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedProject = Project::factory()->trashed()->create(['name' => 'Restorable project']);
+
+        $this->patch(route('projects.trash.restore', $deletedProject->id), [
+            'resolve_name_conflict' => '1',
+        ])
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas(
+                'status',
+                __('Project restored successfully. No new project was created with the repeated name.'),
+            );
+
+        $this->assertDatabaseCount('projects', 1);
+        $this->assertNotSoftDeleted($deletedProject);
+    }
+
+    public function test_trash_lists_most_recently_deleted_projects_first(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $olderProject = Project::factory()->trashed()->create(['name' => 'Older deleted project']);
+        $newerProject = Project::factory()->trashed()->create(['name' => 'Newer deleted project']);
+        $olderProject->forceFill(['deleted_at' => now()->subDay()])->saveQuietly();
+
+        $this->get(route('projects.trash.index'))
+            ->assertSeeInOrder([
+                'Newer deleted project',
+                'Older deleted project',
+            ]);
+    }
+
+    public function test_project_cannot_be_restored_when_an_active_project_uses_its_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedProject = Project::factory()->trashed()->create([
+            'name' => 'Repeated project name',
+        ]);
+        $activeProject = Project::factory()->create(['name' => 'Repeated project name']);
+
+        $this->patch(route('projects.trash.restore', $deletedProject->id))
+            ->assertRedirect(route('projects.trash.index'));
+
+        $this->get(route('projects.trash.index'))
+            ->assertSee(__('Project cannot be restored while another active project uses this name.'));
+
+        $this->assertModelExists($activeProject);
+        $this->assertSoftDeleted($deletedProject);
+    }
+
+    public function test_restore_returns_conflict_when_name_becomes_active_after_precheck(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedProject = Project::factory()->trashed()->create(['name' => 'Concurrent restore project']);
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use (&$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'projects')
+                || ! in_array('Concurrent restore project', $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Project::factory()->create(['name' => 'Concurrent restore project']);
+        });
+
+        $this->patch(route('projects.trash.restore', $deletedProject->id))
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Project cannot be restored while another active project uses this name.'),
+            );
+
+        $this->assertSoftDeleted($deletedProject);
+        $this->assertDatabaseHas('projects', [
+            'name' => 'Concurrent restore project',
+            'deleted_at' => null,
+        ]);
     }
 }

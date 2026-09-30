@@ -27,6 +27,7 @@
         </flux:field>
         <flux:input type="date" name="end_date" :label="__('End date')" x-model="form.end_date"
             data-test="project-end-date" />
+        <flux:error name="end_date" />
         <flux:field>
             <flux:label for="project-customer-id">{{ __('Customer') }}
                 <span class="text-red-600" aria-hidden="true">*</span>

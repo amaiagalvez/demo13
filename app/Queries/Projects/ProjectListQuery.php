@@ -23,14 +23,15 @@ final class ProjectListQuery extends ListQueryBase
                 ->select('projects.*')
                 ->orderBy('projects.start_date')
                 ->orderBy('projects.end_date')
-                ->orderBy('project_customers.name'),
+                ->orderBy('project_customers.name')
+                ->orderBy('projects.name')
+                ->orderBy('projects.id'),
             $search,
             searchColumns: [
                 'projects.name',
                 'project_customers.name',
                 'projects.start_date',
                 'projects.end_date',
-                'projects.created_at',
             ],
         );
     }

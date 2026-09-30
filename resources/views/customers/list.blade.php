@@ -22,7 +22,6 @@
 <x-layouts::app :title="$list['title']">
     <div x-data="{
         form: @js($initialForm),
-        deletedConflict: @js($deletedCustomerConflict),
         confirmation: {
             action: '',
             method: 'DELETE',
@@ -194,41 +193,17 @@
             </flux:modal>
 
             @if ($deletedCustomerConflict)
-                <flux:modal name="customer-name-conflict" class="max-w-md">
-                    <div class="flex flex-col gap-6">
-                        <div>
-                            <flux:heading size="lg">
-                                {{ __('Customer name already in trash') }}
-                            </flux:heading>
-                            <flux:text class="mt-2">
-                                {{ __('A deleted customer already uses this name.', ['name' => $deletedCustomerConflict['name']]) }}
-                            </flux:text>
-                        </div>
-
-                        <div class="flex flex-col gap-3">
-                            <form method="POST" action="{{ route('customers.store') }}">
-                                @csrf
-                                <input type="hidden" name="name"
-                                    value="{{ old('name', $deletedCustomerConflict['name']) }}">
-                                <input type="hidden" name="reuse_deleted_name" value="1">
-                                <flux:button type="submit" variant="primary" class="w-full"
-                                    data-test="customer-conflict-create-new">
-                                    {{ __('Create a new customer') }}
-                                </flux:button>
-                            </form>
-                            <form method="POST"
-                                action="{{ route('customers.trash.restore', $deletedCustomerConflict['id']) }}">
-                                @csrf
-                                <input type="hidden" name="_method" value="PATCH">
-                                <input type="hidden" name="resolve_name_conflict" value="1">
-                                <flux:button type="submit" variant="ghost" class="w-full"
-                                    data-test="customer-conflict-restore">
-                                    {{ __('Restore the deleted customer instead') }}
-                                </flux:button>
-                            </form>
-                        </div>
-                    </div>
-                </flux:modal>
+                <x-name-conflict-modal
+                    name="customer-name-conflict"
+                    :title="__('Customer name already in trash')"
+                    :message="__('A deleted customer already uses this name.', ['name' => $deletedCustomerConflict['name']])"
+                    :create-action="route('customers.store')"
+                    :restore-action="route('customers.trash.restore', $deletedCustomerConflict['id'])"
+                    :create-fields="['name' => old('name', $deletedCustomerConflict['name'])]"
+                    :create-label="__('Create a new customer')"
+                    :restore-label="__('Restore the deleted customer instead')"
+                    create-test="customer-conflict-create-new"
+                    restore-test="customer-conflict-restore" />
             @endif
         @endif
 

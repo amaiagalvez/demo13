@@ -12,6 +12,7 @@ use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
 use Illuminate\Validation\ValidationException;
+use App\Support\Database\UniqueConstraintViolation;
 
 class ProjectController extends Controller
 {
@@ -32,10 +33,25 @@ class ProjectController extends Controller
 
     public function store(ProjectRequest $request): RedirectResponse
     {
+        $name = $request->string('name')->toString();
+        $deletedProject = Project::onlyTrashed()
+            ->where('name', $name)
+            ->latest('deleted_at')
+            ->first();
+
+        if ($deletedProject && ! $request->boolean('reuse_deleted_name')) {
+            return to_route('projects.index')
+                ->withInput()
+                ->with('deleted_project_conflict', [
+                    'id' => $deletedProject->id,
+                    'name' => $deletedProject->name,
+                ]);
+        }
+
         try {
             Project::create($request->validated());
         } catch (QueryException $exception) {
-            if (! $this->isUniqueConstraintViolation($exception)) {
+            if (! UniqueConstraintViolation::causedBy($exception)) {
                 throw $exception;
             }
 
@@ -52,7 +68,7 @@ class ProjectController extends Controller
         try {
             $project->update($request->validated());
         } catch (QueryException $exception) {
-            if (! $this->isUniqueConstraintViolation($exception)) {
+            if (! UniqueConstraintViolation::causedBy($exception)) {
                 throw $exception;
             }
 
@@ -70,13 +86,5 @@ class ProjectController extends Controller
         $project->delete();
 
         return to_route('projects.index')->with('status', __('Project moved to trash.'));
-    }
-
-    private function isUniqueConstraintViolation(QueryException $exception): bool
-    {
-        $errorInfo = $exception->errorInfo;
-
-        return ($errorInfo[0] ?? $exception->getCode()) === '23000'
-            && in_array((int) ($errorInfo[1] ?? 0), [19, 1062], true);
     }
 }
