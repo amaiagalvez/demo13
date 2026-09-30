@@ -59,6 +59,12 @@ class ProjectTrashController extends Controller
     {
         $project = Project::onlyTrashed()->findOrFail($project);
         $this->authorize('forceDelete', $project);
+
+        if ($project->epics()->withTrashed()->exists()) {
+            return to_route('projects.trash.index')
+                ->with('error', __('Project cannot be permanently deleted while it has epics.'));
+        }
+
         $project->forceDelete();
 
         return to_route('projects.trash.index')->with('status', __('Project permanently deleted.'));

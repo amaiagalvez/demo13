@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Policies\ProjectPolicy;
-use Database\Factories\ProjectFactory;
+use App\Policies\EpicPolicy;
+use Database\Factories\EpicFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Fillable(['name', 'start_date', 'end_date', 'customer_id'])]
-#[UsePolicy(ProjectPolicy::class)]
-class Project extends Model
+#[Fillable(['name', 'start_date', 'end_date', 'project_id'])]
+#[UsePolicy(EpicPolicy::class)]
+class Epic extends Model
 {
-    /** @use HasFactory<ProjectFactory> */
+    /** @use HasFactory<EpicFactory> */
     use HasFactory, SoftDeletes;
 
     /**
@@ -30,13 +30,13 @@ class Project extends Model
         ];
     }
 
-    public function customer(): BelongsTo
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(Customer::class)->withTrashed();
+        return $this->belongsTo(Project::class)->withTrashed();
     }
 
-    public function epics(): HasMany
+    public function comments(): HasMany
     {
-        return $this->hasMany(Epic::class);
+        return $this->hasMany(EpicComment::class);
     }
 }

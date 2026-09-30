@@ -8,7 +8,7 @@ Update it when important architectural decisions are made.
 
 ## System Purpose
 
-Authenticated users manage customers and their projects. Both resources can be
+Authenticated users manage customers, their projects, and project epics. These resources can be
 created, edited, searched, paginated, soft-deleted, restored, and permanently
 deleted from a trash view.
 
@@ -21,6 +21,10 @@ deleted from a trash view.
 - Project management: controllers, Form Requests, policy, query object, transformer,
   Eloquent model, active list, and trash list. Each project belongs to one customer;
   a customer may have many projects.
+- Epic management: controllers, Form Requests, policy, query object, transformer,
+  Eloquent model, active list, and trash list. Each epic belongs to one project;
+  a project may have many epics. Epics have comments (author and creation time),
+  added from the epic edit drawer.
 - Authentication and account settings: Laravel Fortify, email verification, passkeys,
   two-factor authentication, profile and password management.
 
@@ -34,6 +38,7 @@ deleted from a trash view.
   delete, restore, and force-delete actions. The current product scope permits every
   authenticated verified user to perform these actions.
 - `ProjectPolicy` applies the same authorization boundary to project actions.
+- `EpicPolicy` applies the same boundary to epic actions and to adding comments.
 
 ---
 
@@ -47,6 +52,11 @@ Soft-deleted names may be reused. Restoring a deleted record whose name is alrea
 used by an active record is rejected with a conflict message. Projects require one
 customer and have a nullable end date that cannot precede the required start date.
 Customers with projects cannot be moved to the trash or permanently deleted.
+Epic names are unique per project among active epics. Epic start and end dates are
+optional, but an end date requires a start date and must be later than it. Projects
+with epics (including trashed epics) cannot be moved to the trash or permanently
+deleted. Epic comments are removed when their epic is permanently deleted and keep
+a null author when the user is deleted.
 
 Important transactions: no multi-step business transaction or queued write flow exists
 currently.

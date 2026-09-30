@@ -3,6 +3,7 @@
 namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
+use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
@@ -234,6 +235,19 @@ class ProjectCrudTest extends TestCase
                 'Alpha project',
                 'Zulu project',
             ]);
+    }
+
+    public function test_project_with_epics_cannot_be_deleted(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->trashed()->create();
+
+        $this->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('error', __('Project cannot be deleted while it has epics.'));
+
+        $this->assertNotSoftDeleted($project);
     }
 
     public function test_guests_are_redirected_to_login_from_the_projects_list(): void

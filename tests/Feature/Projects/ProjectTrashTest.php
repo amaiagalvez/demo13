@@ -3,6 +3,7 @@
 namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
+use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +45,20 @@ class ProjectTrashTest extends TestCase
         $this->delete(route('projects.trash.destroy', $deletedProject->id))
             ->assertRedirect(route('projects.trash.index'));
         $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
+    }
+
+    public function test_deleted_project_with_epics_cannot_be_permanently_deleted(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->create();
+        $project->delete();
+
+        $this->delete(route('projects.trash.destroy', $project->id))
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas('error', __('Project cannot be permanently deleted while it has epics.'));
+
+        $this->assertSoftDeleted($project);
     }
 
     public function test_project_restore_conflict_resolution_reports_that_no_duplicate_was_created(): void

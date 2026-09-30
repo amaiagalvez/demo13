@@ -27,6 +27,10 @@
                     :current="request()->routeIs('projects.*')" wire:navigate>
                     {{ __('Projects') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="rectangle-stack" :href="route('epics.index')"
+                    :current="request()->routeIs('epics.*')" wire:navigate>
+                    {{ __('Epics') }}
+                </flux:sidebar.item>
             </flux:sidebar.group>
         </flux:sidebar.nav>
 
