@@ -45,4 +45,20 @@ class CustomerTranslationTest extends TestCase
         $this->assertSame('Bezeroa behar bezala berreskuratu da.', __('Customer restored successfully.'));
         $this->assertSame('Bezeroa behin betiko ezabatu da.', __('Customer permanently deleted.'));
     }
+
+    public function test_customer_project_deletion_error_is_translated_in_all_supported_locales(): void
+    {
+        $expected = [
+            'eu' => 'Ezin da ezabatu proiektuak dituen bezero bat.',
+            'es' => 'No se puede eliminar un cliente que tiene proyectos.',
+            'fr' => 'Un client ayant des projets ne peut pas être supprimé.',
+            'en' => 'A customer cannot be deleted while it has projects.',
+        ];
+
+        foreach ($expected as $locale => $message) {
+            app()->setLocale($locale);
+
+            $this->assertSame($message, __('Customer cannot be deleted while it has projects.'));
+        }
+    }
 }

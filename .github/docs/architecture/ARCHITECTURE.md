@@ -46,7 +46,7 @@ Important constraints: customer and project names are unique among active record
 Soft-deleted names may be reused. Restoring a deleted record whose name is already
 used by an active record is rejected with a conflict message. Projects require one
 customer and have a nullable end date that cannot precede the required start date.
-Customers with projects cannot be permanently deleted.
+Customers with projects cannot be moved to the trash or permanently deleted.
 
 Important transactions: no multi-step business transaction or queued write flow exists
 currently.

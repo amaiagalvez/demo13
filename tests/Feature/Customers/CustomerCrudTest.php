@@ -4,6 +4,7 @@ namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
@@ -36,6 +37,34 @@ class CustomerCrudTest extends TestCase
         $this->delete(route('customers.destroy', $customer))
             ->assertRedirect(route('customers.index'));
         $this->assertSoftDeleted($customer);
+    }
+
+    public function test_customer_with_a_project_cannot_be_deleted(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+
+        $this->delete(route('customers.destroy', $customer))
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('error', __('Customer cannot be deleted while it has projects.'));
+
+        $this->assertNotSoftDeleted($customer);
+        $this->assertModelExists($project);
+    }
+
+    public function test_customer_with_a_trashed_project_cannot_be_deleted(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->trashed()->create();
+
+        $this->delete(route('customers.destroy', $customer))
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('error', __('Customer cannot be deleted while it has projects.'));
+
+        $this->assertNotSoftDeleted($customer);
+        $this->assertSoftDeleted($project);
     }
 
     public function test_customer_store_returns_created_customer_as_json(): void

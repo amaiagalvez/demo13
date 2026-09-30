@@ -17,6 +17,7 @@
     "Customer name already in trash": "Bezeroaren izena zakarrontzian dago",
     "Customers": "Bezeroak",
     "Customer": "Bezeroa",
+    "Customer cannot be deleted while it has projects.": "Ezin da ezabatu proiektuak dituen bezero bat.",
     "Customer cannot be permanently deleted while it has projects.": "Ezin da behin betiko ezabatu proiektuak dituen bezero bat.",
     "Add a project to your records.": "Gehitu proiektu bat zure erregistroetara.",
     "Delete": "Ezabatu",

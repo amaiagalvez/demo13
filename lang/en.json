@@ -17,6 +17,7 @@
     "Customer name already in trash": "Customer name already in trash",
     "Customers": "Customers",
     "Customer": "Customer",
+    "Customer cannot be deleted while it has projects.": "A customer cannot be deleted while it has projects.",
     "Customer cannot be permanently deleted while it has projects.": "A customer cannot be permanently deleted while it has projects.",
     "Add a project to your records.": "Add a project to your records.",
     "Delete": "Delete",

@@ -17,6 +17,7 @@
     "Customer name already in trash": "Le nom du client est déjà dans la corbeille",
     "Customers": "Clients",
     "Customer": "Client",
+    "Customer cannot be deleted while it has projects.": "Un client ayant des projets ne peut pas être supprimé.",
     "Customer cannot be permanently deleted while it has projects.": "Un client ayant des projets ne peut pas être supprimé définitivement.",
     "Add a project to your records.": "Ajoutez un projet à vos dossiers.",
     "Delete": "Supprimer",
