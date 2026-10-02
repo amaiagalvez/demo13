@@ -11,7 +11,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Profile settings')] class extends Component {
+new #[Title('Profile settings')] class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
     use ProfileValidationRules;
 
     public string $name = '';
@@ -22,8 +22,8 @@ new #[Title('Profile settings')] class extends Component {
      */
     public function mount(): void
     {
-        $this->name = Auth::user()->name;
-        $this->email = Auth::user()->email;
+        $this->name = Auth::user()->name ?? '';
+        $this->email = Auth::user()->email ?? '';
     }
 
     /**
@@ -33,15 +33,15 @@ new #[Title('Profile settings')] class extends Component {
     {
         $user = Auth::user();
 
-        $validated = $this->validate($this->profileRules($user->id));
+        $validated = $this->validate($this->profileRules($user?->id));
 
-        $user->fill($validated);
+        $user?->fill($validated);
 
-        if ($user->isDirty('email')) {
+        if ($user?->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
-        $user->save();
+        $user?->save();
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
         $this->dispatch('form-saved');
@@ -55,13 +55,13 @@ new #[Title('Profile settings')] class extends Component {
     {
         $user = Auth::user();
 
-        if ($user->hasVerifiedEmail()) {
+        if ($user?->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
 
             return;
         }
 
-        $user->sendEmailVerificationNotification();
+        $user?->sendEmailVerificationNotification();
 
         Session::flash('status', 'verification-link-sent');
     }
@@ -69,14 +69,13 @@ new #[Title('Profile settings')] class extends Component {
     #[Computed]
     public function hasUnverifiedEmail(): bool
     {
-        return Auth::user() instanceof MustVerifyEmail && ! Auth::user()->hasVerifiedEmail();
+        return Auth::user() instanceof MustVerifyEmail && !Auth::user()->hasVerifiedEmail();
     }
 
     #[Computed]
     public function showDeleteUser(): bool
     {
-        return ! Auth::user() instanceof MustVerifyEmail
-            || (Auth::user() instanceof MustVerifyEmail && Auth::user()->hasVerifiedEmail());
+        return !Auth::user() instanceof MustVerifyEmail || Auth::user()->hasVerifiedEmail();
     }
     /* @end-chisel-email-verification */
 }; ?>
@@ -90,10 +89,12 @@ new #[Title('Profile settings')] class extends Component {
         <form wire:submit="updateProfileInformation" x-data="{ isDirty: false }"
             x-on:form-dirty-change="isDirty = $event.detail.isDirty" data-track-changes
             class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus
+                autocomplete="name" />
 
             <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                <flux:input wire:model="email" :label="__('Email')" type="email" required
+                    autocomplete="email" />
 
                 {{-- @chisel-email-verification --}}
                 @if ($this->hasUnverifiedEmail)
@@ -101,13 +102,15 @@ new #[Title('Profile settings')] class extends Component {
                         <flux:text class="mt-4">
                             {{ __('Your email address is unverified.') }}
 
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
+                            <flux:link class="text-sm cursor-pointer"
+                                wire:click.prevent="resendVerificationNotification">
                                 {{ __('Click here to re-send the verification email.') }}
                             </flux:link>
                         </flux:text>
 
                         @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
+                            <flux:text
+                                class="mt-2 font-medium !dark:text-green-400 !text-green-600">
                                 {{ __('A new verification link has been sent to your email address.') }}
                             </flux:text>
                         @endif
@@ -118,8 +121,8 @@ new #[Title('Profile settings')] class extends Component {
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full"
-                        disabled x-bind:disabled="!isDirty" wire:loading.attr="disabled"
+                    <flux:button variant="primary" type="submit" class="w-full" disabled
+                        x-bind:disabled="!isDirty" wire:loading.attr="disabled"
                         data-test="update-profile-button">
                         {{ __('Save') }}
                     </flux:button>
@@ -130,9 +133,9 @@ new #[Title('Profile settings')] class extends Component {
 
         {{-- @chisel-email-verification --}}
         @if ($this->showDeleteUser)
-        {{-- @end-chisel-email-verification --}}
+            {{-- @end-chisel-email-verification --}}
             <livewire:pages::settings.delete-user-form />
-        {{-- @chisel-email-verification --}}
+            {{-- @chisel-email-verification --}}
         @endif
         {{-- @end-chisel-email-verification --}}
     </x-pages::settings.layout>

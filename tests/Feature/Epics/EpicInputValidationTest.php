@@ -86,7 +86,13 @@ class EpicInputValidationTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $existingEpic = Epic::factory()->create(['name' => 'Existing epic']);
-        $epicToUpdate = Epic::factory()->for($existingEpic->project)->create(['name' => 'Epic to update']);
+        $existingProject = $existingEpic->project;
+
+        if ($existingProject === null) {
+            self::fail('The existing epic must belong to a project.');
+        }
+
+        $epicToUpdate = Epic::factory()->for($existingProject)->create(['name' => 'Epic to update']);
 
         $this->from(route('epics.index'))
             ->put(route('epics.update', $epicToUpdate), [

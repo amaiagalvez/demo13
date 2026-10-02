@@ -67,7 +67,13 @@ class EpicTrashTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Repeated epic']);
-        Epic::factory()->for($deletedEpic->project)->create(['name' => 'Repeated epic']);
+        $deletedProject = $deletedEpic->project;
+
+        if ($deletedProject === null) {
+            self::fail('The deleted epic must belong to a project.');
+        }
+
+        Epic::factory()->for($deletedProject)->create(['name' => 'Repeated epic']);
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
             ->assertRedirect(route('epics.trash.index'))
@@ -95,9 +101,15 @@ class EpicTrashTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Concurrent restore epic']);
+        $deletedProject = $deletedEpic->project;
+
+        if ($deletedProject === null) {
+            self::fail('The deleted epic must belong to a project.');
+        }
+
         $competitorCreated = false;
 
-        DB::listen(static function (QueryExecuted $query) use ($deletedEpic, &$competitorCreated): void {
+        DB::listen(static function (QueryExecuted $query) use ($deletedProject, &$competitorCreated): void {
             if (
                 $competitorCreated
                 || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
@@ -108,7 +120,7 @@ class EpicTrashTest extends TestCase
             }
 
             $competitorCreated = true;
-            Epic::factory()->for($deletedEpic->project)->create(['name' => 'Concurrent restore epic']);
+            Epic::factory()->for($deletedProject)->create(['name' => 'Concurrent restore epic']);
         });
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))

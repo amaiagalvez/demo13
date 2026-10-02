@@ -18,6 +18,9 @@ class Customer extends Model
     /** @use HasFactory<CustomerFactory> */
     use HasFactory, SoftDeletes;
 
+    /**
+     * @return HasMany<Project, $this>
+     */
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);

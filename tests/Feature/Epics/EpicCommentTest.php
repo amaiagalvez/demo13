@@ -7,6 +7,7 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\EpicComment;
 use App\Queries\Epics\EpicListQuery;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCommentTest extends TestCase
@@ -28,9 +29,18 @@ class EpicCommentTest extends TestCase
 
         $comment = EpicComment::query()->sole();
         $this->assertSame('First comment', $comment->body);
-        $this->assertTrue($comment->epic->is($epic));
-        $this->assertTrue($comment->user->is($user));
-        $this->assertTrue($comment->created_at->equalTo(now()));
+
+        $commentEpic = $comment->epic;
+        $commentAuthor = $comment->user;
+        $commentCreatedAt = $comment->created_at;
+
+        if ($commentEpic === null || $commentAuthor === null || $commentCreatedAt === null) {
+            self::fail('The comment must reference its epic, its author and its creation time.');
+        }
+
+        $this->assertTrue($commentEpic->is($epic));
+        $this->assertTrue($commentAuthor->is($user));
+        $this->assertTrue($commentCreatedAt->equalTo(now()));
     }
 
     public function test_edit_payload_contains_comments_with_author_and_date(): void
@@ -64,9 +74,49 @@ class EpicCommentTest extends TestCase
 
         $response = $this->get(route('epics.index'))->assertOk();
 
-        $payload = collect($response->viewData('list')['rows'])
-            ->firstWhere('id', $epic->id)['actions'][0]['epic'];
-        $this->assertCount($limit, $payload['comments']);
+        $list = $response->viewData('list');
+
+        if (! is_array($list)) {
+            self::fail('The epics list view data must be an array.');
+        }
+
+        $rows = $list['rows'] ?? null;
+
+        if (! is_iterable($rows) && ! $rows instanceof Arrayable) {
+            self::fail('The epics list rows must be iterable.');
+        }
+
+        $row = collect($rows)->firstWhere('id', $epic->id);
+
+        if (! is_array($row)) {
+            self::fail('The epic row must be present in the list payload.');
+        }
+
+        $actions = $row['actions'] ?? null;
+
+        if (! is_array($actions)) {
+            self::fail('The epic row must embed its actions.');
+        }
+
+        $action = $actions[0] ?? null;
+
+        if (! is_array($action)) {
+            self::fail('The epic row must embed its edit action.');
+        }
+
+        $payload = $action['epic'] ?? null;
+
+        if (! is_array($payload)) {
+            self::fail('The edit action must embed the epic payload.');
+        }
+
+        $comments = $payload['comments'] ?? null;
+
+        if (! is_array($comments)) {
+            self::fail('The epic payload must embed its comments.');
+        }
+
+        $this->assertCount($limit, $comments);
         $this->assertSame($limit + 1, $payload['commentsCount']);
         $response->assertDontSee('Oldest hidden comment')
             ->assertSee('Other epic comment')
@@ -110,9 +160,20 @@ class EpicCommentTest extends TestCase
     public function test_comments_keep_existing_when_their_author_is_deleted(): void
     {
         $comment = EpicComment::factory()->create();
+        $commentAuthor = $comment->user;
 
-        $comment->user->delete();
+        if ($commentAuthor === null) {
+            self::fail('The comment must have an author.');
+        }
 
-        $this->assertNull($comment->fresh()->user_id);
+        $commentAuthor->delete();
+
+        $freshComment = $comment->fresh();
+
+        if ($freshComment === null) {
+            self::fail('The comment must still exist after its author is deleted.');
+        }
+
+        $this->assertNull($freshComment->user_id);
     }
 }

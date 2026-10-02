@@ -33,7 +33,20 @@ class EpicCrudTest extends TestCase
 
         $epic = Epic::query()->firstOrFail();
         $this->assertSame('Checkout flow', $epic->name);
-        $this->assertTrue($epic->project->is($project));
+
+        $epicProject = $epic->project;
+
+        if ($epicProject === null) {
+            self::fail('The created epic must belong to a project.');
+        }
+
+        $this->assertTrue($epicProject->is($project));
+
+        $projectCustomer = $project->customer;
+
+        if (! $projectCustomer instanceof Customer) {
+            self::fail('The selected project must belong to a customer.');
+        }
 
         $this->get(route('epics.index'))
             ->assertOk()
@@ -41,7 +54,7 @@ class EpicCrudTest extends TestCase
             ->assertSee('epic-edit-'.$epic->id)
             ->assertSee('Checkout flow')
             ->assertSee($project->name)
-            ->assertSee($project->customer->name);
+            ->assertSee($projectCustomer->name);
 
         $this->put(route('epics.update', $epic), [
             'name' => 'Payment flow',
@@ -184,7 +197,13 @@ class EpicCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create(['name' => 'Original epic']);
         $name = 'Concurrent epic update';
-        $this->insertEpicAfterNameUniquenessCheck($epic->project, $name);
+        $epicProject = $epic->project;
+
+        if (! $epicProject instanceof Project) {
+            self::fail('The epic must belong to a project.');
+        }
+
+        $this->insertEpicAfterNameUniquenessCheck($epicProject, $name);
 
         $this->from(route('epics.index'))
             ->put(route('epics.update', $epic), [

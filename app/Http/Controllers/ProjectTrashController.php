@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\View\View;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
+use App\Http\Requests\ProjectRestoreRequest;
 use App\Transformers\ProjectListTransformer;
 use App\Support\Database\UniqueConstraintViolation;
 
@@ -29,10 +29,9 @@ class ProjectTrashController extends Controller
         ]);
     }
 
-    public function restore(Request $request, int $project): RedirectResponse
+    public function restore(ProjectRestoreRequest $request): RedirectResponse
     {
-        $project = Project::onlyTrashed()->findOrFail($project);
-        $this->authorize('restore', $project);
+        $project = $request->project();
 
         if (Project::query()->where('name', $project->name)->exists()) {
             return $this->restoreConflictResponse();

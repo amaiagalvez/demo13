@@ -70,7 +70,13 @@ class PasswordResetTest extends TestCase
                 ->assertSessionHasNoErrors()
                 ->assertRedirect(route('login', absolute: false));
 
-            $storedPassword = $user->fresh()->password;
+            $freshUser = $user->fresh();
+
+            if ($freshUser === null) {
+                self::fail('The user must still exist after the password reset.');
+            }
+
+            $storedPassword = $freshUser->password;
 
             $this->assertTrue(Hash::check($newPassword, $storedPassword));
             $this->assertFalse(Hash::check('password', $storedPassword));

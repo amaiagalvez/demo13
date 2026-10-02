@@ -154,8 +154,24 @@ window.addEventListener('beforeunload', (event) => {
     event.returnValue = '';
 });
 
-window.addEventListener('form-saved', () => resetTrackedForms());
-window.addEventListener('form-reset', () => resetTrackedForms());
+document.addEventListener('livewire:init', () => {
+    window.Livewire.interceptMessage(({ message, onSuccess, onFinish }) => {
+        let shouldResetForms = false;
+
+        onSuccess(({ payload }) => {
+            shouldResetForms = payload.effects.dispatches?.some(({ name }) =>
+                ['form-saved', 'form-reset'].includes(name)
+            ) ?? false;
+        });
+
+        onFinish(() => {
+            // Livewire restores disabled controls after dispatching component events.
+            if (shouldResetForms) {
+                resetTrackedForms(message.component.el);
+            }
+        });
+    });
+});
 
 const initializeTrackedForms = () => {
     trackedFormsWithin().forEach(trackForm);

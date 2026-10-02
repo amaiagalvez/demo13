@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\View\View;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
+use App\Http\Requests\CustomerRestoreRequest;
 use App\Transformers\CustomerListTransformer;
 use App\Support\Database\UniqueConstraintViolation;
 
@@ -28,10 +28,9 @@ class CustomerTrashController extends Controller
         ]);
     }
 
-    public function restore(Request $request, int $customer): RedirectResponse
+    public function restore(CustomerRestoreRequest $request): RedirectResponse
     {
-        $customer = Customer::onlyTrashed()->findOrFail($customer);
-        $this->authorize('restore', $customer);
+        $customer = $request->customer();
 
         if (Customer::query()->where('name', $customer->name)->exists()) {
             return $this->restoreConflictResponse();

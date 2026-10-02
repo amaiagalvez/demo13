@@ -22,8 +22,8 @@ class CustomerRequest extends FormRequest
         $customer = $this->route('customer');
 
         return $customer
-            ? $this->user()->can('update', $customer)
-            : $this->user()->can('create', Customer::class);
+            ? ($this->user()?->can('update', $customer) ?? false)
+            : ($this->user()?->can('create', Customer::class) ?? false);
     }
 
     /**
@@ -41,6 +41,7 @@ class CustomerRequest extends FormRequest
                     ->ignore($this->route('customer'))
                     ->whereNull('deleted_at'),
             ],
+            'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }
 }

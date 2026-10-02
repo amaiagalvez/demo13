@@ -31,7 +31,14 @@ class ProjectCrudTest extends TestCase
 
         $project = Project::query()->firstOrFail();
         $this->assertSame('Website renewal', $project->name);
-        $this->assertTrue($project->customer->is($customer));
+
+        $projectCustomer = $project->customer;
+
+        if (! $projectCustomer instanceof Customer) {
+            self::fail('The created project must belong to a customer.');
+        }
+
+        $this->assertTrue($projectCustomer->is($customer));
 
         $this->get(route('projects.index'))
             ->assertOk()
@@ -68,7 +75,15 @@ class ProjectCrudTest extends TestCase
         $projects = Project::factory()->count(2)->for($customer)->create();
 
         $this->assertCount(2, $customer->projects);
-        $this->assertTrue($projects->every(fn (Project $project): bool => $project->customer->is($customer)));
+        $this->assertTrue($projects->every(function (Project $project) use ($customer): bool {
+            $projectCustomer = $project->customer;
+
+            if ($projectCustomer === null) {
+                self::fail('Every created project must belong to a customer.');
+            }
+
+            return $projectCustomer->is($customer);
+        }));
     }
 
     public function test_database_rejects_duplicate_project_names(): void

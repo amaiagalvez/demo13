@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Epic;
 use Illuminate\View\View;
-use Illuminate\Http\Request;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\QueryException;
+use App\Http\Requests\EpicRestoreRequest;
 use App\Transformers\EpicListTransformer;
 use App\Support\Database\UniqueConstraintViolation;
 
@@ -29,10 +29,9 @@ class EpicTrashController extends Controller
         ]);
     }
 
-    public function restore(Request $request, int $epic): RedirectResponse
+    public function restore(EpicRestoreRequest $request): RedirectResponse
     {
-        $epic = Epic::onlyTrashed()->findOrFail($epic);
-        $this->authorize('restore', $epic);
+        $epic = $request->epic();
 
         $nameIsInUse = Epic::query()
             ->where('project_id', $epic->project_id)

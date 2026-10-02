@@ -20,7 +20,7 @@ class Epic extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * @return array<string, string>
+     * @return array{start_date: 'date', end_date: 'date'}
      */
     protected function casts(): array
     {
@@ -30,11 +30,17 @@ class Epic extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class)->withTrashed();
     }
 
+    /**
+     * @return HasMany<EpicComment, $this>
+     */
     public function comments(): HasMany
     {
         return $this->hasMany(EpicComment::class);

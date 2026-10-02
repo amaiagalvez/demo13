@@ -20,7 +20,7 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * @return array<string, string>
+     * @return array{start_date: 'date', end_date: 'date'}
      */
     protected function casts(): array
     {
@@ -30,11 +30,17 @@ class Project extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class)->withTrashed();
     }
 
+    /**
+     * @return HasMany<Epic, $this>
+     */
     public function epics(): HasMany
     {
         return $this->hasMany(Epic::class);

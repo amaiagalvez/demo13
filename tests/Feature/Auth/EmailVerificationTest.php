@@ -37,7 +37,13 @@ class EmailVerificationTest extends TestCase
 
         Event::assertDispatched(Verified::class);
 
-        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $verifiedUser = $user->fresh();
+
+        if ($verifiedUser === null) {
+            self::fail('The user must still exist after verification.');
+        }
+
+        $this->assertTrue($verifiedUser->hasVerifiedEmail());
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
     }
 
@@ -53,7 +59,13 @@ class EmailVerificationTest extends TestCase
 
         $this->actingAs($user)->get($verificationUrl);
 
-        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+        $unverifiedUser = $user->fresh();
+
+        if ($unverifiedUser === null) {
+            self::fail('The user must still exist after the invalid verification attempt.');
+        }
+
+        $this->assertFalse($unverifiedUser->hasVerifiedEmail());
     }
 
     public function test_already_verified_user_visiting_verification_link_is_redirected_without_firing_event_again(): void
@@ -73,7 +85,13 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)->get($verificationUrl)
             ->assertRedirect(route('dashboard', absolute: false).'?verified=1');
 
-        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $alreadyVerifiedUser = $user->fresh();
+
+        if ($alreadyVerifiedUser === null) {
+            self::fail('The user must still exist after visiting the verification link.');
+        }
+
+        $this->assertTrue($alreadyVerifiedUser->hasVerifiedEmail());
         Event::assertNotDispatched(Verified::class);
     }
 }

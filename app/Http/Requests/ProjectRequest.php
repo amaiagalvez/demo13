@@ -23,8 +23,8 @@ class ProjectRequest extends FormRequest
         $project = $this->route('project');
 
         return $project
-            ? $this->user()->can('update', $project)
-            : $this->user()->can('create', Project::class);
+            ? ($this->user()?->can('update', $project) ?? false)
+            : ($this->user()?->can('create', Project::class) ?? false);
     }
 
     /**
@@ -49,6 +49,7 @@ class ProjectRequest extends FormRequest
                 'integer',
                 Rule::exists(Customer::class, 'id')->whereNull('deleted_at'),
             ],
+            'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }
 }

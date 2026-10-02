@@ -5,7 +5,7 @@ use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
     use PasswordValidationRules;
 
     public string $password = '';
@@ -19,7 +19,7 @@ new class extends Component {
             'password' => $this->currentPasswordRules(),
         ]);
 
-        tap(Auth::user(), $logout(...))->delete();
+        tap(Auth::user(), $logout(...))?->delete();
 
         $this->redirect('/', navigate: true);
     }
@@ -28,7 +28,8 @@ new class extends Component {
 <flux:modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
     <form method="POST" wire:submit="deleteUser" class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('Are you sure you want to delete your account?') }}</flux:heading>
+            <flux:heading size="lg">{{ __('Are you sure you want to delete your account?') }}
+            </flux:heading>
 
             <flux:subheading>
                 {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}

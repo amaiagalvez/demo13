@@ -14,11 +14,17 @@ class EpicComment extends Model
     /** @use HasFactory<EpicCommentFactory> */
     use HasFactory;
 
+    /**
+     * @return BelongsTo<Epic, $this>
+     */
     public function epic(): BelongsTo
     {
         return $this->belongsTo(Epic::class)->withTrashed();
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -7,9 +7,12 @@ use App\Models\User;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class EpicCommentTest extends DuskTestCase
 {
+    use DatabaseMigrations;
+
     public function test_comment_added_from_the_edit_drawer_is_shown_after_reopening_it(): void
     {
         $user = User::factory()->create(['name' => 'Dusk commenter']);
@@ -25,7 +28,9 @@ class EpicCommentTest extends DuskTestCase
                 ->waitFor('dialog[open] [data-test="epic-comments"]')
                 ->assertSeeIn('dialog[open]', __('No comments yet.'))
                 ->type('dialog[open] [data-test="epic-comment-body"]', $commentBody)
-                ->click('dialog[open] [data-test="epic-comment-submit"]')
+                ->waitForReload(fn (Browser $browser) => $browser->click(
+                    'dialog[open] [data-test="epic-comment-submit"]'
+                ))
                 ->waitFor('dialog[open] [data-test="epic-comment"]')
                 ->assertInputValue('dialog[open] [data-test="epic-name"]', $epicName)
                 ->assertSeeIn('dialog[open] [data-test="epic-comment"]', $commentBody)

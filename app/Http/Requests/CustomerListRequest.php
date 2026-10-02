@@ -9,7 +9,7 @@ class CustomerListRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Customer::class);
+        return $this->user()?->can('viewAny', Customer::class) ?? false;
     }
 
     /**

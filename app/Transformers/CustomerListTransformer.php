@@ -31,7 +31,7 @@ class CustomerListTransformer
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 'id' => $customer->id,
                 'name' => $customer->name,
-                'date' => $customer->created_at->format('Y-m-d'),
+                'date' => $customer->created_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'form-modal',

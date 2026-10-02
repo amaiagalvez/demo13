@@ -2,7 +2,7 @@
 
 use Livewire\Component;
 
-new class extends Component {}; ?>
+new class extends Component {}; // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement) ?>
 
 <section class="mt-10 space-y-6">
     <div class="relative mb-5">

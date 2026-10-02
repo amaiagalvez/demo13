@@ -23,8 +23,8 @@ class EpicRequest extends FormRequest
         $epic = $this->route('epic');
 
         return $epic
-            ? $this->user()->can('update', $epic)
-            : $this->user()->can('create', Epic::class);
+            ? ($this->user()?->can('update', $epic) ?? false)
+            : ($this->user()?->can('create', Epic::class) ?? false);
     }
 
     /**
@@ -50,6 +50,7 @@ class EpicRequest extends FormRequest
                 'integer',
                 Rule::exists(Project::class, 'id')->whereNull('deleted_at'),
             ],
+            'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }
 }

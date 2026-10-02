@@ -2,6 +2,7 @@
 
 namespace App\Transformers;
 
+use App\Models\Customer;
 use App\Models\Project;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -117,10 +118,13 @@ class ProjectListTransformer
      */
     private function columns(Project $project): array
     {
+        /** @var Customer $customer */
+        $customer = $project->customer;
+
         return [
             'id' => $project->id,
             'name' => $project->name,
-            'customer' => $project->customer->name,
+            'customer' => $customer->name,
             'startDate' => $project->start_date->format('Y-m-d'),
             'endDate' => $project->end_date?->format('Y-m-d') ?? '',
         ];

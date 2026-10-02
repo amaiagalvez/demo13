@@ -1,7 +1,7 @@
 # Guía de uso con tu configuración actual. Todo cuelga de tres piezas que ya tienes: 
 
 * AGENTS.md (contexto que Copilot carga en cada sesión vía copilot-instructions.md)
-* .github/instructions/ (reglas que se solas se inyectan al tocar cada ruta) 
+* .github/instructions/ (reglas que se inyectan solas al tocar cada ruta: http, views, tests y models)
 * los / prompts + agentes de .github/
 
 # Punto de partida común (los 3 flujos)
@@ -24,8 +24,10 @@ Nueva sesión por tarea. El contexto de AGENTS.md + las instrucciones de ruta en
 
 Sin / también funciona: describe la feature y el agente acabará en lo mismo, pero el prompt le obliga a planear y a no montar abstracciones de más.
 
+Si lo que quieres es un **recurso CRUD entero** (modelo + migración + vistas), usa **/new-resource** y pásale el nombre: `**/new-resource** Invoice`. Monta el set completo calcado a Customer (XController + XTrashController, XRequest/XListRequest/XRestoreRequest, policy, XListQuery, XListTransformer, vistas con x-list.table y x-forms.tracked-resource, lang en 4 locales) siguiendo TDD, y termina exigiendo pint, PHPStan y los tests de arquitectura en verde. /new-feature sigue siendo lo indicado para features que no son un recurso completo.
+
 ## Revisar incongruencias
-Tres niveles, de menos a más:
+Cuatro niveles, de menos a más:
 
 ### Rápido
 * "Revisa los cambios sin commitear de mi rama"	
@@ -38,6 +40,10 @@ Tres niveles, de menos a más:
 ### Completa
 * /full-review
 * Informe en .github/reviews/YYYY-MM-DD/CODE-REVIEW.md con IDs estables (SEC-001, DB-004…) tras el abogado del diablo
+
+### Consistencia entre recursos
+* /consistency-review
+* Compara customers/projects/epics (o el recurso nuevo) contra los patrones canónicos de forms y listados y lista las divergencias con IDs (PAT-001…). Útil tras varios /new-resource seguidos: la forma del último recurso nuevo se va desvianzando sin que nadie se dé cuenta.
 
 Flujo recomendado (el de tu README): /full-review → abre el CODE-REVIEW.md → selecciona los hallazgos que te convenzan → sesión nueva → /fix-review con los IDs:
 
@@ -52,8 +58,20 @@ Ese prompt reverifica que el hallazgo sigue existiendo, hace el cambio mínimo y
 * Bug de UI/JS → pega error de consola (Boost MCP browser-logs si hay pestaña de debug) → el fix va con Dusk solo si es comportamiento JS (regla de tests.instructions.md).
 * Hallazgo de revisión → no lo repitas: usa /fix-review con su ID para que respete la evidencia original.
 
+## Comprobaciones automáticas (no hace falta pedirlas)
+Al correr `php artisan test` (y en la CI) pasan también tres tests de arquitectura que vigilan la coherencia del proyecto:
+* **tests/Unit/ArchitectureTest.php** — cada recurso trae su set completo (controller, controller de papelera, requests, policy, list query, transformer, vistas list/form) y los controllers son thin: sin `DB::`/`Schema::`/`dd()`/`paginate()` y con FormRequest declarado en todo endpoint que recibe input.
+* **tests/Unit/ValidationCoverageTest.php** — todo lo que un modelo puede asignar en masa (`#[Fillable]`) y todo lo que los controllers leen con `$request->string()/boolean()` tiene su regla en un FormRequest. Sube un campo, una migration o un flag de formulario sin validar y se pone rojo.
+* **tests/Unit/ModelSchemaParityTest.php** — modelos y esquema no se desincronizan: una columna nueva sin `#[Fillable]` falla hasta que la añades (o la declaras como columna de servidor).
+
+El resto del automatismo:
+* `composer ci:check` = pint --test + PHPStan (nivel 9, subido desde 7) + suite completa.
+* Tests en paralelo en local: `DX php artisan test --parallel --compact <ruta>` — los flags van **antes** de la ruta. Nunca en CI: los jobs comparten una BD. Requiere el grant `laravel\_test\_%` (ya aplicado, y en `docker/mysql/init/02-parallel-test-databases.sql` para volúmenes nuevos).
+* Restaurar desde la papelera ya pide `XRestoreRequest` (policy + `resolve_name_conflict` validado). Si añades un endpoint con input, la validación va en su FormRequest, nunca en el controller.
+* CI (master y PRs): cache de Composer y npm, job Dusk, y se salta entera si el diff solo toca `.md`. Dependabot cubre composer y npm.
+
 ## Reglas del juego
-* Recordar una convención: record-rule está apagado → edita a mano .github/instructions/<zona>.instructions.md (mismo applyTo, añade el bullet). Ahí vive todo lo que no quieras repetir.
+* Recordar una convención: record-rule está apagado → edita a mano .github/instructions/<zona>.instructions.md (http, views, tests, models; mismo applyTo, añade el bullet). Ahí vive todo lo que no quieras repetir.
 * Tokens: una sesión = una tarea; ciérrala. Las reglas de ruta solo entran cuando se toca la ruta, y los / solo cuando los invocas.
 * Arquitectura (repositorios, DTOs, servicios…): el prompt y review-rules.md lo bloquean sin causa concreta — si de verdad lo necesitas, dilo explícitamente.
-* Tras cada sesión: git diff + tests tú mismo + commit. La CI (master + PRs) y dependabot ya se encargan del resto.
+* Tras cada sesión: git diff + tests tú mismo + commit.

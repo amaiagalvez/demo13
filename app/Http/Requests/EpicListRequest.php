@@ -9,7 +9,7 @@ class EpicListRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Epic::class);
+        return $this->user()?->can('viewAny', Epic::class) ?? false;
     }
 
     /**

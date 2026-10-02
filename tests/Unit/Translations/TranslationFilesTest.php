@@ -43,10 +43,23 @@ class TranslationFilesTest extends TestCase
      */
     private function translations(string $locale): array
     {
-        return json_decode(
-            file_get_contents(dirname(__DIR__, 3)."/lang/{$locale}.json"),
+        $json = file_get_contents(dirname(__DIR__, 3)."/lang/{$locale}.json");
+
+        if ($json === false) {
+            self::fail("lang/{$locale}.json could not be read.");
+        }
+
+        $translations = json_decode(
+            $json,
             true,
             flags: JSON_THROW_ON_ERROR,
         );
+
+        if (! is_array($translations)) {
+            self::fail("lang/{$locale}.json must decode to an array.");
+        }
+
+        /** @var array<string, string> $translations */
+        return $translations;
     }
 }

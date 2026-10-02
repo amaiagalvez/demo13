@@ -14,19 +14,23 @@ class ProfileDirtyFormTest extends DuskTestCase
     public function test_settings_save_buttons_only_enable_after_changes_and_navigation_warns(): void
     {
         $user = User::factory()->create();
+        $savedName = 'Updated profile name';
 
-        $this->browse(function (Browser $browser) use ($user): void {
+        $this->browse(function (Browser $browser) use ($user, $savedName): void {
+            $nameInput = 'input[wire\\:model="name"]';
+            $saveButtonDisabled = 'document.querySelector(\'[data-test="update-profile-button"]\').disabled';
+
             $browser->loginAs($user)
                 ->visit('/settings/profile')
                 ->waitFor('[data-test="update-profile-button"]')
                 ->assertScript(
-                    'document.querySelector(\'[data-test="update-profile-button"]\').disabled',
+                    $saveButtonDisabled,
                     true,
                 )
-                ->clear('input[wire\\:model="name"]')
-                ->type('input[wire\\:model="name"]', 'Updated profile name')
+                ->clear($nameInput)
+                ->type($nameInput, $savedName)
                 ->assertScript(
-                    'document.querySelector(\'[data-test="update-profile-button"]\').disabled',
+                    $saveButtonDisabled,
                     false,
                 )
                 ->click('a[href$="/projects"]')
@@ -35,18 +39,37 @@ class ProfileDirtyFormTest extends DuskTestCase
                 ->assertPathIs('/settings/profile')
                 ->click('[data-test="update-profile-button"]')
                 ->waitUntil(
-                    'document.body.innerText.includes("Profile updated.")',
+                    'document.body.innerText.includes('.json_encode(__('Profile updated.')).')',
+                    10,
+                )
+                ->waitUntil(
+                    $saveButtonDisabled,
                     10,
                 )
                 ->assertScript(
-                    'document.querySelector(\'[data-test="update-profile-button"]\').disabled',
+                    $saveButtonDisabled,
                     true,
-                );
+                )
+                ->clear($nameInput)
+                ->type($nameInput, 'Another profile name')
+                ->assertScript(
+                    $saveButtonDisabled,
+                    false,
+                )
+                ->clear($nameInput)
+                ->type($nameInput, $savedName)
+                ->assertScript(
+                    $saveButtonDisabled,
+                    true,
+                )
+                ->click('a[href$="/projects"]')
+                ->waitUntil('window.location.pathname === "/projects"', 10)
+                ->assertPathIs('/projects');
         });
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'name' => 'Updated profile name',
+            'name' => $savedName,
         ]);
     }
 }

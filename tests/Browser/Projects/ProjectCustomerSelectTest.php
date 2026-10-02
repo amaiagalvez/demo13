@@ -7,9 +7,12 @@ use Tests\DuskTestCase;
 use App\Models\Customer;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ProjectCustomerSelectTest extends DuskTestCase
 {
+    use DatabaseMigrations;
+
     public function test_project_customer_select_can_search_and_create_customers(): void
     {
         $user = User::factory()->create();

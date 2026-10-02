@@ -7,9 +7,12 @@ use App\Models\User;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class EpicFormTest extends DuskTestCase
 {
+    use DatabaseMigrations;
+
     public function test_end_date_picker_starts_the_day_after_the_start_date(): void
     {
         $user = User::factory()->create();

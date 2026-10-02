@@ -2,8 +2,10 @@
 
 namespace App\Transformers;
 
+use App\Models\Customer;
 use App\Models\Epic;
 use App\Models\EpicComment;
+use App\Models\Project;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class EpicListTransformer
@@ -44,12 +46,16 @@ class EpicListTransformer
                             'project_id' => $epic->project_id,
                             'commentAction' => route('epics.comments.store', $epic),
                             'commentsCount' => (int) $epic->comments_count,
-                            'comments' => $epic->comments->map(fn (EpicComment $comment): array => [
-                                'id' => $comment->id,
-                                'author' => $comment->user?->name ?? __('Deleted user'),
-                                'writtenAt' => $comment->created_at->format('Y-m-d H:i'),
-                                'body' => $comment->body,
-                            ])->all(),
+                            'comments' => $epic->comments->map(function (EpicComment $comment): array {
+                                $author = $comment->user?->name;
+
+                                return [
+                                    'id' => $comment->id,
+                                    'author' => $author ?? __('Deleted user'),
+                                    'writtenAt' => $comment->created_at?->format('Y-m-d H:i'),
+                                    'body' => $comment->body,
+                                ];
+                            })->all(),
                         ],
                     ],
                     [
@@ -126,11 +132,16 @@ class EpicListTransformer
      */
     private function columns(Epic $epic): array
     {
+        /** @var Project $project */
+        $project = $epic->project;
+        /** @var Customer $customer */
+        $customer = $project->customer;
+
         return [
             'id' => $epic->id,
             'name' => $epic->name,
-            'project' => $epic->project->name,
-            'customer' => $epic->project->customer->name,
+            'project' => $project->name,
+            'customer' => $customer->name,
             'startDate' => $epic->start_date?->format('Y-m-d') ?? '',
             'endDate' => $epic->end_date?->format('Y-m-d') ?? '',
             'commentsCount' => (int) $epic->comments_count,

@@ -4,7 +4,7 @@
     'heading' => null,
 ])
 
-<?php if ($expandable && $heading): ?>
+<?php $expandable ??= false; $heading ??= null; if ($expandable && $heading): ?>
 
 <ui-disclosure
     {{ $attributes->class('group/disclosure') }}

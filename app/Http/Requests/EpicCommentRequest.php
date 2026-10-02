@@ -24,7 +24,7 @@ class EpicCommentRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('comment', $this->route('epic'));
+        return $this->user()?->can('comment', $this->route('epic')) ?? false;
     }
 
     /**
