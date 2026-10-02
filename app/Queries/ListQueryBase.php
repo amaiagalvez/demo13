@@ -24,11 +24,13 @@ abstract class ListQueryBase
         array $searchColumns,
     ): LengthAwarePaginator {
         if ($search !== '') {
-            $query->where(function (Builder $query) use ($search, $searchColumns): void {
-                $query->where($searchColumns[0], 'like', "%{$search}%");
+            $escapedSearch = addcslashes($search, '%_\\');
+
+            $query->where(function (Builder $query) use ($escapedSearch, $searchColumns): void {
+                $query->where($searchColumns[0], 'like', "%{$escapedSearch}%");
 
                 foreach (array_slice($searchColumns, 1) as $column) {
-                    $query->orWhere($column, 'like', "%{$search}%");
+                    $query->orWhere($column, 'like', "%{$escapedSearch}%");
                 }
             });
         }

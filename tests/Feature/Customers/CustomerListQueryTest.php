@@ -68,6 +68,36 @@ class CustomerListQueryTest extends TestCase
         $this->assertStringContainsString('search=Ane', $customers->url(2));
     }
 
+    public function test_search_treats_percent_as_a_literal_character(): void
+    {
+        Customer::factory()->create(['name' => 'Customer 100%']);
+        Customer::factory()->create(['name' => 'Customer 1000']);
+
+        $customers = app(CustomerListQuery::class)->active('%');
+
+        $this->assertSame(['Customer 100%'], $customers->pluck('name')->all());
+    }
+
+    public function test_search_treats_underscore_as_a_literal_character(): void
+    {
+        Customer::factory()->create(['name' => 'Ane_One']);
+        Customer::factory()->create(['name' => 'AneXOne']);
+
+        $customers = app(CustomerListQuery::class)->active('_');
+
+        $this->assertSame(['Ane_One'], $customers->pluck('name')->all());
+    }
+
+    public function test_search_treats_backslash_as_a_literal_character(): void
+    {
+        Customer::factory()->create(['name' => 'Ane\\One']);
+        Customer::factory()->create(['name' => 'AneOne']);
+
+        $customers = app(CustomerListQuery::class)->active('\\');
+
+        $this->assertSame(['Ane\\One'], $customers->pluck('name')->all());
+    }
+
     public function test_lists_are_paginated_by_five_customers(): void
     {
         Customer::factory()->count(6)->create();
