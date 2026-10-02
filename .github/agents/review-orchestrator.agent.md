@@ -2,6 +2,17 @@
 name: Review Orchestrator
 description: Execute a complete read-only Laravel code audit and save a dated report under .github/reviews/YYYY-MM-DD/.
 argument-hint: Run the complete Laravel audit and generate .github/reviews/YYYY-MM-DD/CODE-REVIEW.md.
+mode: subagent
+permissions:
+  - action: edit
+    resource: ".github/reviews/**"
+    effect: allow
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: allow
 ---
 
 # Laravel Code Review Orchestrator

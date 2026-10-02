@@ -2,6 +2,14 @@
 name: Frontend Reviewer
 description: Blade, Livewire, Vue and Inertia specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Frontend Reviewer

@@ -4,6 +4,29 @@
 * .github/instructions/ (reglas que se inyectan solas al tocar cada ruta: http, views, tests y models)
 * los / prompts + agentes de .github/
 
+## Y en OpenCode
+
+Nada está duplicado: los ficheros viven **una sola vez** en `.github/agents/` y `.github/prompts/` (los que Copilot ya leía). OpenCode los lee a través de symlinks en `.opencode/agents/` y `.opencode/commands/`, así que corriges un prompt o un agente en un único sitio y los dos clientes lo toman.
+
+* `.github/agents/*.agent.md` → symlink en `.opencode/agents/*.md` (los 17 subagentes, solo lectura)
+* `.github/prompts/*.prompt.md` → symlink en `.opencode/commands/*.md` (los 6 `/`)
+* `.github/skills/*/SKILL.md` y `.github/instructions/*` → sin symlink: `"skills": [".github/skills"]` ya los carga
+* `opencode.jsonc` en la raíz: MCP de Boost y permisos (espejo de `chat.tools.terminal.autoApprove`)
+
+El frontmatter de esos ficheros es compartido: las keys de Copilot (`name`, `argument-hint`) OpenCode las ignora, y `mode`/`permissions` las usa para el modo subagente y los permisos de solo lectura. Lo único que **no** se puede mezclar es `tools:` — OpenCode descarta el fichero entero si la ve, así que no la uses en `.github/agents/`.
+
+Lo único que cambia en el flujo: no hay `applyTo`, así que el agente tiene que abrir a mano el `.instructions.md` de la zona que toca antes de editar. Y `/full-review` corre en sesión hija con el agente `review-orchestrator`, que lanza a los especialistas.
+
+`.opencode/` está en `.gitignore` (son enlaces, no contenido). **En un ordenador nuevo, después de clonar, ejecuta:**
+
+```
+./docker/link-opencode-assets.sh
+```
+
+Es idempotente: puedes ejecutarlo cada vez que clones o añadas un prompt/agente. Sin él, OpenCode arranca sin agentes ni comandos. También avisa si el sistema no soporta symlinks y limpia enlaces colgantes de prompts o agentes que hayas borrado.
+
+Un detalle operativo: al editar un prompt o un agente, OpenCode recarga con ficheros normales pero **no** a través del symlink. Si no ves el cambio, `opencode service restart`.
+
 # Punto de partida común (los 3 flujos)
 
 * Abre VS Code en la raíz del repo y comprueba en el chat: Boost MCP activo (laravel-boost en el selector de tools) y modo Agent (no "Ask": necesitas que edite archivos).

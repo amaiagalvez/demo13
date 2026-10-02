@@ -1,0 +1,62 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Copilot lee .github/instructions/*.instructions.md por `applyTo`; OpenCode V2 acepta
+  // el campo "instructions" pero no lo resuelve, así que AGENTS.md hace de router (ver T2).
+  // Las skills son las de .github/skills: mismo formato, sin copias.
+  "skills": [".github/skills"],
+
+  "mcp": {
+    "servers": {
+      "laravel-boost": {
+        "type": "local",
+        "command": [
+          "/usr/bin/docker",
+          "compose",
+          "exec",
+          "-T",
+          "laravel13",
+          "php",
+          "artisan",
+          "boost:mcp"
+        ]
+      }
+    }
+  },
+
+  // Espejo de .vscode/settings.json (chat.tools.terminal.autoApprove).
+  // Gana el último match; sin match, ask. Los `resource` son texto de comando con
+  // wildcards (no regex): no hay alternancia, así que los 4 scripts de composer van
+  // por separado. Acaba en `*` (no en ` *`) para que el patrón también case con el
+  // comando sin argumentos (`git push`, `php artisan test` a secas).
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "docker compose exec * php artisan test*", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec * php artisan make:*", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec *vendor/bin/pint --dirty --format agent", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose run *npm run build", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose up -d laravel13", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec * composer ci:check", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec * composer test", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec * composer lint:check", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec * composer types:check", "effect": "allow" },
+    { "action": "shell", "resource": "git push", "effect": "deny" },
+    { "action": "shell", "resource": "git push *", "effect": "deny" }
+  ],
+
+  // Pint es el único formateador de PHP; un formateador externo pelea con él y con los
+  // @phpstan-ignore de las vistas. Se deja apagado a propósito.
+  "formatter": false,
+
+  // Ruido de eventos y de contexto (mismo origen que search.exclude de .vscode/settings.json).
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "vendor/**",
+      "dc-data/**",
+      "public/build/**",
+      "storage/framework/**",
+      "storage/logs/**"
+    ]
+  }
+}

@@ -2,6 +2,14 @@
 name: Concurrency Reviewer
 description: Queues, transactions and concurrency specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Concurrency Reviewer

@@ -1,7 +1,15 @@
 ---
-name: Architecture Reviewer
+name: Architecture Reviewer 23
 description: Software architecture specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Architecture Reviewer

@@ -2,6 +2,14 @@
 name: API Reviewer
 description: Laravel API design and security specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # API Reviewer

@@ -2,6 +2,14 @@
 name: Security Reviewer
 description: OWASP-oriented Laravel and PHP security specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Security Reviewer

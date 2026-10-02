@@ -2,6 +2,14 @@
 name: Dependencies Reviewer
 description: Composer, NPM and dependency management specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Dependencies Reviewer

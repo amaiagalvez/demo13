@@ -2,6 +2,14 @@
 name: Business Logic Reviewer
 description: Business rules and domain correctness specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Business Logic Reviewer

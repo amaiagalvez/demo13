@@ -2,6 +2,14 @@
 name: Observability Reviewer
 description: SRE and observability specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Observability Reviewer

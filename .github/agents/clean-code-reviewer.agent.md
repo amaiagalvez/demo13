@@ -2,6 +2,14 @@
 name: Clean Code Reviewer
 description: Clean Code, SOLID and maintainability specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Clean Code Reviewer

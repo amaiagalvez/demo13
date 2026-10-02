@@ -12,3 +12,5 @@
 .env.production
 .phpunit.result.cache
 /dc-data
+# Symlinks a .github/{agents,prompts}; se regeneran con docker/link-opencode-assets.sh
+/.opencode

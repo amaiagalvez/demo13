@@ -2,6 +2,14 @@
 name: Performance Reviewer
 description: Laravel application performance specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Performance Reviewer

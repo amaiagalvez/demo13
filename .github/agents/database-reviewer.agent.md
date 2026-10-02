@@ -2,6 +2,14 @@
 name: Database Reviewer
 description: MySQL, PostgreSQL and Eloquent specialist
 argument-hint: Review the repository without modifying application code.
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "*"
+    effect: deny
 ---
 
 # Database Reviewer
