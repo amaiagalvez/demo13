@@ -54,6 +54,7 @@ class EpicListTransformer
                                 return [
                                     'id' => $comment->id,
                                     'author' => $author ?? __('Deleted user'),
+                                    'dateTime' => $comment->created_at?->toIso8601String(),
                                     'writtenAt' => $comment->created_at?->format('Y-m-d H:i'),
                                     'body' => $comment->body,
                                 ];

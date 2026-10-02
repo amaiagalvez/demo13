@@ -12,8 +12,12 @@ class ProfilePageTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
-        $this->actingAs(User::factory()->create())
+        $response = $this->actingAs(User::factory()->create())
             ->get(route('profile.edit'))
             ->assertOk();
+        $appName = config('app.name');
+
+        self::assertIsString($appName);
+        $response->assertSeeText(__('Profile settings').' - '.$appName);
     }
 }

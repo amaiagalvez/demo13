@@ -5,13 +5,13 @@ use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 /* @end-chisel-email-verification */
 use Flux\Flux;
+use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Profile settings')] class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
+new class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
     use ProfileValidationRules;
 
     public string $name = '';
@@ -78,6 +78,13 @@ new #[Title('Profile settings')] class extends Component { // @phpstan-ignore ex
         return !Auth::user() instanceof MustVerifyEmail || Auth::user()->hasVerifiedEmail();
     }
     /* @end-chisel-email-verification */
+
+    public function render(): View
+    {
+        // Livewire exposes view() dynamically to single-file components.
+        // @phpstan-ignore method.notFound
+        return $this->view()->title(__('Profile settings'));
+    }
 }; ?>
 
 <section class="w-full">

@@ -1,10 +1,15 @@
 <?php
 
+use Illuminate\View\View;
 use Livewire\Component;
-use Livewire\Attributes\Title;
 
-new #[Title('Appearance settings')] class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
-    //
+new class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
+    public function render(): View
+    {
+        // Livewire exposes view() dynamically to single-file components.
+        // @phpstan-ignore method.notFound
+        return $this->view()->title(__('Appearance settings'));
+    }
 }; ?>
 
 <section class="w-full">

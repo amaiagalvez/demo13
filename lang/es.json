@@ -129,5 +129,8 @@
     "Unsaved epic changes are discarded when adding a comment.": "Al añadir un comentario se descartan los cambios no guardados de la épica.",
     "Update epic": "Actualizar épica",
     "Update the epic details.": "Actualiza los datos de la épica.",
-    "Showing the latest :shown of :total comments.": "Se muestran los :shown comentarios más recientes de :total."
+    "Showing the latest :shown of :total comments.": "Se muestran los :shown comentarios más recientes de :total.",
+    "Appearance settings": "Configuración de apariencia",
+    "Profile settings": "Configuración del perfil",
+    "Security settings": "Configuración de seguridad"
 }

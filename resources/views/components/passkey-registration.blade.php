@@ -93,7 +93,8 @@
             />
             <flux:text class="!mt-1">{{ __('Give this passkey a name to help you identify it later.') }}</flux:text>
 
-            <p x-show="error" x-text="error" x-cloak class="text-sm text-red-600 dark:text-red-400"></p>
+            <p x-show="error" x-text="error" x-cloak role="alert"
+                class="text-sm text-red-600 dark:text-red-400"></p>
 
             <div class="flex gap-2">
                 <flux:button

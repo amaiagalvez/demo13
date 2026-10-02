@@ -6,14 +6,13 @@ use PHPUnit\Framework\TestCase;
 
 class TranslationFilesTest extends TestCase
 {
-    private const LOCALES = ['en', 'es', 'eu', 'fr'];
-
     public function test_all_locales_define_the_same_keys(): void
     {
+        $locales = $this->locales();
         $english = array_keys($this->translations('en'));
         sort($english);
 
-        foreach (self::LOCALES as $locale) {
+        foreach ($locales as $locale) {
             $keys = array_keys($this->translations($locale));
             sort($keys);
 
@@ -23,7 +22,7 @@ class TranslationFilesTest extends TestCase
 
     public function test_translations_keep_the_placeholders_of_their_key(): void
     {
-        foreach (self::LOCALES as $locale) {
+        foreach ($this->locales() as $locale) {
             foreach ($this->translations($locale) as $key => $value) {
                 preg_match_all('/:[a-z_]+/', $key, $keyPlaceholders);
 
@@ -36,6 +35,26 @@ class TranslationFilesTest extends TestCase
                 }
             }
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function locales(): array
+    {
+        $files = glob(dirname(__DIR__, 3).'/lang/*.json');
+
+        if ($files === false || $files === []) {
+            self::fail('No locale files were found in lang/.');
+        }
+
+        $locales = array_map(
+            static fn (string $file): string => pathinfo($file, PATHINFO_FILENAME),
+            $files,
+        );
+        sort($locales);
+
+        return $locales;
     }
 
     /**

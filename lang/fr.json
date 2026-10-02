@@ -129,5 +129,8 @@
     "Unsaved epic changes are discarded when adding a comment.": "Les modifications non enregistrées de l’épopée sont perdues lors de l’ajout d’un commentaire.",
     "Update epic": "Mettre à jour l’épopée",
     "Update the epic details.": "Mettez à jour les détails de l’épopée.",
-    "Showing the latest :shown of :total comments.": "Affichage des :shown commentaires les plus récents sur :total."
+    "Showing the latest :shown of :total comments.": "Affichage des :shown commentaires les plus récents sur :total.",
+    "Appearance settings": "Paramètres d’apparence",
+    "Profile settings": "Paramètres du profil",
+    "Security settings": "Paramètres de sécurité"
 }

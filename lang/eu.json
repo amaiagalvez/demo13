@@ -129,5 +129,8 @@
     "Unsaved epic changes are discarded when adding a comment.": "Iruzkin bat gehitzean, epikaren gorde gabeko aldaketak baztertu egiten dira.",
     "Update epic": "Eguneratu epika",
     "Update the epic details.": "Eguneratu epikaren datuak.",
-    "Showing the latest :shown of :total comments.": ":total iruzkinetatik azken :shown erakusten dira."
+    "Showing the latest :shown of :total comments.": ":total iruzkinetatik azken :shown erakusten dira.",
+    "Appearance settings": "Itxura-ezarpenak",
+    "Profile settings": "Profilaren ezarpenak",
+    "Security settings": "Segurtasun-ezarpenak"
 }

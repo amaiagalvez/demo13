@@ -4,10 +4,10 @@ use App\Concerns\PasswordValidationRules;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 /* @chisel-passkeys */
 use Laravel\Passkeys\Actions\DeletePasskey;
@@ -17,7 +17,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 /* @end-chisel-2fa */
 
-new #[Title('Security settings')] class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
+new class extends Component { // @phpstan-ignore expr.resultUnused (Volt requires the anonymous class expression statement)
     use PasswordValidationRules;
 
     public string $current_password = '';
@@ -173,6 +173,13 @@ new #[Title('Security settings')] class extends Component { // @phpstan-ignore e
         $this->deletingPasskeyName = '';
     }
     /* @end-chisel-passkeys */
+
+    public function render(): View
+    {
+        // Livewire exposes view() dynamically to single-file components.
+        // @phpstan-ignore method.notFound
+        return $this->view()->title(__('Security settings'));
+    }
 
     /* @chisel-2fa */
     /**

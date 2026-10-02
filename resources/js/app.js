@@ -348,13 +348,25 @@ window.initializeProjectCustomerSelect = (element) => {
     });
 };
 
-const initializeProjectCustomerSelects = () => {
-    document.querySelectorAll('[data-project-customer-select]').forEach((element) => {
+const initializeProjectCustomerSelects = (root = document) => {
+    if (root instanceof Element && root.matches('[data-project-customer-select]')) {
+        window.initializeProjectCustomerSelect(root);
+    }
+
+    root.querySelectorAll('[data-project-customer-select]').forEach((element) => {
         window.initializeProjectCustomerSelect(element);
     });
 };
 
-const projectCustomerSelectObserver = new MutationObserver(initializeProjectCustomerSelects);
+const projectCustomerSelectObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node instanceof Element) {
+                initializeProjectCustomerSelects(node);
+            }
+        });
+    });
+});
 
 projectCustomerSelectObserver.observe(document.documentElement, {
     childList: true,

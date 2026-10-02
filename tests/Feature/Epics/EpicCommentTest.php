@@ -52,11 +52,13 @@ class EpicCommentTest extends TestCase
             'created_at' => '2026-10-01 09:30:00',
         ]);
 
-        $this->get(route('epics.index'))
+        $response = $this->get(route('epics.index'))
             ->assertOk()
             ->assertSee('Visible comment')
             ->assertSee('Ane Author')
-            ->assertSee('2026-10-01 09:30');
+            ->assertSee('2026-10-01 09:30')
+            ->assertSee('2026-10-01T09:30:00+00:00')
+            ->assertSee('x-bind:datetime="comment.dateTime"', false);
     }
 
     public function test_list_embeds_only_the_most_recent_comments_of_each_epic_but_counts_all(): void

@@ -12,4 +12,4 @@ for argument in "$@"; do
     fi
 done
 
-exec /usr/bin/docker compose -f "$workspace_root/docker-compose.yml" exec -T -e XDEBUG_MODE=off laravel13 php "${php_args[@]}"
+exec docker compose -f "$workspace_root/docker-compose.yml" exec -T -e XDEBUG_MODE=off laravel13 php "${php_args[@]}"

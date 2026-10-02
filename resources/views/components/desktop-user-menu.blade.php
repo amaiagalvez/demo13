@@ -29,7 +29,7 @@
                     type="submit"
                     icon="arrow-right-start-on-rectangle"
                     class="w-full cursor-pointer"
-                    data-test="logout-button"
+                    data-test="desktop-logout-button"
                 >
                     {{ __('Log out') }}
                 </flux:menu.item>

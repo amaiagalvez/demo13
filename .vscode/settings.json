@@ -1,15 +1,15 @@
 {
-    "php.validate.executablePath": "/home/amaia/Mahaigaina/l13/demo13/.vscode/php-docker",
+    "php.validate.executablePath": "${workspaceFolder}/.vscode/php-docker",
     "Laravel.phpEnvironment": "docker",
     "Laravel.phpCommand": [
-        "/usr/bin/docker",
+        "docker",
         "compose",
         "exec",
         "-T",
         "laravel13",
         "php"
     ],
-    "LaravelExtraIntellisense.phpCommand": "/usr/bin/docker compose exec -T -e XDEBUG_MODE=off laravel13 php -r \"{code}\"",
+    "LaravelExtraIntellisense.phpCommand": "docker compose exec -T -e XDEBUG_MODE=off laravel13 php -r \"{code}\"",
     "LaravelExtraIntellisense.basePathForCode": "/docker",
     "chat.tools.terminal.autoApprove": {
         "/pint --dirty --format agent$/": {

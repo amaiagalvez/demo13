@@ -129,5 +129,8 @@
     "Unsaved epic changes are discarded when adding a comment.": "Unsaved epic changes are discarded when adding a comment.",
     "Update epic": "Update epic",
     "Update the epic details.": "Update the epic details.",
-    "Showing the latest :shown of :total comments.": "Showing the latest :shown of :total comments."
+    "Showing the latest :shown of :total comments.": "Showing the latest :shown of :total comments.",
+    "Appearance settings": "Appearance settings",
+    "Profile settings": "Profile settings",
+    "Security settings": "Security settings"
 }
