@@ -12,7 +12,23 @@
     "LaravelExtraIntellisense.phpCommand": "/usr/bin/docker compose exec -T -e XDEBUG_MODE=off laravel13 php -r \"{code}\"",
     "LaravelExtraIntellisense.basePathForCode": "/docker",
     "chat.tools.terminal.autoApprove": {
-        "/^docker compose exec -T laravel13 vendor/bin/pint --dirty --format agent$/": {
+        "/pint --dirty --format agent$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/php artisan test( |$)/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/php artisan make:/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/npm run build$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^docker compose up -d laravel13$/": {
             "approve": true,
             "matchCommandLine": true
         }

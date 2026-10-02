@@ -1,3 +1,6 @@
+---
+applyTo: "app/Http/**,app/Policies/**,app/Queries/**,app/Transformers/**"
+---
 # HTTP / domain rules
 - Store/update: catch `QueryException` and call `UniqueConstraintViolation::rethrowAsValidationError()`. Restore flows return their own conflict response instead.
 - Deleting or force-deleting a parent is blocked if children exist, including trashed ones (`withTrashed()->exists()`). Customer→Project and Project→Epic work the same way.

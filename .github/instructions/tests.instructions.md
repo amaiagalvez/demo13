@@ -1,3 +1,6 @@
+---
+applyTo: "tests/**"
+---
 # Test rules
 - Prefer Feature tests; Dusk (`tests/Browser`) only for JS behavior.
 - Duplicate-insert races are tested per resource for store, update and restore by simulating a duplicate-key `QueryException`.

@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "laravel.vscode-laravel",
+        "amiralizadeh9480.laravel-extra-intellisense",
+        "bradlc.vscode-tailwindcss",
+        "apility.beautify-blade",
+        "emallin.phpunit"
+    ]
+}
