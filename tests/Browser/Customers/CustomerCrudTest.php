@@ -47,6 +47,8 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitFor('dialog[open]')
                 ->type('dialog[open] [data-test="customer-name"]', 'Unsaved Customer')
                 ->click('dialog[open] [data-flux-modal-close] button')
+                ->assertDialogOpened(__('You have unsaved changes. Leave without saving?'))
+                ->acceptDialog()
                 ->waitUntilMissing('dialog[open]')
                 ->click('[data-test="customer-create-button"]')
                 ->waitFor('dialog[open]')
@@ -58,6 +60,8 @@ class CustomerCrudTest extends DuskTestCase
                 ->clear('dialog[open] [data-test="customer-name"]')
                 ->type('dialog[open] [data-test="customer-name"]', 'Unsaved Change')
                 ->click('dialog[open] [data-test="customer-cancel"]')
+                ->assertDialogOpened(__('You have unsaved changes. Leave without saving?'))
+                ->acceptDialog()
                 ->waitUntilMissing('dialog[open]')
                 ->click("[data-test='customer-edit-{$customer->id}']")
                 ->waitFor('dialog[open]')
@@ -71,6 +75,54 @@ class CustomerCrudTest extends DuskTestCase
             'id' => $customer->id,
             'name' => 'Original Customer',
         ]);
+    }
+
+    public function test_customer_save_requires_changes_and_cancel_warns_about_unsaved_changes(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->create(['name' => 'Original Customer']);
+
+        $this->browse(function (Browser $browser) use ($user, $customer): void {
+            $browser->loginAs($user)
+                ->visit('/customers')
+                ->click('[data-test="customer-create-button"]')
+                ->waitFor('dialog[open]')
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="customer-submit"]\').disabled',
+                    true,
+                )
+                ->type('dialog[open] [data-test="customer-name"]', 'Changed Customer')
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="customer-submit"]\').disabled',
+                    false,
+                )
+                ->clear('dialog[open] [data-test="customer-name"]')
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="customer-submit"]\').disabled',
+                    true,
+                )
+                ->type('dialog[open] [data-test="customer-name"]', 'Changed Customer')
+                ->click('dialog[open] [data-test="customer-cancel"]')
+                ->assertDialogOpened(__('You have unsaved changes. Leave without saving?'))
+                ->dismissDialog()
+                ->assertPresent('dialog[open]')
+                ->assertInputValue('dialog[open] [data-test="customer-name"]', 'Changed Customer')
+                ->click('dialog[open] [data-test="customer-cancel"]')
+                ->acceptDialog()
+                ->waitUntilMissing('dialog[open]')
+                ->click("[data-test='customer-edit-{$customer->id}']")
+                ->waitFor('dialog[open]')
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="customer-submit"]\').disabled',
+                    true,
+                )
+                ->clear('dialog[open] [data-test="customer-name"]')
+                ->type('dialog[open] [data-test="customer-name"]', 'Updated Customer')
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="customer-submit"]\').disabled',
+                    false,
+                );
+        });
     }
 
     public function test_duplicate_name_error_is_visible_in_the_create_modal(): void

@@ -141,7 +141,8 @@
 
         @if ($list['create'])
             <flux:modal name="project-form" variant="flyout" position="right"
-                x-on:close="window.clearForm($el.querySelector('form'))"
+                x-on:close="window.clearForm($el.querySelector('form')); window.resetTrackedForms($el)"
+                x-on:cancel.prevent="window.requestTrackedModalClose($el)"
                 class="project-drawer max-w-none">
                 @include('projects.form')
             </flux:modal>

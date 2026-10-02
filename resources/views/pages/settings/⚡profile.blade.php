@@ -44,6 +44,7 @@ new #[Title('Profile settings')] class extends Component {
         $user->save();
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
+        $this->dispatch('form-saved');
     }
 
     /* @chisel-email-verification */
@@ -86,7 +87,9 @@ new #[Title('Profile settings')] class extends Component {
     <flux:heading level="2" class="sr-only">{{ __('Profile settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+        <form wire:submit="updateProfileInformation" x-data="{ isDirty: false }"
+            x-on:form-dirty-change="isDirty = $event.detail.isDirty" data-track-changes
+            class="my-6 w-full space-y-6">
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
             <div>
@@ -115,7 +118,9 @@ new #[Title('Profile settings')] class extends Component {
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
+                    <flux:button variant="primary" type="submit" class="w-full"
+                        disabled x-bind:disabled="!isDirty" wire:loading.attr="disabled"
+                        data-test="update-profile-button">
                         {{ __('Save') }}
                     </flux:button>
                 </div>

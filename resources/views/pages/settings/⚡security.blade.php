@@ -87,6 +87,7 @@ new #[Title('Security settings')] class extends Component {
             ]);
         } catch (ValidationException $e) {
             $this->reset('current_password', 'password', 'password_confirmation');
+            $this->dispatch('form-reset');
 
             throw $e;
         }
@@ -98,6 +99,7 @@ new #[Title('Security settings')] class extends Component {
         $this->reset('current_password', 'password', 'password_confirmation');
 
         Flux::toast(variant: 'success', text: __('Password updated.'));
+        $this->dispatch('form-saved');
     }
 
     /* @chisel-passkeys */
@@ -188,7 +190,9 @@ new #[Title('Security settings')] class extends Component {
     <flux:heading level="2" class="sr-only">{{ __('Security settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
-        <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
+        <form method="POST" wire:submit="updatePassword" x-data="{ isDirty: false }"
+            x-on:form-dirty-change="isDirty = $event.detail.isDirty" data-track-changes
+            class="mt-6 space-y-6">
             <flux:input
                 wire:model="current_password"
                 :label="__('Current password')"
@@ -217,7 +221,8 @@ new #[Title('Security settings')] class extends Component {
             />
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
+                <flux:button variant="primary" type="submit" disabled x-bind:disabled="!isDirty"
+                    wire:loading.attr="disabled" data-test="update-password-button">
                     {{ __('Save') }}
                 </flux:button>
             </div>

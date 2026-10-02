@@ -164,7 +164,8 @@
 
         @if ($list['create'])
             <flux:modal name="epic-form" variant="flyout" position="right"
-                x-on:close="window.clearForm($el.querySelector('form'))"
+                x-on:close="window.clearForm($el.querySelector('form')); window.resetTrackedForms($el)"
+                x-on:cancel.prevent="window.requestTrackedModalClose($el)"
                 class="epic-drawer max-w-none">
                 @include('epics.form')
             </flux:modal>

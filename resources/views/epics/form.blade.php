@@ -4,9 +4,11 @@
         <flux:subheading x-text="form.subtitle"></flux:subheading>
     </div>
 
-    <form method="POST" x-bind:action="form.action" x-data="{ isSubmitting: false }"
-        x-on:submit="if (isSubmitting) $event.preventDefault(); isSubmitting = true"
-        x-on:reset="isSubmitting = false" class="flex flex-col gap-6">
+    <form method="POST" x-bind:action="form.action"
+        x-data="{ isSubmitting: false, isDirty: false }"
+        x-on:form-dirty-change="isDirty = $event.detail.isDirty"
+        x-on:submit="if (!isDirty || isSubmitting) { $event.preventDefault(); return; } isSubmitting = true"
+        x-on:reset="isSubmitting = false" data-track-changes class="flex flex-col gap-6">
         @csrf
         <input type="hidden" name="_method" x-bind:value="form.method">
         <input type="hidden" name="_epic_form" x-bind:value="form.context">
@@ -52,7 +54,8 @@
                     {{ __('Cancel') }}
                 </flux:button>
             </flux:modal.close>
-            <flux:button variant="primary" type="submit" x-bind:disabled="isSubmitting"
+            <flux:button variant="primary" type="submit"
+                disabled x-bind:disabled="isSubmitting || !isDirty"
                 x-bind:aria-busy="isSubmitting" data-test="epic-submit">
                 <span x-text="form.submitLabel"></span>
             </flux:button>
@@ -65,9 +68,11 @@
             <flux:heading size="lg" id="epic-comments-heading">{{ __('Comments') }}
             </flux:heading>
 
-            <form method="POST" x-bind:action="form.commentAction" x-data="{ isSubmitting: false }"
-                x-on:submit="if (isSubmitting) $event.preventDefault(); isSubmitting = true"
-                class="flex flex-col gap-3">
+            <form method="POST" x-bind:action="form.commentAction"
+                x-data="{ isSubmitting: false, isDirty: false }"
+                x-on:form-dirty-change="isDirty = $event.detail.isDirty"
+                x-on:submit="if (!isDirty || isSubmitting) { $event.preventDefault(); return; } isSubmitting = true"
+                data-track-changes class="flex flex-col gap-3">
                 @csrf
                 <input type="hidden" name="_comment_epic_id" x-bind:value="form.id">
                 <flux:field>
@@ -84,7 +89,8 @@
                 </flux:text>
                 <div class="flex justify-end">
                     <flux:button type="submit" variant="primary" size="sm"
-                        icon="chat-bubble-left" x-bind:disabled="isSubmitting"
+                        icon="chat-bubble-left" disabled
+                        x-bind:disabled="isSubmitting || !isDirty"
                         data-test="epic-comment-submit">
                         {{ __('Add comment') }}
                     </flux:button>
