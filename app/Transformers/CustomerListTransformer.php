@@ -15,6 +15,9 @@ class CustomerListTransformer
     {
         return [
             'resource' => __('Customers'),
+            'state' => 'active',
+            'extraDateHeading' => null,
+            'inactiveUrl' => route('customers.inactive.index'),
             'dateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('No customers yet.')
@@ -37,7 +40,18 @@ class CustomerListTransformer
                         'test' => 'customer-edit-'.$customer->id,
                         'customer' => $customer->only(['id', 'name']),
                     ],
-                    [
+                    $customer->projects_exists ? [
+                        'type' => 'confirm-modal',
+                        'label' => __('Deactivate'),
+                        'icon' => 'lock-closed',
+                        'test' => 'customer-deactivate-'.$customer->id,
+                        'danger' => true,
+                        'action' => route('customers.deactivate', $customer),
+                        'method' => 'PATCH',
+                        'confirmTitle' => __('Deactivate record?'),
+                        'confirmText' => __('You can reactivate it from the inactive list.'),
+                        'confirmLabel' => __('Deactivate'),
+                    ] : [
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
@@ -58,10 +72,53 @@ class CustomerListTransformer
      * @param  LengthAwarePaginator<int, Customer>  $customers
      * @return array<string, mixed>
      */
+    public function inactive(LengthAwarePaginator $customers, string $search): array
+    {
+        return [
+            'resource' => __('Customers'),
+            'state' => 'inactive',
+            'dateHeading' => __('Created at'),
+            'extraDateHeading' => __('Updated at'),
+            'emptyMessage' => $search === '' ? __('No inactive records.') : __('No customers match your search.'),
+            'search' => $this->search(route('customers.inactive.index'), $search),
+            'navigation' => [
+                'label' => __('Customers'),
+                'url' => route('customers.index'),
+                'icon' => 'arrow-left',
+                'test' => null,
+            ],
+            'create' => false,
+            'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
+                ...$this->columns($customer),
+                'extraDate' => $customer->updated_at?->format('Y-m-d H:i'),
+                'actions' => [
+                    [
+                        'type' => 'confirm-modal',
+                        'label' => __('Reactivate'),
+                        'icon' => 'lock-open',
+                        'test' => 'customer-reactivate-'.$customer->id,
+                        'danger' => false,
+                        'action' => route('customers.inactive.reactivate', $customer),
+                        'method' => 'PATCH',
+                        'confirmTitle' => __('Reactivate record?'),
+                        'confirmText' => __('The record will return to the active list.'),
+                        'confirmLabel' => __('Reactivate'),
+                    ],
+                ],
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Customer>  $customers
+     * @return array<string, mixed>
+     */
     public function trash(LengthAwarePaginator $customers, string $search): array
     {
         return [
             'resource' => __('Customers'),
+            'state' => 'trash',
+            'extraDateHeading' => __('Deleted at'),
             'dateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
@@ -76,7 +133,7 @@ class CustomerListTransformer
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
-                'deletedAt' => $customer->deleted_at?->format('Y-m-d'),
+                'extraDate' => $customer->deleted_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -87,7 +144,9 @@ class CustomerListTransformer
                         'action' => route('customers.trash.restore', $customer->id),
                         'method' => 'PATCH',
                         'confirmTitle' => __('Restore customer?'),
-                        'confirmText' => __('The customer will return to the active list.'),
+                        'confirmText' => $customer->active
+                            ? __('The customer will return to the active list.')
+                            : __('The record will return to the inactive list.'),
                         'confirmLabel' => __('Restore'),
                     ],
                     [

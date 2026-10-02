@@ -27,11 +27,16 @@
         <flux:error name="start_date" />
     </flux:field>
     <flux:field>
-        <flux:label>{{ __('End date') }}</flux:label>
-        <flux:input type="date" name="end_date" x-model="form.end_date"
+        <div class="flex items-center gap-1">
+            <flux:label for="epic-end-date">{{ __('End date') }}</flux:label>
+            <flux:tooltip toggleable :content="__('The end date requires a start date and must be after it.')">
+                <flux:button type="button" icon="information-circle" size="xs" variant="ghost"
+                    :aria-label="__('The end date requires a start date and must be after it.')"
+                    data-test="epic-end-date-info" />
+            </flux:tooltip>
+        </div>
+        <flux:input id="epic-end-date" type="date" name="end_date" x-model="form.end_date"
             x-bind:min="window.addDays(form.start_date, 1)" data-test="epic-end-date" />
-        <flux:description>{{ __('The end date requires a start date and must be after it.') }}
-        </flux:description>
         <flux:error name="end_date" />
     </flux:field>
 

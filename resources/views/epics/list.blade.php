@@ -124,8 +124,8 @@
                     <flux:table.column>{{ __('Start date') }}</flux:table.column>
                     <flux:table.column>{{ __('End date') }}</flux:table.column>
                     <flux:table.column>{{ __('Comments') }}</flux:table.column>
-                    @if (!$list['create'])
-                        <flux:table.column>{{ __('Deleted at') }}</flux:table.column>
+                    @if ($list['extraDateHeading'])
+                        <flux:table.column>{{ $list['extraDateHeading'] }}</flux:table.column>
                     @endif
                 </flux:table.columns>
 
@@ -149,8 +149,8 @@
                                     {{ $row['commentsCount'] }}
                                 </flux:badge>
                             </flux:table.cell>
-                            @if (!$list['create'])
-                                <flux:table.cell>{{ $row['deletedAt'] }}</flux:table.cell>
+                            @if ($list['extraDateHeading'])
+                                <flux:table.cell>{{ $row['extraDate'] }}</flux:table.cell>
                             @endif
                         </flux:table.row>
                     @empty

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 /**
  * @extends ListQueryBase<Project>
@@ -25,7 +26,8 @@ final class ProjectListQuery extends ListQueryBase
     public function active(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            $this->withCustomer(Project::query())
+            $this->withCustomer(Project::query()->where('projects.active', true))
+                ->withExists(['epics' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)])
                 ->orderBy('projects.start_date')
                 ->orderBy('projects.end_date')
                 ->orderBy('project_customers.name')
@@ -33,6 +35,23 @@ final class ProjectListQuery extends ListQueryBase
                 ->orderBy('projects.id'),
             $search,
             searchColumns: self::SEARCH_COLUMNS,
+        );
+    }
+
+    /**
+     * @return LengthAwarePaginator<int, Project>
+     */
+    public function inactive(string $search): LengthAwarePaginator
+    {
+        return $this->paginate(
+            $this->withCustomer(Project::query()->where('projects.active', false))
+                ->orderBy('projects.start_date')
+                ->orderBy('projects.end_date')
+                ->orderBy('project_customers.name')
+                ->orderBy('projects.name')
+                ->orderBy('projects.id'),
+            $search,
+            searchColumns: [...self::SEARCH_COLUMNS, 'projects.updated_at'],
         );
     }
 

@@ -70,4 +70,20 @@ class EpicPolicy
     {
         return true;
     }
+
+    /**
+     * Determine whether the user can deactivate the model.
+     */
+    public function deactivate(User $user, Epic $epic): bool
+    {
+        return true;
+    }
+
+    /**
+     * Determine whether the user can reactivate the model.
+     */
+    public function reactivate(User $user, Epic $epic): bool
+    {
+        return true;
+    }
 }

@@ -34,7 +34,7 @@ final class EpicListQuery extends ListQueryBase
     public function active(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            $this->withProjectAndCustomer(Epic::query())
+            $this->withProjectAndCustomer(Epic::query()->where('epics.active', true))
                 ->with(['comments' => fn (Relation $query) => $query
                     ->with('user')
                     ->latest()
@@ -50,6 +50,26 @@ final class EpicListQuery extends ListQueryBase
                 ->orderBy('epics.id'),
             $search,
             searchColumns: self::SEARCH_COLUMNS,
+        );
+    }
+
+    /**
+     * @return LengthAwarePaginator<int, Epic>
+     */
+    public function inactive(string $search): LengthAwarePaginator
+    {
+        return $this->paginate(
+            $this->withProjectAndCustomer(Epic::query()->where('epics.active', false))
+                ->orderByRaw('epics.start_date IS NULL')
+                ->orderBy('epics.start_date')
+                ->orderByRaw('epics.end_date IS NULL')
+                ->orderBy('epics.end_date')
+                ->orderBy('epic_projects.name')
+                ->orderBy('epic_customers.name')
+                ->orderBy('epics.name')
+                ->orderBy('epics.id'),
+            $search,
+            searchColumns: [...self::SEARCH_COLUMNS, 'epics.updated_at'],
         );
     }
 

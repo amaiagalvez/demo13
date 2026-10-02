@@ -5,9 +5,12 @@ namespace Tests\Feature\Auth;
 use Tests\TestCase;
 use App\Models\User;
 use Laravel\Fortify\Features;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class AuthPagesTest extends TestCase
 {
+    use LazilyRefreshDatabase;
+
     public function test_login_screen_can_be_rendered(): void
     {
         $this->get(route('login'))->assertOk();
@@ -16,14 +19,14 @@ class AuthPagesTest extends TestCase
     public function test_email_verification_screen_can_be_rendered(): void
     {
         $this->skipUnlessFortifyHas(Features::emailVerification());
-        $user = User::factory()->unverified()->make();
+        $user = User::factory()->unverified()->create();
 
         $this->actingAs($user)->get(route('verification.notice'))->assertOk();
     }
 
     public function test_password_confirmation_screen_can_be_rendered(): void
     {
-        $this->actingAs(User::factory()->make())
+        $this->actingAs(User::factory()->create())
             ->get(route('password.confirm'))
             ->assertOk();
     }

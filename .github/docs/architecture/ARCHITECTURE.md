@@ -9,7 +9,7 @@ Update it when important architectural decisions are made.
 ## System Purpose
 
 Authenticated users manage customers, their projects, and project epics. These resources can be
-created, edited, searched, paginated, soft-deleted, restored, and permanently
+created, edited, searched, paginated, deactivated, reactivated, soft-deleted, restored, and permanently
 deleted from a trash view.
 
 ---
@@ -17,12 +17,12 @@ deleted from a trash view.
 ## Main Modules / Domains
 
 - Customer management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, and trash list.
+  Eloquent model, active list, inactive list, and trash list.
 - Project management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, and trash list. Each project belongs to one customer;
+  Eloquent model, active list, inactive list, and trash list. Each project belongs to one customer;
   a customer may have many projects.
 - Epic management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, and trash list. Each epic belongs to one project;
+  Eloquent model, active list, inactive list, and trash list. Each epic belongs to one project;
   a project may have many epics. Epics have comments (author and creation time),
   added from the epic edit drawer.
 - Authentication and account settings: Laravel Fortify, email verification, passkeys,
@@ -33,6 +33,9 @@ deleted from a trash view.
 ## Authentication / Authorization
 
 - Fortify provides authentication and account security features.
+- Inactive users cannot authenticate with passwords, two-factor challenges, passkeys,
+  or remember-me cookies. A web middleware checks persisted user activity and logs out
+  existing sessions on their next request after deactivation.
 - Customer and project routes require `auth` and `verified` middleware.
 - `CustomerPolicy` is the authorization boundary for customer list, create, update,
   delete, restore, and force-delete actions. The current product scope permits every
@@ -47,12 +50,20 @@ deleted from a trash view.
 Engine: MySQL-compatible MariaDB in Docker; SQLite is used for isolated in-memory
 tests.
 
-Important constraints: customer and project names are unique among active records.
+Customers, projects, epics, and users have an `active` boolean, defaulting to true.
+Resource index lists include only active, non-deleted records; inactive lists include
+only inactive, non-deleted records and append the last modification date. Trash lists
+include every deleted record regardless of `active`; restoring preserves that flag.
+Deactivation does not cascade to children. Index rows offer deactivation instead of
+deletion when a customer has projects or a project has epics, including deleted children.
+
+Important constraints: customer and project names are unique among non-deleted records,
+including inactive records.
 Soft-deleted names may be reused. Restoring a deleted record whose name is already
-used by an active record is rejected with a conflict message. Projects require one
+used by a non-deleted record is rejected with a conflict message. Projects require one
 customer and have a nullable end date that cannot precede the required start date.
 Customers with projects cannot be moved to the trash or permanently deleted.
-Epic names are unique per project among active epics. Epic start and end dates are
+Epic names are unique per project among non-deleted epics, including inactive ones. Epic start and end dates are
 optional, but an end date requires a start date and must be later than it. Projects
 with epics (including trashed epics) cannot be moved to the trash or permanently
 deleted. Epic comments are removed when their epic is permanently deleted and keep
@@ -90,7 +101,7 @@ Blade / Livewire / Vue / Inertia:
 
 - Keep customer and project list querying and presentation transformation separate
 	from controllers.
-- Enforce active customer-name uniqueness in both Form Request validation and the
+- Enforce non-deleted customer-name uniqueness in both Form Request validation and the
 	database; soft-deleted names may be reused. During creation, if a name is in the
 	trash, the user can choose to create a new record or restore the existing one.
 - Enforce project-name uniqueness in both Form Request validation and the database,

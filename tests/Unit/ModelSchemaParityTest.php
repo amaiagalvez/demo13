@@ -30,6 +30,7 @@ class ModelSchemaParityTest extends TestCase
         'created_at',
         'updated_at',
         'deleted_at',
+        'active',
         'remember_token',
         'email_verified_at',
         'two_factor_secret',

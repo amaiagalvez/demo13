@@ -1,5 +1,5 @@
 {{--
-    Breadcrumb and compact toolbar for active and trash list navigation.
+    Breadcrumb and compact toolbar for resource list navigation.
 --}}
 @props(['list', 'prefix', 'createLabel', 'createClick'])
 
@@ -14,7 +14,7 @@
                 {{ $list['resource'] }}
             </flux:breadcrumbs.item>
             <flux:breadcrumbs.item :href="request()->fullUrl()">
-                {{ __('Trash') }}
+                {{ $list['state'] === 'inactive' ? __('Inactive') : __('Trash') }}
             </flux:breadcrumbs.item>
         @else
             <flux:breadcrumbs.item :href="request()->fullUrl()">
@@ -35,6 +35,11 @@
                         '-create-button'" />
                 </flux:tooltip>
             </flux:modal.trigger>
+            <flux:tooltip :content="__('Inactive')">
+                <flux:button :href="$list['inactiveUrl']" size="sm" square variant="ghost"
+                    icon="lock-closed" :aria-label="__('Inactive')"
+                    wire:navigate :data-test="$prefix.'-inactive-link'" />
+            </flux:tooltip>
         @endif
         <flux:tooltip :content="$list['navigation']['label']">
             <flux:button :href="$list['navigation']['url']" size="sm" square variant="ghost"

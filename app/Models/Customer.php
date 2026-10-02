@@ -11,12 +11,33 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @property bool $active
+ * @property-read bool $projects_exists
+ */
 #[Fillable(['name'])]
 #[UsePolicy(CustomerPolicy::class)]
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory, SoftDeletes;
+
+    /**
+     * @var array{active: bool}
+     */
+    protected $attributes = [
+        'active' => true,
+    ];
+
+    /**
+     * @return array{active: 'boolean'}
+     */
+    protected function casts(): array
+    {
+        return [
+            'active' => 'boolean',
+        ];
+    }
 
     /**
      * @return HasMany<Project, $this>

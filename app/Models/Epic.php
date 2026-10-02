@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @property bool $active
+ */
 #[Fillable(['name', 'start_date', 'end_date', 'project_id'])]
 #[UsePolicy(EpicPolicy::class)]
 class Epic extends Model
@@ -20,13 +23,21 @@ class Epic extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * @return array{start_date: 'date', end_date: 'date'}
+     * @var array{active: bool}
+     */
+    protected $attributes = [
+        'active' => true,
+    ];
+
+    /**
+     * @return array{start_date: 'date', end_date: 'date', active: 'boolean'}
      */
     protected function casts(): array
     {
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'active' => 'boolean',
         ];
     }
 

@@ -18,6 +18,9 @@ class EpicListTransformer
     {
         return [
             'resource' => __('Epics'),
+            'state' => 'active',
+            'extraDateHeading' => null,
+            'inactiveUrl' => route('epics.inactive.index'),
             'emptyMessage' => $search === ''
                 ? __('No epics yet.')
                 : __('No epics match your search.'),
@@ -78,10 +81,52 @@ class EpicListTransformer
      * @param  LengthAwarePaginator<int, Epic>  $epics
      * @return array<string, mixed>
      */
+    public function inactive(LengthAwarePaginator $epics, string $search): array
+    {
+        return [
+            'resource' => __('Epics'),
+            'state' => 'inactive',
+            'extraDateHeading' => __('Updated at'),
+            'emptyMessage' => $search === '' ? __('No inactive records.') : __('No epics match your search.'),
+            'search' => $this->search(route('epics.inactive.index'), $search),
+            'navigation' => [
+                'label' => __('Epics'),
+                'url' => route('epics.index'),
+                'icon' => 'arrow-left',
+                'test' => null,
+            ],
+            'create' => false,
+            'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
+                ...$this->columns($epic),
+                'extraDate' => $epic->updated_at?->format('Y-m-d H:i'),
+                'actions' => [
+                    [
+                        'type' => 'confirm-modal',
+                        'label' => __('Reactivate'),
+                        'icon' => 'lock-open',
+                        'test' => 'epic-reactivate-'.$epic->id,
+                        'danger' => false,
+                        'action' => route('epics.inactive.reactivate', $epic),
+                        'method' => 'PATCH',
+                        'confirmTitle' => __('Reactivate record?'),
+                        'confirmText' => __('The record will return to the active list.'),
+                        'confirmLabel' => __('Reactivate'),
+                    ],
+                ],
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Epic>  $epics
+     * @return array<string, mixed>
+     */
     public function trash(LengthAwarePaginator $epics, string $search): array
     {
         return [
             'resource' => __('Epics'),
+            'state' => 'trash',
+            'extraDateHeading' => __('Deleted at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No epics match your search.'),
@@ -95,7 +140,7 @@ class EpicListTransformer
             'create' => false,
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
-                'deletedAt' => $epic->deleted_at?->format('Y-m-d'),
+                'extraDate' => $epic->deleted_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -106,7 +151,9 @@ class EpicListTransformer
                         'action' => route('epics.trash.restore', $epic->id),
                         'method' => 'PATCH',
                         'confirmTitle' => __('Restore epic?'),
-                        'confirmText' => __('The epic will return to the active list.'),
+                        'confirmText' => $epic->active
+                            ? __('The epic will return to the active list.')
+                            : __('The record will return to the inactive list.'),
                         'confirmLabel' => __('Restore'),
                     ],
                     [

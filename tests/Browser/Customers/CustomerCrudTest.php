@@ -3,6 +3,7 @@
 namespace Tests\Browser\Customers;
 
 use App\Models\User;
+use App\Models\Project;
 use Tests\DuskTestCase;
 use App\Models\Customer;
 use Laravel\Dusk\Browser;
@@ -11,6 +12,55 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 class CustomerCrudTest extends DuskTestCase
 {
     use DatabaseMigrations;
+
+    public function test_customer_with_projects_can_be_deactivated_and_reactivated_after_confirmation(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->create(['name' => 'Customer to deactivate']);
+        Project::factory()->for($customer)->create();
+
+        $this->browse(function (Browser $browser) use ($user, $customer): void {
+            $browser->loginAs($user)
+                ->visit('/customers')
+                ->assertMissing("[data-test='customer-delete-{$customer->id}']")
+                ->click("[data-test='customer-deactivate-{$customer->id}']")
+                ->waitFor('dialog[open]')
+                ->assertSeeIn('dialog[open]', __('Deactivate record?'))
+                ->click('dialog[open] [data-flux-modal-close] button')
+                ->waitUntilMissing('dialog[open]')
+                ->assertSee($customer->name);
+
+            $this->assertTrue($customer->fresh()->active);
+
+            $browser->click("[data-test='customer-deactivate-{$customer->id}']")
+                ->waitFor('dialog[open]')
+                ->waitForReload(fn (Browser $browser) => $browser->click(
+                    'dialog[open] [data-test="customer-confirm-submit"]'
+                ))
+                ->assertDontSee($customer->name)
+                ->click('[data-test="customer-inactive-link"]')
+                ->waitForLocation('/customers/inactive')
+                ->assertSee($customer->name)
+                ->assertSeeIn('thead', mb_strtoupper(__('Updated at')))
+                ->assertMissing("[data-test='customer-edit-{$customer->id}']")
+                ->click("[data-test='customer-reactivate-{$customer->id}']")
+                ->waitFor('dialog[open]')
+                ->assertSeeIn('dialog[open]', __('Reactivate record?'));
+
+            $this->assertFalse($customer->fresh()->active);
+            $this->assertNotSoftDeleted($customer);
+
+            $browser->waitForReload(fn (Browser $browser) => $browser->click(
+                'dialog[open] [data-test="customer-confirm-submit"]'
+            ))
+                ->assertDontSee($customer->name)
+                ->visit('/customers')
+                ->assertSee($customer->name);
+        });
+
+        $this->assertTrue($customer->fresh()->active);
+        $this->assertNotSoftDeleted($customer);
+    }
 
     public function test_customer_list_can_be_searched_and_cleared(): void
     {

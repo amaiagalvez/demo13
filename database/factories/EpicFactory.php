@@ -36,6 +36,13 @@ class EpicFactory extends Factory
         ]);
     }
 
+    public function inactive(): static
+    {
+        return $this->state([
+            'active' => false,
+        ]);
+    }
+
     public function trashed(): static
     {
         return $this->afterCreating(static function (Epic $epic): void {

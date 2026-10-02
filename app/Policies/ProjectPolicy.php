@@ -62,4 +62,20 @@ class ProjectPolicy
     {
         return true;
     }
+
+    /**
+     * Determine whether the user can deactivate the model.
+     */
+    public function deactivate(User $user, Project $project): bool
+    {
+        return true;
+    }
+
+    /**
+     * Determine whether the user can reactivate the model.
+     */
+    public function reactivate(User $user, Project $project): bool
+    {
+        return true;
+    }
 }

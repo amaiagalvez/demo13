@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @property bool $active
+ * @property-read bool $epics_exists
+ */
 #[Fillable(['name', 'start_date', 'end_date', 'customer_id'])]
 #[UsePolicy(ProjectPolicy::class)]
 class Project extends Model
@@ -20,13 +24,21 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * @return array{start_date: 'date', end_date: 'date'}
+     * @var array{active: bool}
+     */
+    protected $attributes = [
+        'active' => true,
+    ];
+
+    /**
+     * @return array{start_date: 'date', end_date: 'date', active: 'boolean'}
      */
     protected function casts(): array
     {
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'active' => 'boolean',
         ];
     }
 

@@ -3,15 +3,20 @@
 namespace App\Providers;
 
 /* @chisel-registration */
-use Illuminate\Support\Str;
+use App\Models\User;
 /* @end-chisel-registration */
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Laravel\Fortify\Fortify;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use App\Actions\Fortify\CreateNewUser;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -31,6 +36,49 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureActiveUsers();
+    }
+
+    private function configureActiveUsers(): void
+    {
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $user = User::where(Fortify::username(), $request->input(Fortify::username()))
+                ->where('active', true)
+                ->first();
+            $provider = Auth::guard(config('fortify.guard'))->getProvider();
+            $credentials = $request->only('password');
+
+            if (! $user || ! $provider->validateCredentials($user, $credentials)) {
+                return null;
+            }
+
+            if (config('hashing.rehash_on_login', true)) {
+                $provider->rehashPasswordIfRequired($user, $credentials);
+            }
+
+            return $user;
+        });
+
+        Event::listen(Login::class, function (Login $event): void {
+            if (! $event->user instanceof User ||
+                User::whereKey($event->user->getAuthIdentifier())->where('active', true)->exists()) {
+                return;
+            }
+
+            // Login events also cover 2FA, passkeys and remember-me authentication.
+            $guard = Auth::guard($event->guard);
+            $guard->setUser($event->user);
+            $guard->logout();
+
+            if (request()->hasSession()) {
+                request()->session()->invalidate();
+                request()->session()->regenerateToken();
+            }
+
+            throw ValidationException::withMessages([
+                Fortify::username() => [__('auth.failed')],
+            ]);
+        });
     }
 
     /**

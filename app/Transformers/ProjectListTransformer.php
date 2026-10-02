@@ -16,6 +16,9 @@ class ProjectListTransformer
     {
         return [
             'resource' => __('Projects'),
+            'state' => 'active',
+            'extraDateHeading' => null,
+            'inactiveUrl' => route('projects.inactive.index'),
             'emptyMessage' => $search === ''
                 ? __('No projects yet.')
                 : __('No projects match your search.'),
@@ -43,7 +46,18 @@ class ProjectListTransformer
                             'customer_id' => $project->customer_id,
                         ],
                     ],
-                    [
+                    $project->epics_exists ? [
+                        'type' => 'confirm-modal',
+                        'label' => __('Deactivate'),
+                        'icon' => 'lock-closed',
+                        'test' => 'project-deactivate-'.$project->id,
+                        'danger' => true,
+                        'action' => route('projects.deactivate', $project),
+                        'method' => 'PATCH',
+                        'confirmTitle' => __('Deactivate record?'),
+                        'confirmText' => __('You can reactivate it from the inactive list.'),
+                        'confirmLabel' => __('Deactivate'),
+                    ] : [
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
@@ -64,10 +78,52 @@ class ProjectListTransformer
      * @param  LengthAwarePaginator<int, Project>  $projects
      * @return array<string, mixed>
      */
+    public function inactive(LengthAwarePaginator $projects, string $search): array
+    {
+        return [
+            'resource' => __('Projects'),
+            'state' => 'inactive',
+            'extraDateHeading' => __('Updated at'),
+            'emptyMessage' => $search === '' ? __('No inactive records.') : __('No projects match your search.'),
+            'search' => $this->search(route('projects.inactive.index'), $search),
+            'navigation' => [
+                'label' => __('Projects'),
+                'url' => route('projects.index'),
+                'icon' => 'arrow-left',
+                'test' => null,
+            ],
+            'create' => false,
+            'rows' => collect($projects->items())->map(fn (Project $project): array => [
+                ...$this->columns($project),
+                'extraDate' => $project->updated_at?->format('Y-m-d H:i'),
+                'actions' => [
+                    [
+                        'type' => 'confirm-modal',
+                        'label' => __('Reactivate'),
+                        'icon' => 'lock-open',
+                        'test' => 'project-reactivate-'.$project->id,
+                        'danger' => false,
+                        'action' => route('projects.inactive.reactivate', $project),
+                        'method' => 'PATCH',
+                        'confirmTitle' => __('Reactivate record?'),
+                        'confirmText' => __('The record will return to the active list.'),
+                        'confirmLabel' => __('Reactivate'),
+                    ],
+                ],
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Project>  $projects
+     * @return array<string, mixed>
+     */
     public function trash(LengthAwarePaginator $projects, string $search): array
     {
         return [
             'resource' => __('Projects'),
+            'state' => 'trash',
+            'extraDateHeading' => __('Deleted at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No projects match your search.'),
@@ -81,7 +137,7 @@ class ProjectListTransformer
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
-                'deletedAt' => $project->deleted_at?->format('Y-m-d'),
+                'extraDate' => $project->deleted_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -92,7 +148,9 @@ class ProjectListTransformer
                         'action' => route('projects.trash.restore', $project->id),
                         'method' => 'PATCH',
                         'confirmTitle' => __('Restore project?'),
-                        'confirmText' => __('The project will return to the active list.'),
+                        'confirmText' => $project->active
+                            ? __('The project will return to the active list.')
+                            : __('The record will return to the inactive list.'),
                         'confirmLabel' => __('Restore'),
                     ],
                     [

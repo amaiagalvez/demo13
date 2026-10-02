@@ -10,7 +10,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -88,6 +88,7 @@ select:focus[data-flux-control] {
 }
 
 .select2-container--default .select2-selection--single {
+    position: relative;
     display: flex;
     min-height: 2.5rem;
     align-items: center;
@@ -98,9 +99,44 @@ select:focus[data-flux-control] {
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
+    flex: 1;
+    min-width: 0;
     padding-inline: 0.75rem 2rem;
     color: inherit;
     line-height: 1.5rem;
+}
+
+.select2-container--default .select2-selection--single.select2-selection--clearable .select2-selection__rendered {
+    padding-inline-end: 4rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: 2rem;
+    display: flex;
+    width: 1.5rem;
+    height: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border-radius: 0.25rem;
+    color: var(--color-zinc-500);
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1;
+    transform: translateY(-50%);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+    background-color: var(--color-zinc-100);
+    color: var(--color-zinc-800);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -143,6 +179,15 @@ html.dark {
     .select2-container--default .select2-selection--single {
         border-color: var(--color-zinc-600);
         background-color: var(--color-zinc-800);
+        color: var(--color-zinc-100);
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        color: var(--color-zinc-400);
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+        background-color: var(--color-zinc-700);
         color: var(--color-zinc-100);
     }
 

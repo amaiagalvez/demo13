@@ -41,4 +41,20 @@ class CustomerPolicy
     {
         return true;
     }
+
+    /**
+     * Determine whether the user can deactivate the model.
+     */
+    public function deactivate(User $user, Customer $customer): bool
+    {
+        return true;
+    }
+
+    /**
+     * Determine whether the user can reactivate the model.
+     */
+    public function reactivate(User $user, Customer $customer): bool
+    {
+        return true;
+    }
 }
