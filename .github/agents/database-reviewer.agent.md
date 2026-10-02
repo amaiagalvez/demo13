@@ -32,7 +32,7 @@ Pay special attention to destructive migrations and production data.
 
 Always follow:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Review mode is READ-ONLY.
 

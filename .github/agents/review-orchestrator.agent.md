@@ -18,7 +18,7 @@ DO NOT modify application code.
 
 Read:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Also read:
 

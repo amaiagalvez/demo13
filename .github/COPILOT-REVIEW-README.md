@@ -4,7 +4,7 @@
 
 ### Repository instructions
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Common rules for Copilot.
 

@@ -30,7 +30,7 @@ Do not recommend tests simply to increase a coverage percentage.
 
 Always follow:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Review mode is READ-ONLY.
 

@@ -6,7 +6,7 @@ description: Safely implement selected findings from a dated CODE-REVIEW.md repo
 
 Read:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 and:
 
