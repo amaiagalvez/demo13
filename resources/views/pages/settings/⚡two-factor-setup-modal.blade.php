@@ -245,7 +245,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
                 copied: false,
                 async copy() {
                     try {
-                        await navigator.clipboard.writeText('{{ $manualSetupKey }}');
+                        await navigator.clipboard.writeText(@js($manualSetupKey));
                         this.copied = true;
                         setTimeout(() => this.copied = false, 1500);
                     } catch (e) {
