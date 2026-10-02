@@ -38,4 +38,4 @@ State server-side; validate and authorize in actions. Alpine is already bundled.
 ## Tests (PHPUnit)
 - Add/update tests for behavior changes (not for copy/styling). Cover the change and its key failures only. Read the `testing-best-practices` skill first.
 - Create: `DX php artisan make:test --phpunit Name` (feature; `--unit` for unit; no suite dir in name).
-- Run the narrowest: `DX php artisan test --compact <path|--filter=name>`; add `--parallel` for local runs (never in CI — shared DB). Rerun after each fix.
+- Run the narrowest: `DX php artisan test --compact <path|--filter=name>`; add `--parallel` for local speed (never in CI — shared DB) with flags before the path: `DX php artisan test --parallel --compact <path>`. Rerun after each fix.

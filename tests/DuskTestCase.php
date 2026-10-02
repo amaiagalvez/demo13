@@ -2,7 +2,9 @@
 
 namespace Tests;
 
+use Illuminate\Support\Env;
 use Illuminate\Support\Collection;
+use Illuminate\Foundation\Application;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use PHPUnit\Framework\Attributes\BeforeClass;
@@ -20,10 +22,16 @@ abstract class DuskTestCase extends BaseTestCase
 
     protected function baseUrl(): string
     {
-        return rtrim(env('DUSK_BASE_URL', config('app.url')), '/');
+        $baseUrl = Env::get('DUSK_BASE_URL', config('app.url'));
+
+        if (! is_string($baseUrl)) {
+            static::fail('DUSK_BASE_URL must resolve to a string.');
+        }
+
+        return rtrim($baseUrl, '/');
     }
 
-    protected function getEnvironmentSetUp($app): void
+    protected function getEnvironmentSetUp(Application $app): void
     {
         $app['config']->set('database.default', 'mysql');
         $app['config']->set('database.connections.mysql.database', 'laravel_test');
@@ -49,8 +57,19 @@ abstract class DuskTestCase extends BaseTestCase
      */
     protected function driver(): RemoteWebDriver
     {
+        $chromeBinary = $_ENV['DUSK_CHROME_BINARY'] ?? Env::get('DUSK_CHROME_BINARY', '/usr/bin/chromium');
+        $driverUrl = $_ENV['DUSK_DRIVER_URL'] ?? Env::get('DUSK_DRIVER_URL') ?? 'http://localhost:9515';
+
+        if (! is_string($chromeBinary)) {
+            static::fail('DUSK_CHROME_BINARY must resolve to a string.');
+        }
+
+        if (! is_string($driverUrl)) {
+            static::fail('DUSK_DRIVER_URL must resolve to a string.');
+        }
+
         $options = (new ChromeOptions)
-            ->setBinary($_ENV['DUSK_CHROME_BINARY'] ?? env('DUSK_CHROME_BINARY', '/usr/bin/chromium'))
+            ->setBinary($chromeBinary)
             ->addArguments(collect([
                 $this->shouldStartMaximized() ? '--start-maximized' : '--window-size=1920,1080',
                 '--disable-search-engine-choice-screen',
@@ -65,7 +84,7 @@ abstract class DuskTestCase extends BaseTestCase
             })->all());
 
         return RemoteWebDriver::create(
-            $_ENV['DUSK_DRIVER_URL'] ?? env('DUSK_DRIVER_URL') ?? 'http://localhost:9515',
+            $driverUrl,
             DesiredCapabilities::chrome()->setCapability(
                 ChromeOptions::CAPABILITY,
                 $options
