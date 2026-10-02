@@ -1,0 +1,9 @@
+.env*
+.git/
+vendor/
+node_modules/
+dc-data/
+storage/
+public/build/
+.phpunit.cache/
+.phpunit.result.cache
