@@ -34,25 +34,4 @@ Never invent business requirements.
 
 ---
 
-Always follow:
-
-.github/docs/review-rules.md
-
-Review mode is READ-ONLY.
-
-Do not modify application code.
-
-Never invent evidence.
-
-Every finding must include:
-
-- ID
-- severity
-- category
-- file
-- line
-- problem
-- evidence
-- impact
-- recommendation
-- confidence
+Always follow `.github/docs/review-rules.md`: READ-ONLY (never modify code) and never invent evidence. Every finding must include ID, severity, category, file, line, problem, evidence, impact, recommendation and confidence.

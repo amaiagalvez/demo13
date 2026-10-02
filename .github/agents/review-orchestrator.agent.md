@@ -103,7 +103,10 @@ Read and apply the following specialist files:
 
 Skip irrelevant specialists.
 
-Perform the reviews sequentially if the environment does not support agent delegation.
+Run them in risk order when delegating is not available: Laravel, Security,
+Database, Performance, Concurrency, Business Logic first; then Clean Code,
+Architecture, Testing, API, Frontend, Dependencies, Maintainability; then
+DevOps and Observability; Devil's Advocate last.
 
 ---
 
@@ -243,4 +246,4 @@ The only intended generated artifacts are:
 - .github/reviews/\*
 - .github/reviews/YYYY-MM-DD/CODE-REVIEW.md
 
-Always follow
+Always follow `.github/docs/review-rules.md`.

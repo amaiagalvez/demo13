@@ -2,41 +2,13 @@
 
 ## Project
 
-This repository is a Laravel application.
+This repository is a Laravel application. The stack, commands and project map
+are defined in `AGENTS.md` (Laravel 13, PHP 8.4, Livewire 4, Flux free,
+Tailwind 4, PHPUnit, Dusk, Pint, MariaDB, Vite).
 
-IMPORTANT:
-Inspect the repository before assuming optional technologies.
-
-Determine the actual versions and stack from:
-- composer.json
-- composer.lock
-- package.json
-- lockfiles
-- Docker files
-- CI configuration
-- application source
-
-Possible technologies include:
-- PHP
-- Laravel
-- Eloquent
-- MySQL
-- Redis
-- Horizon
-- Queues
-- Pest
-- PHPUnit
-- PHPStan
-- Psalm
-- Pint
-- Blade
-- Livewire
-- Vue
-- Inertia
-- Docker
-- Vite
-
-Never assume a technology exists just because this review pack supports it.
+Verify versions against composer.json, package.json, lockfiles, Docker and CI
+files. Never assume an optional technology exists (Redis, Horizon, Pest, Vue,
+Inertia, PHPStan, Psalm...) just because this review pack supports it.
 
 ---
 

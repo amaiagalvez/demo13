@@ -3,11 +3,19 @@ name: tests
 on:
   push:
     branches:
-      - main
+      - master
+    paths-ignore:
+      - '**.md'
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
@@ -61,6 +69,7 @@ jobs:
         run: composer ci:check
 
   dusk:
+    needs: ci
     runs-on: ubuntu-latest
     env:
       APP_URL: http://127.0.0.1:8000

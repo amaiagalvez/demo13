@@ -15,7 +15,7 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 - Duplicate-name races: `App\Support\Database\UniqueConstraintViolation`.
 - i18n: `lang/*.json`, 4 locales, parity checked by a unit test.
 - Tests: `tests/Feature`, `tests/Unit`, Dusk in `tests/Browser`.
-- Structural changes: read `.github/docs/architecture/ARCHITECTURE.md` first. Path rules: `.github/rules/index.md`.
+- Structural changes: read `.github/docs/architecture/ARCHITECTURE.md` first.
 
 EOF
 awk -v f=/tmp/project-map.md '/^## Boost \/ docs/ { while ((getline l < f) > 0) print l } { print }' AGENTS.md > AGENTS.md.new

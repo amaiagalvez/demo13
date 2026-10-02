@@ -1,6 +1,6 @@
 ---
 name: livewire-development
-description: "Use for any task or question involving Livewire. Activate if user mentions Livewire, wire: directives, or Livewire-specific concepts like wire:model, wire:click, wire:sort, or islands, invoke this skill. Covers building new components, debugging reactivity issues, real-time form validation, drag-and-drop, loading states, migrating from Livewire 3 to 4, converting component formats (SFC/MFC/class-based), and performance optimization. Do not use for non-Livewire reactive UI (React, Vue, Alpine-only, Inertia.js) or standard Laravel forms without Livewire."
+description: "Use for any Livewire task: wire: directives, components, real-time validation, loading states, performance, and Livewire 3 to 4 or SFC/class-based conversion. Not for non-Livewire UI (React, Vue, Alpine-only, Inertia) or plain Laravel forms."
 license: MIT
 metadata:
   author: laravel
