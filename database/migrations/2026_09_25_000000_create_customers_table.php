@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();
+            $table->boolean('active')->default(true);
         });
 
         if (in_array(DB::connection()->getDriverName(), ['sqlite', 'pgsql'], true)) {
