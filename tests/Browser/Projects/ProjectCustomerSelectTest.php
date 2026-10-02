@@ -42,6 +42,8 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 ->type('dialog[open] .select2-container--open .select2-search__field', 'Northwind')
                 ->assertSeeIn('dialog[open] .select2-results', $existingCustomerName)
                 ->click('dialog[open] .select2-results__option--selectable')
+                ->waitUntil('document.querySelector(\'[data-test="project-submit"]\').disabled === false', 10)
+                ->assertEnabled('[data-test="project-submit"]')
                 ->click('#select2-project-customer-id-container')
                 ->type(
                     'dialog[open] .select2-container--open .select2-search__field',

@@ -302,6 +302,7 @@ window.initializeProjectCustomerSelect = (element) => {
 
         if (!customerOption.newTag) {
             projectForm.form.customerCreateError = '';
+            element.dispatchEvent(new Event('change', { bubbles: true }));
 
             return;
         }
