@@ -15,16 +15,16 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 - Duplicate-name races: `App\Support\Database\UniqueConstraintViolation`.
 - i18n: `lang/*.json`, 4 locales, parity checked by a unit test.
 - Tests: `tests/Feature`, `tests/Unit`, Dusk in `tests/Browser`.
-- Structural changes: read `.github/docs/architecture/ARCHITECTURE.md` first. Path rules: `.ai/rules/index.md`.
+- Structural changes: read `.github/docs/architecture/ARCHITECTURE.md` first. Path rules: `.github/rules/index.md`.
 
 EOF
 awk -v f=/tmp/project-map.md '/^## Boost \/ docs/ { while ((getline l < f) > 0) print l } { print }' AGENTS.md > AGENTS.md.new
 mv AGENTS.md.new AGENTS.md
 
-# 3) .ai/rules (se cargan solo al tocar esas rutas)
-mkdir -p .ai/rules
+# 3) .github/rules (se cargan solo al tocar esas rutas)
+mkdir -p .github/rules
 
-cat > .ai/rules/index.md <<'EOF'
+cat > .github/rules/index.md <<'EOF'
 # Rules index
 Read the file whose glob matches the path you edit.
 
@@ -35,7 +35,7 @@ Read the file whose glob matches the path you edit.
 | `tests/**` | tests.md |
 EOF
 
-cat > .ai/rules/http.md <<'EOF'
+cat > .github/rules/http.md <<'EOF'
 # HTTP / domain rules
 - Store/update: catch `QueryException` and call `UniqueConstraintViolation::rethrowAsValidationError()`. Restore flows return their own conflict response instead.
 - Deleting or force-deleting a parent is blocked if children exist, including trashed ones (`withTrashed()->exists()`). Customer→Project and Project→Epic work the same way.
@@ -43,14 +43,14 @@ cat > .ai/rules/http.md <<'EOF'
 - List querying lives in `app/Queries`, row shaping in `app/Transformers`; keep controllers thin.
 EOF
 
-cat > .ai/rules/views.md <<'EOF'
+cat > .github/rules/views.md <<'EOF'
 # View / i18n rules
 - List views reuse `resources/views/components/list/*`; do not copy their markup back into a view. Keep existing `data-test` names; row actions pass the edit payload via `data-payload`.
 - Use Flux components where one exists.
 - Any new user-facing string goes in `lang/*.json` for all 4 locales (same key and `:placeholders`); a unit test checks parity. Default locale is `eu`.
 EOF
 
-cat > .ai/rules/tests.md <<'EOF'
+cat > .github/rules/tests.md <<'EOF'
 # Test rules
 - Prefer Feature tests; Dusk (`tests/Browser`) only for JS behavior.
 - Duplicate-insert races are tested per resource for store, update and restore by simulating a duplicate-key `QueryException`.

@@ -31,7 +31,7 @@ Everything runs in Docker. `DX` = `docker compose exec laravel13`.
 ## Boost / docs
 - Prefer Boost MCP tools over shell: `database-query` (read-only), `database-schema`, `get-absolute-url`, `browser-logs`, `search-docs`.
 - `search-docs` before version-specific Laravel-ecosystem APIs (skip for copy/styling). Broad topic queries, no package names in the query, scope with `packages`. Reuse earlier results.
-- If `.ai/rules/index.md` exists, read the rule files matching the paths you edit first. Use `record-rule` only when the user explicitly asks.
+- If `.github/rules/index.md` exists, read the rule files matching the paths you edit first. Use `record-rule` only when the user explicitly asks.
 - Activate the matching skill in `.github/skills` for its domain. No verification scripts/tinker when tests cover it.
 
 ## PHP

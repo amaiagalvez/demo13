@@ -17,12 +17,12 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 - Duplicate-name races: `App\Support\Database\UniqueConstraintViolation`.
 - i18n: `lang/*.json`, 4 locales, parity checked by a unit test.
 - Tests: `tests/Feature`, `tests/Unit`, Dusk in `tests/Browser`.
-- Structural changes: read `.github/docs/architecture/ARCHITECTURE.md` first. Path rules: `.ai/rules/index.md`.
+- Structural changes: read `.github/docs/architecture/ARCHITECTURE.md` first. Path rules: `.github/rules/index.md`.
 
 ## Boost / docs
 - Prefer Boost MCP tools over shell: `database-query` (read-only), `database-schema`, `get-absolute-url`, `browser-logs`, `search-docs`.
 - `search-docs` before version-specific Laravel-ecosystem APIs (skip for copy/styling). Broad topic queries, no package names in the query, scope with `packages`. Reuse earlier results.
-- If `.ai/rules/index.md` exists, read the rule files matching the paths you edit first. Use `record-rule` only when the user explicitly asks.
+- If `.github/rules/index.md` exists, read the rule files matching the paths you edit first. Use `record-rule` only when the user explicitly asks.
 - Activate the matching skill in `.github/skills` for its domain. No verification scripts/tinker when tests cover it.
 
 ## PHP
