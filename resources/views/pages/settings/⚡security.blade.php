@@ -309,6 +309,8 @@ new #[Title('Security settings')] class extends Component { // @phpstan-ignore e
                                 <flux:button variant="ghost" size="sm" icon="trash"
                                     icon:variant="outline"
                                     wire:click="confirmDelete({{ $passkey['id'] }})"
+                                    :aria-label="__('Delete').' '.$passkey['name']"
+                                    :data-test="'passkey-delete-'.$passkey['id']"
                                     class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50" />
                             </div>
                         @empty
