@@ -16,5 +16,18 @@
             "approve": true,
             "matchCommandLine": true
         }
+    },
+    "search.exclude": {
+        "**/dc-data": true,
+        "**/node_modules": true,
+        "**/vendor": true,
+        "public/build": true,
+        "storage/framework": true,
+        "storage/logs": true
+    },
+    "files.watcherExclude": {
+        "**/dc-data/**": true,
+        "**/node_modules/**": true,
+        "**/vendor/**": true
     }
 }

@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 # Ejecutar desde la raíz del repo DESPUÉS de token-diet.sh: bash agent-config-extras.sh
-# Crea una rama nueva encima de chore/reduce-agent-tokens (necesita su AGENTS.md compacto).
 set -euo pipefail
-
-git switch chore/reduce-agent-tokens
-git switch -c chore/agent-config-extras
 
 # 1) Xdebug apagado en los comandos del agente
 sed -i 's#`DX` = `docker compose exec laravel13`#`DX` = `docker compose exec -e XDEBUG_MODE=off laravel13`#' AGENTS.md
@@ -97,12 +93,3 @@ cat > .vscode/settings.json <<'EOF'
     }
 }
 EOF
-
-git add AGENTS.md .ai .vscode/settings.json
-git commit -q -m "chore: add project map, .ai/rules and editor excludes
-
-- AGENTS.md: run agent commands with XDEBUG_MODE=off, add project map
-- .ai/rules: path-scoped rules for http, views and tests
-- .vscode: exclude heavy folders from search and file watching"
-
-git --no-pager show --stat HEAD
