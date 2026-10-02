@@ -97,47 +97,39 @@
 
         <x-list.search :search="$list['search']" prefix="project" />
 
-        <div class="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>{{ __('Name') }}</flux:table.column>
-                    <flux:table.column>{{ __('Customer') }}</flux:table.column>
-                    <flux:table.column>{{ __('Start date') }}</flux:table.column>
-                    <flux:table.column>{{ __('End date') }}</flux:table.column>
-                    <flux:table.column class="text-end">
-                        <span class="sr-only">{{ __('Actions') }}</span>
-                    </flux:table.column>
-                </flux:table.columns>
+        <x-list.table prefix="project" :paginator="$projects">
+            <flux:table.columns>
+                <flux:table.column>{{ __('Name') }}</flux:table.column>
+                <flux:table.column>{{ __('Customer') }}</flux:table.column>
+                <flux:table.column>{{ __('Start date') }}</flux:table.column>
+                <flux:table.column>{{ __('End date') }}</flux:table.column>
+                <flux:table.column class="text-end">
+                    <span class="sr-only">{{ __('Actions') }}</span>
+                </flux:table.column>
+            </flux:table.columns>
 
-                <flux:table.rows>
-                    @forelse ($list['rows'] as $row)
-                        <flux:table.row :key="$row['id']">
-                            <flux:table.cell class="font-medium">{{ $row['name'] }}
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
-                            <flux:table.cell class="text-end">
-                                <x-list.row-actions :actions="$row['actions']" prefix="project"
-                                    payload-key="project" edit-handler="editProject" />
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="5" class="py-8 text-center text-zinc-500">
-                                {{ $list['emptyMessage'] }}
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
-        </div>
-
-        @if ($projects->hasPages())
-            <nav aria-label="{{ __('Pagination') }}" data-test="project-pagination">
-                {{ $projects->links() }}
-            </nav>
-        @endif
+            <flux:table.rows>
+                @forelse ($list['rows'] as $row)
+                    <flux:table.row :key="$row['id']">
+                        <flux:table.cell class="font-medium">{{ $row['name'] }}
+                        </flux:table.cell>
+                        <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
+                        <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
+                        <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
+                        <flux:table.cell class="text-end">
+                            <x-list.row-actions :actions="$row['actions']" prefix="project"
+                                payload-key="project" edit-handler="editProject" />
+                        </flux:table.cell>
+                    </flux:table.row>
+                @empty
+                    <flux:table.row>
+                        <flux:table.cell colspan="5" class="py-8 text-center text-zinc-500">
+                            {{ $list['emptyMessage'] }}
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforelse
+            </flux:table.rows>
+        </x-list.table>
 
         @if ($list['create'])
             <flux:modal name="project-form" variant="flyout" position="right"

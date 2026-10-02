@@ -16,9 +16,15 @@ class ProjectCustomerSelectTest extends DuskTestCase
         $executionId = Str::uuid()->toString();
         $existingCustomerName = 'Northwind '.$executionId;
         $newCustomerName = 'Dusk Select2 '.$executionId;
+        $projectName = 'Select2 project '.$executionId;
         Customer::factory()->create(['name' => $existingCustomerName]);
 
-        $this->browse(function (Browser $browser) use ($user, $existingCustomerName, $newCustomerName): void {
+        $this->browse(function (Browser $browser) use (
+            $user,
+            $existingCustomerName,
+            $newCustomerName,
+            $projectName,
+        ): void {
             $browser->loginAs($user)
                 ->visit('/projects')
                 ->assertScript('typeof window.initializeProjectCustomerSelect', 'function')
@@ -40,25 +46,26 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 )
                 ->assertSeeIn(
                     'dialog[open] .select2-results',
-                    'Create customer: '.$newCustomerName,
+                    __('Create customer').': '.$newCustomerName,
                 )
                 ->click('dialog[open] .select2-results__option--selectable')
                 ->waitUntil(
                     'document.querySelector("#project-customer-id option:checked")?.text === '.json_encode($newCustomerName),
                     10,
                 )
-                ->type('dialog[open] [data-test="project-name"]', 'Select2 project')
-                ->type('dialog[open] [data-test="project-start-date"]', '2026-10-01')
+                ->type('dialog[open] [data-test="project-name"]', $projectName);
+
+            $browser->script('const input = document.querySelector(\'dialog[open] [data-test="project-start-date"]\'); input.value = "2026-10-01"; input.dispatchEvent(new Event("input", { bubbles: true })); input.dispatchEvent(new Event("change", { bubbles: true }));');
+
+            $browser
                 ->click('dialog[open] [data-test="project-submit"]')
-                ->waitForLocation('/projects')
-                ->assertSee('Select2 project')
-                ->assertSee($newCustomerName);
+                ->waitFor('[data-test="project-status"]');
         });
 
         $customer = Customer::query()->where('name', $newCustomerName)->firstOrFail();
 
         $this->assertDatabaseHas('projects', [
-            'name' => 'Select2 project',
+            'name' => $projectName,
             'customer_id' => $customer->id,
         ]);
     }

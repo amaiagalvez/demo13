@@ -7,6 +7,7 @@ Be concise. Create docs only if explicitly asked. Follow sibling files' structur
 Everything runs in Docker. `DX` = `docker compose exec -e XDEBUG_MODE=off laravel13`.
 - Start: `docker compose up -d laravel13`
 - Artisan/Composer/PHPUnit: `DX php artisan ...`, `DX composer ...`. Always pass `--no-interaction`; create files with `DX php artisan make:*`.
+- Dusk: `docker compose exec -e XDEBUG_MODE=off laravel13-dusk php artisan dusk [tests/Browser/...php]`. Run Dusk in its dedicated service so both the test runner and browser server use `laravel_test` and an isolated config cache.
 - npm: `docker compose run --rm --no-deps --entrypoint npm laravel13-npm <cmd>` (e.g. `run build`). Vite error "Unable to locate file in Vite manifest" or UI not updating: run build, or ask the user to start dev (`-p 5173:5173 ... run dev -- --host 0.0.0.0`).
 - Package versions: `DX composer show --direct`, or package.json. Use APIs of the installed major version.
 
@@ -37,4 +38,4 @@ State server-side; validate and authorize in actions. Alpine is already bundled.
 ## Tests (PHPUnit)
 - Add/update tests for behavior changes (not for copy/styling). Cover the change and its key failures only. Read the `testing-best-practices` skill first.
 - Create: `DX php artisan make:test --phpunit Name` (feature; `--unit` for unit; no suite dir in name).
-- Run the narrowest: `DX php artisan test --compact <path|--filter=name>`; rerun after each fix.
+- Run the narrowest: `DX php artisan test --compact <path|--filter=name>`; add `--parallel` for local runs (never in CI — shared DB). Rerun after each fix.

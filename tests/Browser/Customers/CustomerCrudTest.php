@@ -29,7 +29,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertSee('Ane Bezeroa')
                 ->assertDontSee('Jon Bezeroa')
                 ->click('[data-test="customer-search-clear"]')
-                ->waitForLocation('/customers')
+                ->waitUntil('document.body.innerText.includes("Jon Bezeroa")', 10)
                 ->assertSee('Ane Bezeroa')
                 ->assertSee('Jon Bezeroa');
         });

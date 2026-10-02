@@ -31,6 +31,10 @@
         "/^docker compose up -d laravel13$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/composer (ci:check|test|lint:check|types:check)$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     },
     "search.exclude": {

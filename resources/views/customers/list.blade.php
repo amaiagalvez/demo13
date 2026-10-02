@@ -77,43 +77,35 @@
 
         <x-list.search :search="$list['search']" prefix="customer" />
 
-        <div class="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>{{ __('Name') }}</flux:table.column>
-                    <flux:table.column>{{ $list['dateHeading'] }}</flux:table.column>
-                    <flux:table.column class="text-end">
-                        <span class="sr-only">{{ __('Actions') }}</span>
-                    </flux:table.column>
-                </flux:table.columns>
+        <x-list.table prefix="customer" :paginator="$customers">
+            <flux:table.columns>
+                <flux:table.column>{{ __('Name') }}</flux:table.column>
+                <flux:table.column>{{ $list['dateHeading'] }}</flux:table.column>
+                <flux:table.column class="text-end">
+                    <span class="sr-only">{{ __('Actions') }}</span>
+                </flux:table.column>
+            </flux:table.columns>
 
-                <flux:table.rows>
-                    @forelse ($list['rows'] as $row)
-                        <flux:table.row :key="$row['id']">
-                            <flux:table.cell class="font-medium">{{ $row['name'] }}
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $row['date'] }}</flux:table.cell>
-                            <flux:table.cell class="text-end">
-                                <x-list.row-actions :actions="$row['actions']" prefix="customer"
-                                    payload-key="customer" edit-handler="editCustomer" />
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="3" class="py-8 text-center text-zinc-500">
-                                {{ $list['emptyMessage'] }}
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
-        </div>
-
-        @if ($customers->hasPages())
-            <nav aria-label="{{ __('Pagination') }}" data-test="customer-pagination">
-                {{ $customers->links() }}
-            </nav>
-        @endif
+            <flux:table.rows>
+                @forelse ($list['rows'] as $row)
+                    <flux:table.row :key="$row['id']">
+                        <flux:table.cell class="font-medium">{{ $row['name'] }}
+                        </flux:table.cell>
+                        <flux:table.cell>{{ $row['date'] }}</flux:table.cell>
+                        <flux:table.cell class="text-end">
+                            <x-list.row-actions :actions="$row['actions']" prefix="customer"
+                                payload-key="customer" edit-handler="editCustomer" />
+                        </flux:table.cell>
+                    </flux:table.row>
+                @empty
+                    <flux:table.row>
+                        <flux:table.cell colspan="3" class="py-8 text-center text-zinc-500">
+                            {{ $list['emptyMessage'] }}
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforelse
+            </flux:table.rows>
+        </x-list.table>
 
         @if ($list['create'])
             <flux:modal name="customer-form" variant="flyout" position="right"

@@ -111,56 +111,48 @@
 
         <x-list.search :search="$list['search']" prefix="epic" />
 
-        <div class="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>{{ __('Name') }}</flux:table.column>
-                    <flux:table.column>{{ __('Project') }}</flux:table.column>
-                    <flux:table.column>{{ __('Customer') }}</flux:table.column>
-                    <flux:table.column>{{ __('Start date') }}</flux:table.column>
-                    <flux:table.column>{{ __('End date') }}</flux:table.column>
-                    <flux:table.column>{{ __('Comments') }}</flux:table.column>
-                    <flux:table.column class="text-end">
-                        <span class="sr-only">{{ __('Actions') }}</span>
-                    </flux:table.column>
-                </flux:table.columns>
+        <x-list.table prefix="epic" :paginator="$epics">
+            <flux:table.columns>
+                <flux:table.column>{{ __('Name') }}</flux:table.column>
+                <flux:table.column>{{ __('Project') }}</flux:table.column>
+                <flux:table.column>{{ __('Customer') }}</flux:table.column>
+                <flux:table.column>{{ __('Start date') }}</flux:table.column>
+                <flux:table.column>{{ __('End date') }}</flux:table.column>
+                <flux:table.column>{{ __('Comments') }}</flux:table.column>
+                <flux:table.column class="text-end">
+                    <span class="sr-only">{{ __('Actions') }}</span>
+                </flux:table.column>
+            </flux:table.columns>
 
-                <flux:table.rows>
-                    @forelse ($list['rows'] as $row)
-                        <flux:table.row :key="$row['id']">
-                            <flux:table.cell class="font-medium">{{ $row['name'] }}
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $row['project'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge size="sm" icon="chat-bubble-left"
-                                    :data-test="'epic-comments-count-'.$row['id']">
-                                    {{ $row['commentsCount'] }}
-                                </flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell class="text-end">
-                                <x-list.row-actions :actions="$row['actions']" prefix="epic"
-                                    payload-key="epic" edit-handler="editEpic" />
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="7" class="py-8 text-center text-zinc-500">
-                                {{ $list['emptyMessage'] }}
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
-        </div>
-
-        @if ($epics->hasPages())
-            <nav aria-label="{{ __('Pagination') }}" data-test="epic-pagination">
-                {{ $epics->links() }}
-            </nav>
-        @endif
+            <flux:table.rows>
+                @forelse ($list['rows'] as $row)
+                    <flux:table.row :key="$row['id']">
+                        <flux:table.cell class="font-medium">{{ $row['name'] }}
+                        </flux:table.cell>
+                        <flux:table.cell>{{ $row['project'] }}</flux:table.cell>
+                        <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
+                        <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
+                        <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
+                        <flux:table.cell>
+                            <flux:badge size="sm" icon="chat-bubble-left"
+                                :data-test="'epic-comments-count-'.$row['id']">
+                                {{ $row['commentsCount'] }}
+                            </flux:badge>
+                        </flux:table.cell>
+                        <flux:table.cell class="text-end">
+                            <x-list.row-actions :actions="$row['actions']" prefix="epic"
+                                payload-key="epic" edit-handler="editEpic" />
+                        </flux:table.cell>
+                    </flux:table.row>
+                @empty
+                    <flux:table.row>
+                        <flux:table.cell colspan="7" class="py-8 text-center text-zinc-500">
+                            {{ $list['emptyMessage'] }}
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforelse
+            </flux:table.rows>
+        </x-list.table>
 
         @if ($list['create'])
             <flux:modal name="epic-form" variant="flyout" position="right"

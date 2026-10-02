@@ -11,6 +11,13 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 abstract class DuskTestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        self::assertSame('laravel_test', config('database.connections.mysql.database'));
+    }
+
     protected function baseUrl(): string
     {
         return rtrim(env('DUSK_BASE_URL', config('app.url')), '/');

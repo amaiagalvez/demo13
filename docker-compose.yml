@@ -13,6 +13,7 @@ services:
             - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
             HOME: /tmp
+            APP_CONFIG_CACHE: /tmp/laravel13-config-cache.php
             WEB_DOCUMENT_ROOT: /docker/public
             CONTAINER_UID: 1000
             GIT_CONFIG_COUNT: 1
@@ -39,6 +40,7 @@ services:
         environment:
             HOME: /tmp
             APP_URL: http://laravel13-dusk
+            APP_CONFIG_CACHE: /tmp/laravel13-dusk-config-cache.php
             DB_CONNECTION: mysql
             DB_HOST: db
             DB_PORT: 3306
@@ -148,7 +150,6 @@ services:
         command: bash -c "
             composer install --no-progress
             && php artisan migrate:fresh
-            && php artisan izt:basics-migrations-seeds
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
             db:
@@ -170,7 +171,6 @@ services:
         command: bash -c "
             composer install --no-progress
             && php artisan migrate
-            && php artisan izt:basics-migrations-seeds
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
             db:
