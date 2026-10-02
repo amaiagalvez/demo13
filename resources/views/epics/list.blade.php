@@ -36,7 +36,7 @@
         : null;
 @endphp
 
-<x-layouts::app :title="$list['title']">
+<x-layouts::app :title="$list['resource']">
     <div x-data="{
         form: @js($initialForm),
         confirmation: {
@@ -97,7 +97,7 @@
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
         @elseif ($deletedEpicConflict)
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))" @endif
-        class="flex flex-col gap-6">
+        class="flex flex-col gap-4">
         <x-list.header :list="$list" prefix="epic" :create-label="__('New epic')"
             create-click="createEpic()" />
 
@@ -109,56 +109,65 @@
 
         <x-list.flash prefix="epic" />
 
-        <x-list.search :search="$list['search']" prefix="epic" />
+        @fragment('list-results')
+        <x-list.searchable-results :search="$list['search']">
+            <x-list.search :search="$list['search']" prefix="epic" />
 
-        <x-list.table prefix="epic" :paginator="$epics">
-            <flux:table.columns>
-                <flux:table.column>{{ __('Name') }}</flux:table.column>
-                <flux:table.column>{{ __('Project') }}</flux:table.column>
-                <flux:table.column>{{ __('Customer') }}</flux:table.column>
-                <flux:table.column>{{ __('Start date') }}</flux:table.column>
-                <flux:table.column>{{ __('End date') }}</flux:table.column>
-                <flux:table.column>{{ __('Comments') }}</flux:table.column>
-                <flux:table.column class="text-end">
-                    <span class="sr-only">{{ __('Actions') }}</span>
-                </flux:table.column>
-            </flux:table.columns>
+            <x-list.table prefix="epic" :paginator="$epics">
+                <flux:table.columns>
+                    <flux:table.column>{{ __('Name') }}</flux:table.column>
+                    <flux:table.column>{{ __('Project') }}</flux:table.column>
+                    <flux:table.column>{{ __('Customer') }}</flux:table.column>
+                    <flux:table.column>{{ __('Start date') }}</flux:table.column>
+                    <flux:table.column>{{ __('End date') }}</flux:table.column>
+                    <flux:table.column>{{ __('Comments') }}</flux:table.column>
+                    <flux:table.column class="text-end">
+                        <span class="sr-only">{{ __('Actions') }}</span>
+                    </flux:table.column>
+                </flux:table.columns>
 
-            <flux:table.rows>
-                @forelse ($list['rows'] as $row)
-                    <flux:table.row :key="$row['id']">
-                        <flux:table.cell class="font-medium">{{ $row['name'] }}
-                        </flux:table.cell>
-                        <flux:table.cell>{{ $row['project'] }}</flux:table.cell>
-                        <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
-                        <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
-                        <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
-                        <flux:table.cell>
-                            <flux:badge size="sm" icon="chat-bubble-left"
-                                :data-test="'epic-comments-count-'.$row['id']">
-                                {{ $row['commentsCount'] }}
-                            </flux:badge>
-                        </flux:table.cell>
-                        <flux:table.cell class="text-end">
-                            <x-list.row-actions :actions="$row['actions']" prefix="epic"
-                                payload-key="epic" edit-handler="editEpic" />
-                        </flux:table.cell>
-                    </flux:table.row>
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="7" class="py-8 text-center text-zinc-500">
-                            {{ $list['emptyMessage'] }}
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </x-list.table>
+                <flux:table.rows>
+                    @forelse ($list['rows'] as $row)
+                        <flux:table.row :key="$row['id']"
+                            class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                            <flux:table.cell class="font-medium">{{ $row['name'] }}
+                            </flux:table.cell>
+                            <flux:table.cell>{{ $row['project'] }}</flux:table.cell>
+                            <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
+                            <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
+                            <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" icon="chat-bubble-left"
+                                    :data-test="'epic-comments-count-'.$row['id']">
+                                    {{ $row['commentsCount'] }}
+                                </flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell class="text-end">
+                                <x-list.row-actions :actions="$row['actions']" prefix="epic"
+                                    payload-key="epic" edit-handler="editEpic" />
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="7" class="py-8 text-center text-zinc-500">
+                                <div class="flex flex-col items-center gap-3 px-4 py-4">
+                                    <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
+                                        aria-hidden="true" />
+                                    <span>{{ $list['emptyMessage'] }}</span>
+                                </div>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </x-list.table>
+        </x-list.searchable-results>
+        @endfragment
 
         @if ($list['create'])
             <flux:modal name="epic-form" variant="flyout" position="right"
                 x-on:close="window.clearForm($el.querySelector('form')); window.resetTrackedForms($el)"
                 x-on:cancel.prevent="window.requestTrackedModalClose($el)"
-                class="epic-drawer max-w-none">
+                class="form-drawer max-w-none">
                 @include('epics.form')
             </flux:modal>
 

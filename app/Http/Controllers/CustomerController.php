@@ -19,14 +19,14 @@ class CustomerController extends Controller
         CustomerListRequest $request,
         CustomerListQuery $query,
         CustomerListTransformer $transformer,
-    ): View {
+    ): View|string {
         $search = $request->search();
         $customers = $query->active($search);
 
         return view('customers.list', [
             'customers' => $customers,
             'list' => $transformer->active($customers, $search),
-        ]);
+        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
     }
 
     public function store(CustomerRequest $request): RedirectResponse|JsonResponse

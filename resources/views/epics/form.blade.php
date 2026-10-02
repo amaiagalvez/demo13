@@ -37,7 +37,7 @@
 
     <x-slot:after>
         <template x-if="form.method === 'PUT'">
-            <section class="flex flex-col gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-700"
+            <section class="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/60 sm:p-5"
                 aria-labelledby="epic-comments-heading" data-test="epic-comments">
                 <flux:heading size="lg" id="epic-comments-heading">{{ __('Comments') }}
                 </flux:heading>
@@ -81,7 +81,7 @@
 
                 <ul class="flex flex-col gap-3" x-show="form.comments.length > 0">
                     <template x-for="comment in form.comments" :key="comment.id">
-                        <li class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700"
+                        <li class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
                             data-test="epic-comment">
                             <div class="flex items-center justify-between gap-2 text-xs text-zinc-500">
                                 <span class="font-medium text-zinc-700 dark:text-zinc-300"

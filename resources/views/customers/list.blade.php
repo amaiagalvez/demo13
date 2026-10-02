@@ -19,7 +19,7 @@
         : null;
 @endphp
 
-<x-layouts::app :title="$list['title']">
+<x-layouts::app :title="$list['resource']">
     <div x-data="{
         form: @js($initialForm),
         confirmation: {
@@ -69,49 +69,58 @@
         @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-form' }))"
         @elseif ($deletedCustomerConflict)
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-name-conflict' }))" @endif
-        class="flex flex-col gap-6">
+        class="flex flex-col gap-4">
         <x-list.header :list="$list" prefix="customer" :create-label="__('New customer')"
             create-click="createCustomer()" />
 
         <x-list.flash prefix="customer" />
 
-        <x-list.search :search="$list['search']" prefix="customer" />
+        @fragment('list-results')
+        <x-list.searchable-results :search="$list['search']">
+            <x-list.search :search="$list['search']" prefix="customer" />
 
-        <x-list.table prefix="customer" :paginator="$customers">
-            <flux:table.columns>
-                <flux:table.column>{{ __('Name') }}</flux:table.column>
-                <flux:table.column>{{ $list['dateHeading'] }}</flux:table.column>
-                <flux:table.column class="text-end">
-                    <span class="sr-only">{{ __('Actions') }}</span>
-                </flux:table.column>
-            </flux:table.columns>
+            <x-list.table prefix="customer" :paginator="$customers">
+                <flux:table.columns>
+                    <flux:table.column>{{ __('Name') }}</flux:table.column>
+                    <flux:table.column>{{ $list['dateHeading'] }}</flux:table.column>
+                    <flux:table.column class="text-end">
+                        <span class="sr-only">{{ __('Actions') }}</span>
+                    </flux:table.column>
+                </flux:table.columns>
 
-            <flux:table.rows>
-                @forelse ($list['rows'] as $row)
-                    <flux:table.row :key="$row['id']">
-                        <flux:table.cell class="font-medium">{{ $row['name'] }}
-                        </flux:table.cell>
-                        <flux:table.cell>{{ $row['date'] }}</flux:table.cell>
-                        <flux:table.cell class="text-end">
-                            <x-list.row-actions :actions="$row['actions']" prefix="customer"
-                                payload-key="customer" edit-handler="editCustomer" />
-                        </flux:table.cell>
-                    </flux:table.row>
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="3" class="py-8 text-center text-zinc-500">
-                            {{ $list['emptyMessage'] }}
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </x-list.table>
+                <flux:table.rows>
+                    @forelse ($list['rows'] as $row)
+                        <flux:table.row :key="$row['id']"
+                            class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                            <flux:table.cell class="font-medium">{{ $row['name'] }}
+                            </flux:table.cell>
+                            <flux:table.cell>{{ $row['date'] }}</flux:table.cell>
+                            <flux:table.cell class="text-end">
+                                <x-list.row-actions :actions="$row['actions']" prefix="customer"
+                                    payload-key="customer" edit-handler="editCustomer" />
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="3" class="py-8 text-center text-zinc-500">
+                                <div class="flex flex-col items-center gap-3 px-4 py-4">
+                                    <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
+                                        aria-hidden="true" />
+                                    <span>{{ $list['emptyMessage'] }}</span>
+                                </div>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </x-list.table>
+        </x-list.searchable-results>
+        @endfragment
 
         @if ($list['create'])
             <flux:modal name="customer-form" variant="flyout" position="right"
                 x-on:close="window.clearForm($el.querySelector('form')); window.resetTrackedForms($el)"
                 x-on:cancel.prevent="window.requestTrackedModalClose($el)"
-                class="customer-drawer max-w-none">
+                class="form-drawer max-w-none">
                 @include('customers.form')
             </flux:modal>
 

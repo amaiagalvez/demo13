@@ -2,8 +2,8 @@
 
 namespace App\Transformers;
 
-use App\Models\Customer;
 use App\Models\Project;
+use App\Models\Customer;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProjectListTransformer
@@ -15,8 +15,7 @@ class ProjectListTransformer
     public function active(LengthAwarePaginator $projects, string $search): array
     {
         return [
-            'title' => __('Projects'),
-            'subtitle' => __('Manage your projects.'),
+            'resource' => __('Projects'),
             'emptyMessage' => $search === ''
                 ? __('No projects yet.')
                 : __('No projects match your search.'),
@@ -68,8 +67,7 @@ class ProjectListTransformer
     public function trash(LengthAwarePaginator $projects, string $search): array
     {
         return [
-            'title' => __('Project trash'),
-            'subtitle' => __('Restore projects or delete them permanently.'),
+            'resource' => __('Projects'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No projects match your search.'),

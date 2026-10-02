@@ -18,14 +18,14 @@ class CustomerTrashController extends Controller
         CustomerListRequest $request,
         CustomerListQuery $query,
         CustomerListTransformer $transformer,
-    ): View {
+    ): View|string {
         $search = $request->search();
         $customers = $query->trashed($search);
 
         return view('customers.list', [
             'customers' => $customers,
             'list' => $transformer->trash($customers, $search),
-        ]);
+        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
     }
 
     public function restore(CustomerRestoreRequest $request): RedirectResponse

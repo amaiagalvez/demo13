@@ -2,10 +2,10 @@
 
 namespace App\Transformers;
 
-use App\Models\Customer;
 use App\Models\Epic;
-use App\Models\EpicComment;
 use App\Models\Project;
+use App\Models\Customer;
+use App\Models\EpicComment;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class EpicListTransformer
@@ -17,8 +17,7 @@ class EpicListTransformer
     public function active(LengthAwarePaginator $epics, string $search): array
     {
         return [
-            'title' => __('Epics'),
-            'subtitle' => __('Manage your epics.'),
+            'resource' => __('Epics'),
             'emptyMessage' => $search === ''
                 ? __('No epics yet.')
                 : __('No epics match your search.'),
@@ -82,8 +81,7 @@ class EpicListTransformer
     public function trash(LengthAwarePaginator $epics, string $search): array
     {
         return [
-            'title' => __('Epic trash'),
-            'subtitle' => __('Restore epics or delete them permanently.'),
+            'resource' => __('Epics'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No epics match your search.'),

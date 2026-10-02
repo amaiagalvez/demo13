@@ -14,8 +14,7 @@ class CustomerListTransformer
     public function active(LengthAwarePaginator $customers, string $search): array
     {
         return [
-            'title' => __('Customers'),
-            'subtitle' => __('Manage your customers.'),
+            'resource' => __('Customers'),
             'dateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('No customers yet.')
@@ -64,8 +63,7 @@ class CustomerListTransformer
     public function trash(LengthAwarePaginator $customers, string $search): array
     {
         return [
-            'title' => __('Customer trash'),
-            'subtitle' => __('Restore customers or delete them permanently.'),
+            'resource' => __('Customers'),
             'dateHeading' => __('Deleted at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')

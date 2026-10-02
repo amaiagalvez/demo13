@@ -19,17 +19,33 @@ class CustomerCrudTest extends DuskTestCase
         Customer::factory()->create(['name' => 'Jon Bezeroa']);
 
         $this->browse(function (Browser $browser) use ($user): void {
-            $browser->loginAs($user)
-                ->visit('/customers')
-                ->type('[data-test="customer-search"]', 'Ane')
-                ->waitForReload(fn (Browser $browser) => $browser->click(
-                    '[data-test="customer-search-submit"]'
-                ))
-                ->assertQueryStringHas('search', 'Ane')
+            $browser->loginAs($user)->visit('/customers');
+            $browser->script("window.listSearchPageState = 'preserved';");
+
+            $browser
+                ->assertScript(
+                    'typeof window.Alpine.$data(document.querySelector("[data-list-results]")).searchInput',
+                    'function',
+                )
+                ->assertScript('typeof window.Alpine.morph', 'function')
+                ->type('[data-test="customer-search"]', 'Ane Bezeroa')
+                ->waitUntil('window.location.search.includes("search=Ane")', 10)
+                ->assertQueryStringHas('search', 'Ane Bezeroa')
+                ->assertScript('window.listSearchPageState', 'preserved')
                 ->assertSee('Ane Bezeroa')
                 ->assertDontSee('Jon Bezeroa')
+                ->assertAttribute('[data-test="customer-search-clear"]', 'title', __('Clear'))
+                ->assertScript(
+                    'document.querySelector(\'[data-test="customer-search-clear"]\').innerText.trim()',
+                    '',
+                )
+                ->assertScript(
+                    '(() => { const input = document.querySelector(\'[data-test="customer-search"]\'); const clear = document.querySelector(\'[data-test="customer-search-clear"]\'); const inputBounds = input.getBoundingClientRect(); const clearBounds = clear.getBoundingClientRect(); return clearBounds.left >= inputBounds.left && clearBounds.right <= inputBounds.right && clearBounds.top >= inputBounds.top && clearBounds.bottom <= inputBounds.bottom; })()',
+                    true,
+                )
                 ->click('[data-test="customer-search-clear"]')
                 ->waitUntil('document.body.innerText.includes("Jon Bezeroa")', 10)
+                ->assertQueryStringMissing('search')
                 ->assertSee('Ane Bezeroa')
                 ->assertSee('Jon Bezeroa');
         });

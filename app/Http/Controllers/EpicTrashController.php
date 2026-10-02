@@ -18,7 +18,7 @@ class EpicTrashController extends Controller
         EpicListRequest $request,
         EpicListQuery $query,
         EpicListTransformer $transformer,
-    ): View {
+    ): View|string {
         $search = $request->search();
         $epics = $query->trashed($search);
 
@@ -26,7 +26,7 @@ class EpicTrashController extends Controller
             'epics' => $epics,
             'availableProjects' => collect(),
             'list' => $transformer->trash($epics, $search),
-        ]);
+        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
     }
 
     public function restore(EpicRestoreRequest $request): RedirectResponse

@@ -65,7 +65,7 @@ Al correr `php artisan test` (y en la CI) pasan también tres tests de arquitect
 * **tests/Unit/ModelSchemaParityTest.php** — modelos y esquema no se desincronizan: una columna nueva sin `#[Fillable]` falla hasta que la añades (o la declaras como columna de servidor).
 
 El resto del automatismo:
-* `composer ci:check` = pint --test + PHPStan (nivel 9, subido desde 7) + suite completa.
+* `composer ci:check` = pint --test + PHPStan (nivel 7) + suite completa.
 * Tests en paralelo en local: `DX php artisan test --parallel --compact <ruta>` — los flags van **antes** de la ruta. Nunca en CI: los jobs comparten una BD. Requiere el grant `laravel\_test\_%` (ya aplicado, y en `docker/mysql/init/02-parallel-test-databases.sql` para volúmenes nuevos).
 * Restaurar desde la papelera ya pide `XRestoreRequest` (policy + `resolve_name_conflict` validado). Si añades un endpoint con input, la validación va en su FormRequest, nunca en el controller.
 * CI (master y PRs): cache de Composer y npm, job Dusk, y se salta entera si el diff solo toca `.md`. Dependabot cubre composer y npm.

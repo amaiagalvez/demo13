@@ -18,7 +18,7 @@ class ProjectTrashController extends Controller
         ProjectListRequest $request,
         ProjectListQuery $query,
         ProjectListTransformer $transformer,
-    ): View {
+    ): View|string {
         $search = $request->search();
         $projects = $query->trashed($search);
 
@@ -26,7 +26,7 @@ class ProjectTrashController extends Controller
             'projects' => $projects,
             'availableCustomers' => collect(),
             'list' => $transformer->trash($projects, $search),
-        ]);
+        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
     }
 
     public function restore(ProjectRestoreRequest $request): RedirectResponse

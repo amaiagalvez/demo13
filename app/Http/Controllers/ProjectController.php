@@ -19,7 +19,7 @@ class ProjectController extends Controller
         ProjectListRequest $request,
         ProjectListQuery $query,
         ProjectListTransformer $transformer,
-    ): View {
+    ): View|string {
         $search = $request->search();
         $projects = $query->active($search);
 
@@ -27,7 +27,7 @@ class ProjectController extends Controller
             'projects' => $projects,
             'availableCustomers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'list' => $transformer->active($projects, $search),
-        ]);
+        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
     }
 
     public function store(ProjectRequest $request): RedirectResponse

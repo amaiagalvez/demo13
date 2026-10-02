@@ -364,3 +364,125 @@ initializeProjectCustomerSelects();
 
 window.clearForm = clearForm;
 window.addDays = addDays;
+
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('listSearch', (initialSearch) => ({
+        currentSearch: initialSearch,
+        requestController: null,
+
+        init() {
+            this.handlePopstate = () => this.refreshList(new URL(window.location.href), false);
+            window.addEventListener('popstate', this.handlePopstate);
+        },
+
+        destroy() {
+            window.removeEventListener('popstate', this.handlePopstate);
+            this.requestController?.abort();
+        },
+
+        searchInput(event) {
+            if (event.target.name !== 'search') {
+                return;
+            }
+
+            const query = event.target.value.trim();
+
+            if (query.length > 3
+                || (query.length === 0 && (this.currentSearch !== '' || this.requestController))) {
+                this.search(query);
+
+                return;
+            }
+
+            if (this.requestController && query !== this.currentSearch) {
+                this.requestController.abort();
+            }
+        },
+
+        submitSearch(event) {
+            const form = event.target.closest('[data-list-search]');
+            const query = form.elements.search.value.trim();
+
+            if ((query.length > 0 && query.length <= 3)
+                || (query.length === 0 && this.currentSearch === '')) {
+                return;
+            }
+
+            this.search(query);
+        },
+
+        handleClick(event) {
+            const clearLink = event.target.closest('[data-list-search-clear]');
+
+            if (clearLink) {
+                event.preventDefault();
+                this.refreshList(new URL(clearLink.href));
+
+                return;
+            }
+
+            const paginationLink = event.target.closest('nav[data-test$="-pagination"] a');
+
+            if (paginationLink) {
+                event.preventDefault();
+                this.refreshList(new URL(paginationLink.href));
+            }
+        },
+
+        search(query) {
+            const form = this.$root.querySelector('[data-list-search]');
+            const url = new URL(form.action, window.location.href);
+
+            if (query === '') {
+                url.searchParams.delete('search');
+            } else {
+                url.searchParams.set('search', query);
+            }
+
+            this.refreshList(url);
+        },
+
+        async refreshList(url, updateHistory = true) {
+            this.requestController?.abort();
+
+            const controller = new AbortController();
+            this.requestController = controller;
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-List-Fragment': 'true' },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`List refresh failed with HTTP ${response.status}.`);
+                }
+
+                const template = document.createElement('template');
+                template.innerHTML = await response.text();
+
+                const results = template.content.querySelector('[data-list-results]');
+
+                if (!results) {
+                    throw new Error('The list response did not contain the expected results fragment.');
+                }
+
+                this.currentSearch = url.searchParams.get('search')?.trim() ?? '';
+
+                if (updateHistory) {
+                    window.history.pushState({}, '', url);
+                }
+
+                window.Alpine.morph(this.$root, results.outerHTML);
+            } catch (error) {
+                if (!controller.signal.aborted) {
+                    throw error;
+                }
+            } finally {
+                if (this.requestController === controller) {
+                    this.requestController = null;
+                }
+            }
+        },
+    }));
+});
