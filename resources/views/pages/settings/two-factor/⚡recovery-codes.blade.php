@@ -36,10 +36,25 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
 
         if ($user !== null && $user->hasEnabledTwoFactorAuthentication() && $user->two_factor_recovery_codes) {
             try {
-                /** @var array<int, string> $recoveryCodes */
-                $recoveryCodes = json_decode((string) decrypt($user->two_factor_recovery_codes), true);
+                $decryptedRecoveryCodes = decrypt($user->two_factor_recovery_codes);
 
-                $this->recoveryCodes = $recoveryCodes;
+                if (! is_string($decryptedRecoveryCodes)) {
+                    throw new UnexpectedValueException('Decrypted recovery codes are not a string.');
+                }
+
+                $decodedRecoveryCodes = json_decode($decryptedRecoveryCodes, true);
+
+                if (! is_array($decodedRecoveryCodes) || ! array_is_list($decodedRecoveryCodes)) {
+                    throw new UnexpectedValueException('Decrypted recovery codes are not a list.');
+                }
+
+                $this->recoveryCodes = array_map(static function (mixed $recoveryCode): string {
+                    if (! is_string($recoveryCode)) {
+                        throw new UnexpectedValueException('A decrypted recovery code is not a string.');
+                    }
+
+                    return $recoveryCode;
+                }, $decodedRecoveryCodes);
             } catch (Exception) {
                 $this->addError('recoveryCodes', 'Failed to load recovery codes');
 

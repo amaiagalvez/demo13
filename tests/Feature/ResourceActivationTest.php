@@ -10,7 +10,6 @@ use App\Models\Customer;
 use App\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ResourceActivationTest extends TestCase
@@ -360,22 +359,49 @@ class ResourceActivationTest extends TestCase
     /**
      * @param  class-string<Customer|Project|Epic>  $model
      */
-    #[DataProvider('resources')]
-    public function test_inactive_list_paginates_only_inactive_records(string $model, string $resource): void
-    {
+    #[DataProvider('resourcesWithTestPrefix')]
+    public function test_inactive_list_paginates_only_inactive_records(
+        string $model,
+        string $resource,
+        string $testPrefix,
+    ): void {
         $this->actingAs(User::factory()->create());
-        $model::factory()->count(ListQueryBase::PER_PAGE + 1)->inactive()->create();
-        $model::factory()->count(2)->create();
-        $model::factory()->inactive()->trashed()->create();
 
-        $this->get(route($resource.'.inactive.index'))
-            ->assertViewHas($resource, fn (LengthAwarePaginator $records): bool => $records->total() === ListQueryBase::PER_PAGE + 1
-                && $records->count() === ListQueryBase::PER_PAGE
-                && $records->getCollection()->every(fn (Model $record): bool => $record->active === false));
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            $model::factory()->inactive()->create(['name' => "Inactive record {$index}"]);
+        }
 
-        $this->get(route($resource.'.inactive.index', ['page' => 2]))
-            ->assertViewHas($resource, fn (LengthAwarePaginator $records): bool => $records->count() === 1
-                && $records->first()->active === false);
+        for ($index = 1; $index <= 2; $index++) {
+            $model::factory()->create(['name' => "Active record {$index}"]);
+        }
+
+        $model::factory()->inactive()->trashed()->create(['name' => 'Trashed inactive record']);
+
+        $firstPage = $this->get(route($resource.'.inactive.index'));
+        $firstPage
+            ->assertOk()
+            ->assertDontSee('Active record 1')
+            ->assertDontSee('Active record 2')
+            ->assertDontSee('Trashed inactive record');
+        $firstPageContent = $firstPage->getContent();
+        $this->assertIsString($firstPageContent);
+        $this->assertSame(
+            ListQueryBase::PER_PAGE,
+            substr_count($firstPageContent, 'data-test="'.$testPrefix.'-reactivate-'),
+        );
+
+        $secondPage = $this->get(route($resource.'.inactive.index', ['page' => 2]));
+        $secondPage
+            ->assertOk()
+            ->assertDontSee('Active record 1')
+            ->assertDontSee('Active record 2')
+            ->assertDontSee('Trashed inactive record');
+        $secondPageContent = $secondPage->getContent();
+        $this->assertIsString($secondPageContent);
+        $this->assertSame(
+            1,
+            substr_count($secondPageContent, 'data-test="'.$testPrefix.'-reactivate-'),
+        );
     }
 
     public function test_childless_parents_keep_the_delete_action(): void
@@ -398,7 +424,9 @@ class ResourceActivationTest extends TestCase
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
         $project = $epic->project;
+        $this->assertNotNull($project);
         $customer = $project->customer;
+        $this->assertNotNull($customer);
 
         $this->patch(route('customers.deactivate', $customer));
         $this->patch(route('projects.deactivate', $project));

@@ -30,7 +30,9 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitUntilMissing('dialog[open]')
                 ->assertSee($customer->name);
 
-            $this->assertTrue($customer->fresh()->active);
+            $freshCustomer = $customer->fresh();
+            $this->assertNotNull($freshCustomer);
+            $this->assertTrue($freshCustomer->active);
 
             $browser->click("[data-test='customer-deactivate-{$customer->id}']")
                 ->waitFor('dialog[open]')
@@ -47,7 +49,9 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitFor('dialog[open]')
                 ->assertSeeIn('dialog[open]', __('Reactivate record?'));
 
-            $this->assertFalse($customer->fresh()->active);
+            $freshCustomer = $customer->fresh();
+            $this->assertNotNull($freshCustomer);
+            $this->assertFalse($freshCustomer->active);
             $this->assertNotSoftDeleted($customer);
 
             $browser->waitForReload(fn (Browser $browser) => $browser->click(
@@ -58,7 +62,9 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertSee($customer->name);
         });
 
-        $this->assertTrue($customer->fresh()->active);
+        $freshCustomer = $customer->fresh();
+        $this->assertNotNull($freshCustomer);
+        $this->assertTrue($freshCustomer->active);
         $this->assertNotSoftDeleted($customer);
     }
 

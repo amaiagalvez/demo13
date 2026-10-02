@@ -23,6 +23,9 @@ class ProjectTrashTest extends TestCase
             'start_date' => '2026-01-03',
             'end_date' => '2026-08-04',
         ]);
+        $customer = $project->customer;
+        $this->assertNotNull($customer);
+
         $activeResponse = $this->get(route('projects.index'));
         $project->delete();
 
@@ -31,7 +34,7 @@ class ProjectTrashTest extends TestCase
         $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
             '<thead', __('Actions'), __('Name'), __('Customer'), __('Start date'), __('End date'), __('Deleted at'),
-        ], false)->assertSeeInOrder(['Project with dates', $project->customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
+        ], false)->assertSeeInOrder(['Project with dates', $customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
     }
 
     public function test_deleted_projects_can_be_restored_or_permanently_deleted(): void

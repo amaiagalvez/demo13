@@ -45,7 +45,7 @@ class FortifyServiceProvider extends ServiceProvider
             $user = User::where(Fortify::username(), $request->input(Fortify::username()))
                 ->where('active', true)
                 ->first();
-            $provider = Auth::guard(config('fortify.guard'))->getProvider();
+            $provider = Auth::guard(config()->string('fortify.guard'))->getProvider();
             $credentials = $request->only('password');
 
             if (! $user || ! $provider->validateCredentials($user, $credentials)) {
@@ -124,7 +124,9 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower((string) $request->input(Fortify::username())).'|'.$request->ip());
+            $username = $request->input(Fortify::username());
+            $username = is_string($username) ? $username : '';
+            $throttleKey = Str::transliterate(Str::lower($username).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });
@@ -132,10 +134,11 @@ class FortifyServiceProvider extends ServiceProvider
         /* @chisel-passkeys */
         RateLimiter::for('passkeys', function (Request $request) {
             $credentialId = $request->input('credential.id');
+            $throttleIdentifier = is_string($credentialId) && $credentialId !== ''
+                ? $credentialId
+                : $request->session()->getId();
 
-            return Limit::perMinute(10)->by(
-                (string) ($credentialId ?: $request->session()->getId()).'|'.$request->ip(),
-            );
+            return Limit::perMinute(10)->by($throttleIdentifier.'|'.$request->ip());
         });
         /* @end-chisel-passkeys */
     }

@@ -55,7 +55,13 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
             }
 
             $this->qrCodeSvg = $user->twoFactorQrCodeSvg();
-            $this->manualSetupKey = (string) decrypt($user->two_factor_secret);
+            $manualSetupKey = decrypt($user->two_factor_secret);
+
+            if (! is_string($manualSetupKey)) {
+                throw new Exception('Decrypted two-factor setup key is not a string.');
+            }
+
+            $this->manualSetupKey = $manualSetupKey;
         } catch (Exception) {
             $this->addError('setupData', 'Failed to fetch setup data.');
 

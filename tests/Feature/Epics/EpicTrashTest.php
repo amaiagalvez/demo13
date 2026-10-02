@@ -23,6 +23,11 @@ class EpicTrashTest extends TestCase
             'start_date' => '2026-01-03',
             'end_date' => '2026-08-04',
         ]);
+        $project = $epic->project;
+        $this->assertNotNull($project);
+        $customer = $project->customer;
+        $this->assertNotNull($customer);
+
         EpicComment::factory()->for($epic)->create();
         $activeResponse = $this->get(route('epics.index'));
         $epic->delete();
@@ -34,7 +39,7 @@ class EpicTrashTest extends TestCase
             '<thead', __('Actions'), __('Name'), __('Project'), __('Customer'), __('Start date'), __('End date'),
             __('Comments'), __('Deleted at'),
         ], false)->assertSeeInOrder([
-            'Epic with dates', $epic->project->name, $epic->project->customer->name,
+            'Epic with dates', $project->name, $customer->name,
             '2026-01-03', '2026-08-04', '2026-10-02',
         ]);
         $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"', false);
