@@ -21,7 +21,7 @@ class ProjectFactory extends Factory
         $startDate = fake()->dateTimeBetween('-1 year', 'now')->format('Y-m-d');
 
         return [
-            'name' => fake()->sentence(3),
+            'name' => fake()->unique()->sentence(3),
             'start_date' => $startDate,
             'end_date' => fake()->dateTimeBetween($startDate, '+1 year')->format('Y-m-d'),
             'customer_id' => Customer::factory(),
