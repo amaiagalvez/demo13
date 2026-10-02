@@ -70,7 +70,7 @@ Avoid unrelated refactoring.
 
 Add or update tests that demonstrate the intended behavior.
 
-Follow the project's existing Pest/PHPUnit conventions.
+Follow the project's existing PHPUnit conventions.
 
 ## 7. Validation
 
@@ -78,19 +78,18 @@ Run relevant checks.
 
 Examples:
 
-php artisan test
+docker compose exec -e XDEBUG_MODE=off laravel13 php artisan test --compact <test-path>
 
-vendor/bin/pest
+docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/phpstan analyse
 
-vendor/bin/phpunit
+docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/pint --dirty --format agent
 
-vendor/bin/phpstan analyse
+docker compose exec -e XDEBUG_MODE=off laravel13 composer ci:check --no-interaction
 
-vendor/bin/pint --test
-
-npm run lint
+docker compose run --rm --no-deps --entrypoint npm laravel13-npm run build
 
 Only run commands appropriate to the project.
+Prefer the narrowest relevant tests; use `composer ci:check` for the full gate.
 
 ## 8. Final report
 

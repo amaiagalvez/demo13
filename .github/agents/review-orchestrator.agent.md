@@ -67,16 +67,15 @@ Run safe checks that already exist.
 
 Possible commands:
 
-php artisan test
-vendor/bin/pest
-vendor/bin/phpunit
-vendor/bin/phpstan analyse
-vendor/bin/pint --test
-composer audit
-npm run lint
-npm run typecheck
+docker compose exec -e XDEBUG_MODE=off laravel13 php artisan test --compact <test-path>
+docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/phpstan analyse
+docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/pint --test
+docker compose exec -e XDEBUG_MODE=off laravel13 composer audit --no-interaction
+docker compose run --rm --no-deps --entrypoint npm laravel13-npm run build
 
 Only execute appropriate commands.
+This project uses PHPUnit, not Pest; npm provides build/dev, not lint/typecheck.
+Do not run `composer ci:check` in read-only review mode: its preparation step clears the application configuration cache.
 
 Record actual results.
 
