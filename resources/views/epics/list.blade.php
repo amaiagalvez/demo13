@@ -115,6 +115,9 @@
 
             <x-list.table prefix="epic" :paginator="$epics">
                 <flux:table.columns>
+                    <flux:table.column class="resource-list-actions">
+                        <span class="sr-only">{{ __('Actions') }}</span>
+                    </flux:table.column>
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
                     <flux:table.column>{{ __('Project') }}</flux:table.column>
                     <flux:table.column>{{ __('Customer') }}</flux:table.column>
@@ -124,15 +127,16 @@
                     @if (!$list['create'])
                         <flux:table.column>{{ __('Deleted at') }}</flux:table.column>
                     @endif
-                    <flux:table.column class="text-end">
-                        <span class="sr-only">{{ __('Actions') }}</span>
-                    </flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>
                     @forelse ($list['rows'] as $row)
                         <flux:table.row :key="$row['id']"
                             class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                            <flux:table.cell class="resource-list-actions">
+                                <x-list.row-actions :actions="$row['actions']" prefix="epic"
+                                    payload-key="epic" edit-handler="editEpic" />
+                            </flux:table.cell>
                             <flux:table.cell class="font-medium">{{ $row['name'] }}
                             </flux:table.cell>
                             <flux:table.cell>{{ $row['project'] }}</flux:table.cell>
@@ -148,10 +152,6 @@
                             @if (!$list['create'])
                                 <flux:table.cell>{{ $row['deletedAt'] }}</flux:table.cell>
                             @endif
-                            <flux:table.cell class="text-end">
-                                <x-list.row-actions :actions="$row['actions']" prefix="epic"
-                                    payload-key="epic" edit-handler="editEpic" />
-                            </flux:table.cell>
                         </flux:table.row>
                     @empty
                         <flux:table.row>

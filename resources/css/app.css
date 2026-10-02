@@ -75,6 +75,10 @@ select:focus[data-flux-control] {
     @apply border-zinc-200 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-800 dark:text-zinc-300;
 }
 
+.resource-list-table .resource-list-actions {
+    @apply w-px px-1 text-start whitespace-nowrap;
+}
+
 .resource-list-table [data-flux-row]:hover > [data-flux-cell] {
     @apply bg-zinc-50 dark:bg-zinc-800/60;
 }

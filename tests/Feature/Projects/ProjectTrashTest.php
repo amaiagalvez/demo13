@@ -30,8 +30,8 @@ class ProjectTrashTest extends TestCase
 
         $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
-            __('Name'), __('Customer'), __('Start date'), __('End date'), __('Deleted at'), __('Actions'),
-        ])->assertSeeInOrder(['Project with dates', $project->customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
+            '<thead', __('Actions'), __('Name'), __('Customer'), __('Start date'), __('End date'), __('Deleted at'),
+        ], false)->assertSeeInOrder(['Project with dates', $project->customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
     }
 
     public function test_deleted_projects_can_be_restored_or_permanently_deleted(): void

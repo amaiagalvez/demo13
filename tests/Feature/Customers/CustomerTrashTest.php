@@ -28,7 +28,7 @@ class CustomerTrashTest extends TestCase
         $response = $this->get(route('customers.trash.index'));
 
         $activeResponse->assertDontSee(__('Deleted at'));
-        $response->assertSeeInOrder([__('Name'), __('Created at'), __('Deleted at'), __('Actions')])
+        $response->assertSeeInOrder(['<thead', __('Actions'), __('Name'), __('Created at'), __('Deleted at')], false)
             ->assertSeeInOrder(['Customer with dates', '2026-01-03', '2026-10-02']);
     }
 

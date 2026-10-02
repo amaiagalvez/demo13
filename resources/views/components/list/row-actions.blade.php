@@ -5,12 +5,12 @@
 --}}
 @props(['actions', 'prefix', 'payloadKey', 'editHandler'])
 
-<div class="flex justify-end gap-2">
+<div class="flex justify-start gap-0.5">
     @foreach ($actions as $action)
         @if ($action['type'] === 'form-modal')
             <flux:modal.trigger :name="$prefix.'-form'">
                 <flux:tooltip :content="$action['label']">
-                    <flux:button size="sm" variant="ghost" :icon="$action['icon']"
+                    <flux:button size="xs" square variant="ghost" :icon="$action['icon']"
                         :aria-label="$action['label']"
                         x-on:click="{{ $editHandler }}(JSON.parse($el.dataset.payload))"
                         data-payload="{{ json_encode($action[$payloadKey]) }}"
@@ -20,7 +20,7 @@
         @else
             <flux:modal.trigger :name="$prefix.'-confirm'">
                 <flux:tooltip :content="$action['label']">
-                    <flux:button size="sm" variant="ghost" :icon="$action['icon']"
+                    <flux:button size="xs" square variant="ghost" :icon="$action['icon']"
                         :aria-label="$action['label']"
                         :class="($action['danger'] ?? false) ? 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300' : ''"
                         x-on:click="confirmAction(JSON.parse($el.dataset.action))"

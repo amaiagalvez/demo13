@@ -31,9 +31,9 @@ class EpicTrashTest extends TestCase
 
         $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
-            __('Name'), __('Project'), __('Customer'), __('Start date'), __('End date'),
-            __('Comments'), __('Deleted at'), __('Actions'),
-        ])->assertSeeInOrder([
+            '<thead', __('Actions'), __('Name'), __('Project'), __('Customer'), __('Start date'), __('End date'),
+            __('Comments'), __('Deleted at'),
+        ], false)->assertSeeInOrder([
             'Epic with dates', $epic->project->name, $epic->project->customer->name,
             '2026-01-03', '2026-08-04', '2026-10-02',
         ]);
