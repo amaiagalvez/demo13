@@ -17,6 +17,7 @@ concurrency:
 jobs:
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       code: ${{ steps.filter.outputs.code }}
     steps:
@@ -45,6 +46,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       DB_CONNECTION: mysql
       DB_HOST: 127.0.0.1
@@ -109,6 +111,7 @@ jobs:
     needs: [changes, ci]
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       APP_URL: http://127.0.0.1:8000
       DB_CONNECTION: mysql
