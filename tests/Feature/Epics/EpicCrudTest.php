@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCrudTest extends TestCase
@@ -36,7 +38,7 @@ class EpicCrudTest extends TestCase
         $this->get(route('epics.index'))
             ->assertOk()
             ->assertSee('epic-create-button')
-            ->assertSee('epic-edit-'.$epic->id)
+            ->assertSee('epic-edit-' . $epic->id)
             ->assertSee('Checkout flow')
             ->assertSee($project->name)
             ->assertSee($project->customer->name);
@@ -149,11 +151,71 @@ class EpicCrudTest extends TestCase
 
         $this->get(route('epics.index'))
             ->assertOk()
-            ->assertSeeInOrder(['epic-comments-count-'.$epic->id, '3']);
+            ->assertSeeInOrder(['epic-comments-count-' . $epic->id, '3']);
     }
 
     public function test_guests_are_redirected_to_login_from_the_epics_list(): void
     {
         $this->get(route('epics.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        $name = 'Concurrent epic';
+        $this->insertEpicAfterNameUniquenessCheck($project, $name);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), [
+                'name' => $name,
+                'project_id' => $project->id,
+            ])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+
+        $this->assertDatabaseCount('epics', 1);
+    }
+
+    public function test_update_converts_a_concurrent_duplicate_insert_to_validation_error(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create(['name' => 'Original epic']);
+        $name = 'Concurrent epic update';
+        $this->insertEpicAfterNameUniquenessCheck($epic->project, $name);
+
+        $this->from(route('epics.index'))
+            ->put(route('epics.update', $epic), [
+                'name' => $name,
+                'project_id' => $epic->project_id,
+            ])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+
+        $this->assertDatabaseHas('epics', ['id' => $epic->id, 'name' => 'Original epic']);
+        $this->assertDatabaseHas('epics', ['name' => $name, 'deleted_at' => null]);
+    }
+
+    private function insertEpicAfterNameUniquenessCheck(Project $project, string $name): void
+    {
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use ($project, $name, &$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'epics')
+                || ! in_array($name, $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Epic::factory()->for($project)->create(['name' => $name]);
+        });
     }
 }

@@ -11,7 +11,6 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
-use Illuminate\Validation\ValidationException;
 use App\Support\Database\UniqueConstraintViolation;
 
 class CustomerController extends Controller
@@ -59,13 +58,7 @@ class CustomerController extends Controller
         try {
             $customer = Customer::create($request->validated());
         } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            throw ValidationException::withMessages([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
+            UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
         if ($request->expectsJson()) {
@@ -80,13 +73,7 @@ class CustomerController extends Controller
         try {
             $customer->update($request->validated());
         } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            throw ValidationException::withMessages([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
+            UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
         return to_route('customers.index')->with('status', __('Customer updated successfully.'));

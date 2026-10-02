@@ -30,7 +30,7 @@ final class EpicListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withProjectAndCustomer(Epic::query())
-                ->with(['comments' => fn (HasMany $query) => $query->with('user')->latest()->latest('id')])
+                ->with(['comments' => fn(HasMany $query) => $query->with('user')->latest()->latest('id')])
                 ->orderByRaw('epics.start_date IS NULL')
                 ->orderBy('epics.start_date')
                 ->orderByRaw('epics.end_date IS NULL')

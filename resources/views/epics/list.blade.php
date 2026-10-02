@@ -1,11 +1,14 @@
 @php
     $editingEpic = $list['create'] && str_starts_with(old('_epic_form', ''), 'edit-');
     $deletedEpicConflict = session('deleted_epic_conflict');
-    $findEpicPayload = fn (mixed $id): ?array => collect($list['rows'])
-        ->firstWhere('id', (int) $id)['actions'][0]['epic'] ?? null;
+    $findEpicPayload = fn(mixed $id): ?array => collect($list['rows'])->firstWhere('id', (int) $id)[
+        'actions'
+    ][0]['epic'] ?? null;
     $hasCommentErrors = $errors->getBag('comment')->any();
     $commentedEpic = $list['create']
-        ? $findEpicPayload(session('commented_epic_id') ?? ($hasCommentErrors ? old('_comment_epic_id') : null))
+        ? $findEpicPayload(
+            session('commented_epic_id') ?? ($hasCommentErrors ? old('_comment_epic_id') : null),
+        )
         : null;
     $editingEpicPayload = $editingEpic ? $findEpicPayload(old('_epic_id')) : null;
     $initialForm = $list['create']
@@ -87,13 +90,11 @@
             };
         },
     }"
-        @if ($commentedEpic)
-            x-init="editEpic(@js($commentedEpic), @js($hasCommentErrors ? old('body', '') : '')); $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
+        @if ($commentedEpic) x-init="editEpic(@js($commentedEpic), @js($hasCommentErrors ? old('body', '') : '')); $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
         @elseif ($errors->any())
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
         @elseif ($deletedEpicConflict)
-            x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))"
-        @endif
+            x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))" @endif
         class="flex flex-col gap-6">
         <div class="flex items-center justify-between gap-4">
             <div>
@@ -237,21 +238,16 @@
             </flux:modal>
 
             @if ($deletedEpicConflict)
-                <x-name-conflict-modal
-                    name="epic-name-conflict"
-                    :title="__('Epic name already in trash')"
-                    :message="__('A deleted epic in this project already uses the name :name.', ['name' => $deletedEpicConflict['name']])"
-                    :create-action="route('epics.store')"
-                    :restore-action="route('epics.trash.restore', $deletedEpicConflict['id'])"
-                    :create-fields="[
+                <x-name-conflict-modal name="epic-name-conflict" :title="__('Epic name already in trash')" :message="__('A deleted epic in this project already uses the name :name.', [
+                    'name' => $deletedEpicConflict['name'],
+                ])"
+                    :create-action="route('epics.store')" :restore-action="route('epics.trash.restore', $deletedEpicConflict['id'])" :create-fields="[
                         'name' => old('name', $deletedEpicConflict['name']),
                         'start_date' => old('start_date'),
                         'end_date' => old('end_date'),
                         'project_id' => old('project_id'),
-                    ]"
-                    :create-label="__('Create a new epic')"
-                    :restore-label="__('Restore the deleted epic instead')"
-                    create-test="epic-conflict-create-new"
+                    ]" :create-label="__('Create a new epic')"
+                    :restore-label="__('Restore the deleted epic instead')" create-test="epic-conflict-create-new"
                     restore-test="epic-conflict-restore" />
             @endif
         @endif

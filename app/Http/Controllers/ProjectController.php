@@ -11,7 +11,6 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
-use Illuminate\Validation\ValidationException;
 use App\Support\Database\UniqueConstraintViolation;
 
 class ProjectController extends Controller
@@ -51,13 +50,7 @@ class ProjectController extends Controller
         try {
             Project::create($request->validated());
         } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            throw ValidationException::withMessages([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
+            UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
         return to_route('projects.index')->with('status', __('Project created successfully.'));
@@ -68,13 +61,7 @@ class ProjectController extends Controller
         try {
             $project->update($request->validated());
         } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            throw ValidationException::withMessages([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
+            UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
         return to_route('projects.index')->with('status', __('Project updated successfully.'));

@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
-use Illuminate\Validation\ValidationException;
 use App\Support\Database\UniqueConstraintViolation;
 
 class EpicController extends Controller
@@ -51,7 +50,7 @@ class EpicController extends Controller
         try {
             Epic::create($request->validated());
         } catch (QueryException $exception) {
-            $this->throwIfNotDuplicateName($exception);
+            UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
         return to_route('epics.index')->with('status', __('Epic created successfully.'));
@@ -62,7 +61,7 @@ class EpicController extends Controller
         try {
             $epic->update($request->validated());
         } catch (QueryException $exception) {
-            $this->throwIfNotDuplicateName($exception);
+            UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
         return to_route('epics.index')->with('status', __('Epic updated successfully.'));
@@ -74,19 +73,5 @@ class EpicController extends Controller
         $epic->delete();
 
         return to_route('epics.index')->with('status', __('Epic moved to trash.'));
-    }
-
-    /**
-     * @throws ValidationException
-     */
-    private function throwIfNotDuplicateName(QueryException $exception): never
-    {
-        if (! UniqueConstraintViolation::causedBy($exception)) {
-            throw $exception;
-        }
-
-        throw ValidationException::withMessages([
-            'name' => __('validation.unique', ['attribute' => __('Name')]),
-        ]);
     }
 }

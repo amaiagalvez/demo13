@@ -6,6 +6,8 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\EpicComment;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicTrashTest extends TestCase
@@ -87,5 +89,36 @@ class EpicTrashTest extends TestCase
             ->assertSessionHas('status', __('Epic restored successfully.'));
 
         $this->assertNotSoftDeleted($deletedEpic);
+    }
+
+    public function test_restore_returns_conflict_when_name_becomes_active_after_precheck(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Concurrent restore epic']);
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use ($deletedEpic, &$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'epics')
+                || ! in_array('Concurrent restore epic', $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Epic::factory()->for($deletedEpic->project)->create(['name' => 'Concurrent restore epic']);
+        });
+
+        $this->patch(route('epics.trash.restore', $deletedEpic->id))
+            ->assertRedirect(route('epics.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Epic cannot be restored while another active epic in the same project uses this name.'),
+            );
+
+        $this->assertSoftDeleted($deletedEpic);
+        $this->assertDatabaseHas('epics', ['name' => 'Concurrent restore epic', 'deleted_at' => null]);
     }
 }

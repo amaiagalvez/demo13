@@ -36,7 +36,7 @@ class ProjectCrudTest extends TestCase
         $this->get(route('projects.index'))
             ->assertOk()
             ->assertSee('project-create-button')
-            ->assertSee('project-edit-'.$project->id)
+            ->assertSee('project-edit-' . $project->id)
             ->assertSee('Website renewal')
             ->assertSee($customer->name);
 
@@ -68,7 +68,7 @@ class ProjectCrudTest extends TestCase
         $projects = Project::factory()->count(2)->for($customer)->create();
 
         $this->assertCount(2, $customer->projects);
-        $this->assertTrue($projects->every(fn (Project $project): bool => $project->customer->is($customer)));
+        $this->assertTrue($projects->every(fn(Project $project): bool => $project->customer->is($customer)));
     }
 
     public function test_database_rejects_duplicate_project_names(): void
