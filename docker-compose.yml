@@ -219,7 +219,7 @@ services:
             - 127.0.0.1:13306:3306
 
     laravel13-myadmin:
-        image: phpmyadmin:latest
+        image: phpmyadmin:5.2.3
         ports:
             - 127.0.0.1:4000:80
         environment:
@@ -230,7 +230,7 @@ services:
             - frontend
 
     mailhog:
-        image: mailhog/mailhog:latest
+        image: mailhog/mailhog:v1.0.1
         ports:
             - "127.0.0.1:${MAILHOG_PORT:-8025}:8025"
         networks:
