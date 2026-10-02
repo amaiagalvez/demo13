@@ -3,7 +3,7 @@
         "copilot"
     ],
     "cloud": false,
-    "guidelines": true,
+    "guidelines": false,
     "mcp": true,
     "nightwatch": false,
     "packages": [

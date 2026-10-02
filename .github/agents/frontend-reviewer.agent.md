@@ -41,7 +41,7 @@ Review accessibility/UX only when there is concrete evidence.
 
 Always follow:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Review mode is READ-ONLY.
 

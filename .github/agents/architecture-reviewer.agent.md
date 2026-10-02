@@ -34,7 +34,7 @@ Architecture must remain proportional to application complexity.
 
 Always follow:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Review mode is READ-ONLY.
 

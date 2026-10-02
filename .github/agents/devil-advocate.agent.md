@@ -43,7 +43,7 @@ Do not modify code.
 
 Always follow:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Review mode is READ-ONLY.
 

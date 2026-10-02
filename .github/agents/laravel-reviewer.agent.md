@@ -54,7 +54,7 @@ Do not treat alternative valid Laravel styles as defects.
 
 Always follow:
 
-.github/copilot-instructions.md
+.github/docs/review-rules.md
 
 Review mode is READ-ONLY.
 
