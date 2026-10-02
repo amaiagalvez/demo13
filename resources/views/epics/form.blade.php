@@ -41,7 +41,7 @@
         <flux:field>
             <flux:label>{{ __('End date') }}</flux:label>
             <flux:input type="date" name="end_date" x-model="form.end_date"
-                x-bind:min="form.start_date" data-test="epic-end-date" />
+                x-bind:min="window.addDays(form.start_date, 1)" data-test="epic-end-date" />
             <flux:description>{{ __('The end date requires a start date and must be after it.') }}
             </flux:description>
             <flux:error name="end_date" />
@@ -93,6 +93,11 @@
 
             <p x-show="form.comments.length === 0" class="text-sm text-zinc-500"
                 data-test="epic-comments-empty">{{ __('No comments yet.') }}</p>
+
+            <p x-show="form.commentsCount > form.comments.length" class="text-xs text-zinc-500"
+                data-test="epic-comments-truncated"
+                x-text="@js(__('Showing the latest :shown of :total comments.')).replace(':shown', form.comments.length).replace(':total', form.commentsCount)">
+            </p>
 
             <ul class="flex flex-col gap-3" x-show="form.comments.length > 0">
                 <template x-for="comment in form.comments" :key="comment.id">

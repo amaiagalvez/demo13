@@ -85,7 +85,7 @@ class CustomerCrudTest extends TestCase
 
         $this->postJson(route('customers.store'), ['name' => 'Deleted Select2 Customer'])
             ->assertStatus(409)
-            ->assertJsonPath('errors.name.0', __('A deleted customer already uses this name.'));
+            ->assertJsonPath('errors.name.0', __('A deleted customer already uses the name :name.', ['name' => 'Deleted Select2 Customer']));
 
         $this->assertDatabaseCount('customers', 1);
     }

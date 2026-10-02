@@ -13,6 +13,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class EpicListQuery extends ListQueryBase
 {
+    /**
+     * Only the most recent comments are embedded in each list row; the total is in comments_count.
+     */
+    public const RECENT_COMMENTS_LIMIT = 20;
+
     private const SEARCH_COLUMNS = [
         'epics.name',
         'epic_projects.name',
@@ -30,7 +35,11 @@ final class EpicListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withProjectAndCustomer(Epic::query())
-                ->with(['comments' => fn(HasMany $query) => $query->with('user')->latest()->latest('id')])
+                ->with(['comments' => fn (HasMany $query) => $query
+                    ->with('user')
+                    ->latest()
+                    ->latest('id')
+                    ->limit(self::RECENT_COMMENTS_LIMIT)])
                 ->orderByRaw('epics.start_date IS NULL')
                 ->orderBy('epics.start_date')
                 ->orderByRaw('epics.end_date IS NULL')

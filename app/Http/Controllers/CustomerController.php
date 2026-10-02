@@ -39,7 +39,7 @@ class CustomerController extends Controller
 
         if ($deletedCustomer && ! $request->boolean('reuse_deleted_name')) {
             if ($request->expectsJson()) {
-                $message = __('A deleted customer already uses this name.');
+                $message = __('A deleted customer already uses the name :name.', ['name' => $deletedCustomer->name]);
 
                 return response()->json([
                     'message' => $message,

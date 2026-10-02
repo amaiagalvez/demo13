@@ -3,7 +3,7 @@
     "Add a customer to your records.": "Ajoutez un client à vos dossiers.",
     "Cancel": "Annuler",
     "Clear": "Effacer",
-    "A deleted customer already uses this name.": "Un client supprimé utilise déjà ce nom.",
+    "A deleted customer already uses the name :name.": "Un client supprimé utilise déjà le nom :name.",
     "Create a new customer": "Créer un nouveau client",
     "Create customer": "Créer un client",
     "Created at": "Créé le",
@@ -46,7 +46,7 @@
     "Project restored successfully. No new project was created with the repeated name.": "Projet restauré avec succès. Aucun nouveau projet n'a été créé avec le nom répété.",
     "Project cannot be restored while another active project uses this name.": "Impossible de restaurer le projet : un autre projet actif utilise déjà ce nom.",
     "Project name already in trash": "Le nom du projet est déjà dans la corbeille",
-    "A deleted project already uses this name.": "Un projet supprimé utilise déjà le nom :name.",
+    "A deleted project already uses the name :name.": "Un projet supprimé utilise déjà le nom :name.",
     "Create a new project": "Créer un nouveau projet",
     "Restore the deleted project instead": "Restaurer plutôt le projet supprimé",
     "Project trash": "Corbeille des projets",
@@ -124,5 +124,6 @@
     "The epic will return to the active list.": "L’épopée reviendra dans la liste active.",
     "Unsaved epic changes are discarded when adding a comment.": "Les modifications non enregistrées de l’épopée sont perdues lors de l’ajout d’un commentaire.",
     "Update epic": "Mettre à jour l’épopée",
-    "Update the epic details.": "Mettez à jour les détails de l’épopée."
+    "Update the epic details.": "Mettez à jour les détails de l’épopée.",
+    "Showing the latest :shown of :total comments.": "Affichage des :shown commentaires les plus récents sur :total."
 }

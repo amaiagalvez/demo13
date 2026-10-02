@@ -38,7 +38,7 @@ class EpicCrudTest extends TestCase
         $this->get(route('epics.index'))
             ->assertOk()
             ->assertSee('epic-create-button')
-            ->assertSee('epic-edit-' . $epic->id)
+            ->assertSee('epic-edit-'.$epic->id)
             ->assertSee('Checkout flow')
             ->assertSee($project->name)
             ->assertSee($project->customer->name);
@@ -151,7 +151,7 @@ class EpicCrudTest extends TestCase
 
         $this->get(route('epics.index'))
             ->assertOk()
-            ->assertSeeInOrder(['epic-comments-count-' . $epic->id, '3']);
+            ->assertSeeInOrder(['epic-comments-count-'.$epic->id, '3']);
     }
 
     public function test_guests_are_redirected_to_login_from_the_epics_list(): void

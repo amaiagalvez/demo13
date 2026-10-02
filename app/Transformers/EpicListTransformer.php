@@ -28,14 +28,14 @@ class EpicListTransformer
                 'test' => 'epic-trash-link',
             ],
             'create' => true,
-            'rows' => collect($epics->items())->map(fn(Epic $epic): array => [
+            'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'actions' => [
                     [
                         'type' => 'form-modal',
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
-                        'test' => 'epic-edit-' . $epic->id,
+                        'test' => 'epic-edit-'.$epic->id,
                         'epic' => [
                             'id' => $epic->id,
                             'name' => $epic->name,
@@ -43,7 +43,8 @@ class EpicListTransformer
                             'end_date' => $epic->end_date?->toDateString() ?? '',
                             'project_id' => $epic->project_id,
                             'commentAction' => route('epics.comments.store', $epic),
-                            'comments' => $epic->comments->map(fn(EpicComment $comment): array => [
+                            'commentsCount' => (int) $epic->comments_count,
+                            'comments' => $epic->comments->map(fn (EpicComment $comment): array => [
                                 'id' => $comment->id,
                                 'author' => $comment->user?->name ?? __('Deleted user'),
                                 'writtenAt' => $comment->created_at->format('Y-m-d H:i'),
@@ -55,7 +56,7 @@ class EpicListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
-                        'test' => 'epic-delete-' . $epic->id,
+                        'test' => 'epic-delete-'.$epic->id,
                         'danger' => true,
                         'action' => route('epics.destroy', $epic),
                         'method' => 'DELETE',
@@ -88,14 +89,14 @@ class EpicListTransformer
                 'test' => null,
             ],
             'create' => false,
-            'rows' => collect($epics->items())->map(fn(Epic $epic): array => [
+            'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
                         'label' => __('Restore'),
                         'icon' => 'arrow-path',
-                        'test' => 'epic-restore-' . $epic->id,
+                        'test' => 'epic-restore-'.$epic->id,
                         'danger' => false,
                         'action' => route('epics.trash.restore', $epic->id),
                         'method' => 'PATCH',
@@ -107,7 +108,7 @@ class EpicListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete permanently'),
                         'icon' => 'trash',
-                        'test' => 'epic-force-delete-' . $epic->id,
+                        'test' => 'epic-force-delete-'.$epic->id,
                         'danger' => true,
                         'action' => route('epics.trash.destroy', $epic->id),
                         'method' => 'DELETE',

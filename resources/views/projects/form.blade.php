@@ -14,8 +14,8 @@
         <flux:field>
             <flux:label>{{ __('Name') }} <span class="text-red-600" aria-hidden="true">*</span>
             </flux:label>
-            <flux:input name="name" x-model="form.name" maxlength="255" required autofocus
-                data-test="project-name" />
+            <flux:input name="name" x-model="form.name" minlength="4" maxlength="255" required
+                autofocus data-test="project-name" />
             <flux:error name="name" />
         </flux:field>
         <flux:field>
@@ -25,9 +25,12 @@
                 data-test="project-start-date" />
             <flux:error name="start_date" />
         </flux:field>
-        <flux:input type="date" name="end_date" :label="__('End date')" x-model="form.end_date"
-            data-test="project-end-date" />
-        <flux:error name="end_date" />
+        <flux:field>
+            <flux:label>{{ __('End date') }}</flux:label>
+            <flux:input type="date" name="end_date" x-model="form.end_date"
+                x-bind:min="form.start_date" data-test="project-end-date" />
+            <flux:error name="end_date" />
+        </flux:field>
         <flux:field>
             <flux:label for="project-customer-id">{{ __('Customer') }}
                 <span class="text-red-600" aria-hidden="true">*</span>

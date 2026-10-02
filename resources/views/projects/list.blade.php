@@ -84,27 +84,8 @@
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-name-conflict' }))"
         @endif
         class="flex flex-col gap-6">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <flux:heading size="xl">{{ $list['title'] }}</flux:heading>
-                <flux:subheading>{{ $list['subtitle'] }}</flux:subheading>
-            </div>
-            <div class="flex items-center gap-2">
-                <flux:button :href="$list['navigation']['url']" variant="ghost"
-                    :icon="$list['navigation']['icon']" wire:navigate
-                    :data-test="$list['navigation']['test']">
-                    {{ $list['navigation']['label'] }}
-                </flux:button>
-                @if ($list['create'])
-                    <flux:modal.trigger name="project-form">
-                        <flux:button variant="primary" icon="plus" x-on:click="createProject()"
-                            data-test="project-create-button">
-                            {{ __('New project') }}
-                        </flux:button>
-                    </flux:modal.trigger>
-                @endif
-            </div>
-        </div>
+        <x-list.header :list="$list" prefix="project" :create-label="__('New project')"
+            create-click="createProject()" />
 
         @if ($list['create'] && $availableCustomers->isEmpty())
             <flux:callout icon="exclamation-triangle" variant="warning">
@@ -112,33 +93,9 @@
             </flux:callout>
         @endif
 
-        @if (session('status'))
-            <flux:callout icon="check-circle" variant="success" x-data="{ visible: true }"
-                x-init="setTimeout(() => visible = false, 10000)" x-show="visible" x-transition.opacity
-                data-test="project-status">{{ session('status') }}</flux:callout>
-        @endif
+        <x-list.flash prefix="project" />
 
-        @if (session('error'))
-            <flux:callout icon="exclamation-triangle" variant="danger" data-test="project-error">
-                {{ session('error') }}</flux:callout>
-        @endif
-
-        <form method="GET" action="{{ $list['search']['action'] }}"
-            class="flex w-full items-end gap-2 sm:max-w-xl">
-            <flux:input name="search" :label="__('Search')"
-                :placeholder="$list['search']['placeholder']" :value="$list['search']['value']"
-                maxlength="255" icon="magnifying-glass" data-test="project-search" />
-            <flux:button type="submit" variant="primary" icon="magnifying-glass"
-                data-test="project-search-submit">
-                {{ __('Search') }}
-            </flux:button>
-            @if ($list['search']['value'] !== '')
-                <flux:button :href="$list['search']['action']" variant="ghost" icon="x-mark"
-                    wire:navigate data-test="project-search-clear">
-                    {{ __('Clear') }}
-                </flux:button>
-            @endif
-        </form>
+        <x-list.search :search="$list['search']" prefix="project" />
 
         <div class="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
             <flux:table>
@@ -161,35 +118,8 @@
                             <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
                             <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
                             <flux:table.cell class="text-end">
-                                <div class="flex justify-end gap-2">
-                                    @foreach ($row['actions'] as $action)
-                                        @if ($action['type'] === 'form-modal')
-                                            <flux:modal.trigger name="project-form">
-                                                <flux:tooltip :content="$action['label']">
-                                                    <flux:button size="sm" variant="ghost"
-                                                        :icon="$action['icon']"
-                                                        :aria-label="$action['label']"
-                                                        x-on:click="editProject(JSON.parse($el.dataset.project))"
-                                                        data-project="{{ json_encode($action['project']) }}"
-                                                        :data-test="$action['test']" />
-                                                </flux:tooltip>
-                                            </flux:modal.trigger>
-                                        @else
-                                            <flux:modal.trigger name="project-confirm">
-                                                <flux:tooltip :content="$action['label']">
-                                                    <flux:button size="sm" variant="ghost"
-                                                        :icon="$action['icon']"
-                                                        :aria-label="$action['label']"
-                                                        :class="$action['danger'] ?? false ?
-                                                            'text-red-600' : ''"
-                                                        x-on:click="confirmAction(JSON.parse($el.dataset.action))"
-                                                        data-action="{{ json_encode($action) }}"
-                                                        :data-test="$action['test']" />
-                                                </flux:tooltip>
-                                            </flux:modal.trigger>
-                                        @endif
-                                    @endforeach
-                                </div>
+                                <x-list.row-actions :actions="$row['actions']" prefix="project"
+                                    payload-key="project" edit-handler="editProject" />
                             </flux:table.cell>
                         </flux:table.row>
                     @empty
@@ -220,7 +150,7 @@
                 <x-name-conflict-modal
                     name="project-name-conflict"
                     :title="__('Project name already in trash')"
-                    :message="__('A deleted project already uses this name.', ['name' => $deletedProjectConflict['name']])"
+                    :message="__('A deleted project already uses the name :name.', ['name' => $deletedProjectConflict['name']])"
                     :create-action="route('projects.store')"
                     :restore-action="route('projects.trash.restore', $deletedProjectConflict['id'])"
                     :create-fields="[
@@ -236,37 +166,6 @@
             @endif
         @endif
 
-        <flux:modal name="project-confirm" class="max-w-md">
-            <div class="flex flex-col gap-6">
-                <div>
-                    <flux:heading size="lg" x-text="confirmation.title"></flux:heading>
-                    <flux:text class="mt-2" x-text="confirmation.text"></flux:text>
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <flux:modal.close>
-                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                    </flux:modal.close>
-                    <form method="POST" x-bind:action="confirmation.action"
-                        x-data="{ isSubmitting: false }"
-                        x-on:submit="if (isSubmitting) $event.preventDefault(); isSubmitting = true">
-                        @csrf
-                        <input type="hidden" name="_method" x-bind:value="confirmation.method">
-                        <template x-if="confirmation.danger">
-                            <flux:button variant="danger" type="submit"
-                                x-bind:disabled="isSubmitting" data-test="project-confirm-submit">
-                                <span x-text="confirmation.label"></span>
-                            </flux:button>
-                        </template>
-                        <template x-if="!confirmation.danger">
-                            <flux:button variant="primary" type="submit"
-                                x-bind:disabled="isSubmitting" data-test="project-confirm-submit">
-                                <span x-text="confirmation.label"></span>
-                            </flux:button>
-                        </template>
-                    </form>
-                </div>
-            </div>
-        </flux:modal>
+        <x-list.confirm-modal prefix="project" />
     </div>
 </x-layouts::app>

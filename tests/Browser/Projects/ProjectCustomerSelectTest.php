@@ -14,8 +14,8 @@ class ProjectCustomerSelectTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $executionId = Str::uuid()->toString();
-        $existingCustomerName = 'Northwind ' . $executionId;
-        $newCustomerName = 'Dusk Select2 ' . $executionId;
+        $existingCustomerName = 'Northwind '.$executionId;
+        $newCustomerName = 'Dusk Select2 '.$executionId;
         Customer::factory()->create(['name' => $existingCustomerName]);
 
         $this->browse(function (Browser $browser) use ($user, $existingCustomerName, $newCustomerName): void {
@@ -40,11 +40,11 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 )
                 ->assertSeeIn(
                     'dialog[open] .select2-results',
-                    'Create customer: ' . $newCustomerName,
+                    'Create customer: '.$newCustomerName,
                 )
                 ->click('dialog[open] .select2-results__option--selectable')
                 ->waitUntil(
-                    'document.querySelector("#project-customer-id option:checked")?.text === ' . json_encode($newCustomerName),
+                    'document.querySelector("#project-customer-id option:checked")?.text === '.json_encode($newCustomerName),
                     10,
                 )
                 ->type('dialog[open] [data-test="project-name"]', 'Select2 project')

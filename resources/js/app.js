@@ -44,6 +44,21 @@ export function clearForm(form) {
     });
 }
 
+/**
+ * Shift a Y-m-d date by a number of days; returns '' for an empty or invalid date.
+ */
+export function addDays(isoDate, days) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate ?? '');
+
+    if (!match) {
+        return '';
+    }
+
+    const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + days));
+
+    return date.toISOString().slice(0, 10);
+}
+
 window.initializeProjectCustomerSelect = (element) => {
     const select = $(element);
     const root = document.querySelector('[data-project-form-root]');
@@ -144,3 +159,4 @@ projectCustomerSelectObserver.observe(document.documentElement, {
 initializeProjectCustomerSelects();
 
 window.clearForm = clearForm;
+window.addDays = addDays;

@@ -28,11 +28,7 @@ class ProjectListTransformer
             ],
             'create' => true,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'customer' => $project->customer->name,
-                'startDate' => $project->start_date->format('Y-m-d'),
-                'endDate' => $project->end_date?->format('Y-m-d') ?? '',
+                ...$this->columns($project),
                 'actions' => [
                     [
                         'type' => 'form-modal',
@@ -85,11 +81,7 @@ class ProjectListTransformer
             ],
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'customer' => $project->customer->name,
-                'startDate' => $project->start_date->format('Y-m-d'),
-                'endDate' => $project->end_date?->format('Y-m-d') ?? '',
+                ...$this->columns($project),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -117,6 +109,20 @@ class ProjectListTransformer
                     ],
                 ],
             ])->all(),
+        ];
+    }
+
+    /**
+     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string}
+     */
+    private function columns(Project $project): array
+    {
+        return [
+            'id' => $project->id,
+            'name' => $project->name,
+            'customer' => $project->customer->name,
+            'startDate' => $project->start_date->format('Y-m-d'),
+            'endDate' => $project->end_date?->format('Y-m-d') ?? '',
         ];
     }
 

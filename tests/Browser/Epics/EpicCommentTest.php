@@ -13,15 +13,15 @@ class EpicCommentTest extends DuskTestCase
     public function test_comment_added_from_the_edit_drawer_is_shown_after_reopening_it(): void
     {
         $user = User::factory()->create(['name' => 'Dusk commenter']);
-        $epicName = 'Dusk epic ' . Str::uuid()->toString();
+        $epicName = 'Dusk epic '.Str::uuid()->toString();
         $epic = Epic::factory()->create(['name' => $epicName]);
-        $commentBody = 'Dusk comment ' . Str::uuid()->toString();
+        $commentBody = 'Dusk comment '.Str::uuid()->toString();
 
         $this->browse(function (Browser $browser) use ($user, $epic, $epicName, $commentBody): void {
             $browser->loginAs($user)
-                ->visit('/epics?search=' . urlencode($epicName))
-                ->assertSeeIn('[data-test="epic-comments-count-' . $epic->id . '"]', '0')
-                ->click('[data-test="epic-edit-' . $epic->id . '"]')
+                ->visit('/epics?search='.urlencode($epicName))
+                ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '0')
+                ->click('[data-test="epic-edit-'.$epic->id.'"]')
                 ->waitFor('dialog[open] [data-test="epic-comments"]')
                 ->assertSeeIn('dialog[open]', __('No comments yet.'))
                 ->type('dialog[open] [data-test="epic-comment-body"]', $commentBody)
@@ -30,7 +30,7 @@ class EpicCommentTest extends DuskTestCase
                 ->assertInputValue('dialog[open] [data-test="epic-name"]', $epicName)
                 ->assertSeeIn('dialog[open] [data-test="epic-comment"]', $commentBody)
                 ->assertSeeIn('dialog[open] [data-test="epic-comment"]', 'Dusk commenter')
-                ->assertSeeIn('[data-test="epic-comments-count-' . $epic->id . '"]', '1');
+                ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '1');
         });
 
         $this->assertDatabaseHas('epic_comments', [

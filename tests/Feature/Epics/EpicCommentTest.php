@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\EpicComment;
+use App\Queries\Epics\EpicListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCommentTest extends TestCase
@@ -46,6 +47,30 @@ class EpicCommentTest extends TestCase
             ->assertSee('Visible comment')
             ->assertSee('Ane Author')
             ->assertSee('2026-10-01 09:30');
+    }
+
+    public function test_list_embeds_only_the_most_recent_comments_of_each_epic_but_counts_all(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $limit = EpicListQuery::RECENT_COMMENTS_LIMIT;
+        $epic = Epic::factory()->create();
+        $otherEpic = Epic::factory()->create();
+        EpicComment::factory()->for($epic)->create([
+            'body' => 'Oldest hidden comment',
+            'created_at' => now()->subDays(2),
+        ]);
+        EpicComment::factory()->count($limit)->for($epic)->create(['created_at' => now()->subDay()]);
+        EpicComment::factory()->for($otherEpic)->create(['body' => 'Other epic comment']);
+
+        $response = $this->get(route('epics.index'))->assertOk();
+
+        $payload = collect($response->viewData('list')['rows'])
+            ->firstWhere('id', $epic->id)['actions'][0]['epic'];
+        $this->assertCount($limit, $payload['comments']);
+        $this->assertSame($limit + 1, $payload['commentsCount']);
+        $response->assertDontSee('Oldest hidden comment')
+            ->assertSee('Other epic comment')
+            ->assertSee('epic-comments-truncated');
     }
 
     public function test_comment_body_is_required(): void

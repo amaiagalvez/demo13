@@ -19,6 +19,7 @@
             'end_date' => old('end_date', ''),
             'project_id' => old('project_id', ''),
             'comments' => $editingEpicPayload['comments'] ?? [],
+            'commentsCount' => $editingEpicPayload['commentsCount'] ?? 0,
             'commentAction' => $editingEpicPayload['commentAction'] ?? '',
             'commentBody' => '',
             'context' => $editingEpic ? old('_epic_form') : 'create',
@@ -56,6 +57,7 @@
                 end_date: '',
                 project_id: '',
                 comments: [],
+                commentsCount: 0,
                 commentAction: '',
                 commentBody: '',
                 context: 'create',
@@ -96,27 +98,8 @@
         @elseif ($deletedEpicConflict)
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))" @endif
         class="flex flex-col gap-6">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <flux:heading size="xl">{{ $list['title'] }}</flux:heading>
-                <flux:subheading>{{ $list['subtitle'] }}</flux:subheading>
-            </div>
-            <div class="flex items-center gap-2">
-                <flux:button :href="$list['navigation']['url']" variant="ghost"
-                    :icon="$list['navigation']['icon']" wire:navigate
-                    :data-test="$list['navigation']['test']">
-                    {{ $list['navigation']['label'] }}
-                </flux:button>
-                @if ($list['create'])
-                    <flux:modal.trigger name="epic-form">
-                        <flux:button variant="primary" icon="plus" x-on:click="createEpic()"
-                            data-test="epic-create-button">
-                            {{ __('New epic') }}
-                        </flux:button>
-                    </flux:modal.trigger>
-                @endif
-            </div>
-        </div>
+        <x-list.header :list="$list" prefix="epic" :create-label="__('New epic')"
+            create-click="createEpic()" />
 
         @if ($list['create'] && $availableProjects->isEmpty())
             <flux:callout icon="exclamation-triangle" variant="warning">
@@ -124,33 +107,9 @@
             </flux:callout>
         @endif
 
-        @if (session('status'))
-            <flux:callout icon="check-circle" variant="success" x-data="{ visible: true }"
-                x-init="setTimeout(() => visible = false, 10000)" x-show="visible" x-transition.opacity
-                data-test="epic-status">{{ session('status') }}</flux:callout>
-        @endif
+        <x-list.flash prefix="epic" />
 
-        @if (session('error'))
-            <flux:callout icon="exclamation-triangle" variant="danger" data-test="epic-error">
-                {{ session('error') }}</flux:callout>
-        @endif
-
-        <form method="GET" action="{{ $list['search']['action'] }}"
-            class="flex w-full items-end gap-2 sm:max-w-xl">
-            <flux:input name="search" :label="__('Search')"
-                :placeholder="$list['search']['placeholder']" :value="$list['search']['value']"
-                maxlength="255" icon="magnifying-glass" data-test="epic-search" />
-            <flux:button type="submit" variant="primary" icon="magnifying-glass"
-                data-test="epic-search-submit">
-                {{ __('Search') }}
-            </flux:button>
-            @if ($list['search']['value'] !== '')
-                <flux:button :href="$list['search']['action']" variant="ghost" icon="x-mark"
-                    wire:navigate data-test="epic-search-clear">
-                    {{ __('Clear') }}
-                </flux:button>
-            @endif
-        </form>
+        <x-list.search :search="$list['search']" prefix="epic" />
 
         <div class="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
             <flux:table>
@@ -182,35 +141,8 @@
                                 </flux:badge>
                             </flux:table.cell>
                             <flux:table.cell class="text-end">
-                                <div class="flex justify-end gap-2">
-                                    @foreach ($row['actions'] as $action)
-                                        @if ($action['type'] === 'form-modal')
-                                            <flux:modal.trigger name="epic-form">
-                                                <flux:tooltip :content="$action['label']">
-                                                    <flux:button size="sm" variant="ghost"
-                                                        :icon="$action['icon']"
-                                                        :aria-label="$action['label']"
-                                                        x-on:click="editEpic(JSON.parse($el.dataset.epic))"
-                                                        data-epic="{{ json_encode($action['epic']) }}"
-                                                        :data-test="$action['test']" />
-                                                </flux:tooltip>
-                                            </flux:modal.trigger>
-                                        @else
-                                            <flux:modal.trigger name="epic-confirm">
-                                                <flux:tooltip :content="$action['label']">
-                                                    <flux:button size="sm" variant="ghost"
-                                                        :icon="$action['icon']"
-                                                        :aria-label="$action['label']"
-                                                        :class="$action['danger'] ?? false ?
-                                                            'text-red-600' : ''"
-                                                        x-on:click="confirmAction(JSON.parse($el.dataset.action))"
-                                                        data-action="{{ json_encode($action) }}"
-                                                        :data-test="$action['test']" />
-                                                </flux:tooltip>
-                                            </flux:modal.trigger>
-                                        @endif
-                                    @endforeach
-                                </div>
+                                <x-list.row-actions :actions="$row['actions']" prefix="epic"
+                                    payload-key="epic" edit-handler="editEpic" />
                             </flux:table.cell>
                         </flux:table.row>
                     @empty
@@ -252,37 +184,6 @@
             @endif
         @endif
 
-        <flux:modal name="epic-confirm" class="max-w-md">
-            <div class="flex flex-col gap-6">
-                <div>
-                    <flux:heading size="lg" x-text="confirmation.title"></flux:heading>
-                    <flux:text class="mt-2" x-text="confirmation.text"></flux:text>
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <flux:modal.close>
-                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                    </flux:modal.close>
-                    <form method="POST" x-bind:action="confirmation.action"
-                        x-data="{ isSubmitting: false }"
-                        x-on:submit="if (isSubmitting) $event.preventDefault(); isSubmitting = true">
-                        @csrf
-                        <input type="hidden" name="_method" x-bind:value="confirmation.method">
-                        <template x-if="confirmation.danger">
-                            <flux:button variant="danger" type="submit"
-                                x-bind:disabled="isSubmitting" data-test="epic-confirm-submit">
-                                <span x-text="confirmation.label"></span>
-                            </flux:button>
-                        </template>
-                        <template x-if="!confirmation.danger">
-                            <flux:button variant="primary" type="submit"
-                                x-bind:disabled="isSubmitting" data-test="epic-confirm-submit">
-                                <span x-text="confirmation.label"></span>
-                            </flux:button>
-                        </template>
-                    </form>
-                </div>
-            </div>
-        </flux:modal>
+        <x-list.confirm-modal prefix="epic" />
     </div>
 </x-layouts::app>

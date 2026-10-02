@@ -3,7 +3,7 @@
     "Add a customer to your records.": "Gehitu bezero bat zure erregistroetara.",
     "Cancel": "Utzi",
     "Clear": "Garbitu",
-    "A deleted customer already uses this name.": "Ezabatutako bezero batek izen hau erabiltzen du.",
+    "A deleted customer already uses the name :name.": "Ezabatutako bezero batek :name izena erabiltzen du.",
     "Create a new customer": "Sortu bezero berria",
     "Create customer": "Sortu bezeroa",
     "Created at": "Sortze-data",
@@ -46,7 +46,7 @@
     "Project restored successfully. No new project was created with the repeated name.": "Proiektua behar bezala berreskuratu da. Ez da izen errepikatuarekin beste proiekturik sortu.",
     "Project cannot be restored while another active project uses this name.": "Ezin da proiektua berreskuratu beste proiektu aktibo batek izen hau erabiltzen badu.",
     "Project name already in trash": "Proiektuaren izena zakarrontzian dago",
-    "A deleted project already uses this name.": "Ezabatutako proiektu batek :name izena erabiltzen du.",
+    "A deleted project already uses the name :name.": "Ezabatutako proiektu batek :name izena erabiltzen du.",
     "Create a new project": "Sortu proiektu berri bat",
     "Restore the deleted project instead": "Berreskuratu ezabatutako proiektua",
     "Project trash": "Proiektuen zakarrontzia",
@@ -124,5 +124,6 @@
     "The epic will return to the active list.": "Epika zerrenda aktibora itzuliko da.",
     "Unsaved epic changes are discarded when adding a comment.": "Iruzkin bat gehitzean, epikaren gorde gabeko aldaketak baztertu egiten dira.",
     "Update epic": "Eguneratu epika",
-    "Update the epic details.": "Eguneratu epikaren datuak."
+    "Update the epic details.": "Eguneratu epikaren datuak.",
+    "Showing the latest :shown of :total comments.": ":total iruzkinetatik azken :shown erakusten dira."
 }

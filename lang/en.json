@@ -3,7 +3,7 @@
     "Add a customer to your records.": "Add a customer to your records.",
     "Cancel": "Cancel",
     "Clear": "Clear",
-    "A deleted customer already uses this name.": "A deleted customer already uses this name.",
+    "A deleted customer already uses the name :name.": "A deleted customer already uses the name :name.",
     "Create a new customer": "Create a new customer",
     "Create customer": "Create customer",
     "Created at": "Created at",
@@ -46,7 +46,7 @@
     "Project restored successfully. No new project was created with the repeated name.": "Project restored successfully. No new project was created with the repeated name.",
     "Project cannot be restored while another active project uses this name.": "Project cannot be restored while another active project uses this name.",
     "Project name already in trash": "Project name already in trash",
-    "A deleted project already uses this name.": "A deleted project already uses the name :name.",
+    "A deleted project already uses the name :name.": "A deleted project already uses the name :name.",
     "Create a new project": "Create a new project",
     "Restore the deleted project instead": "Restore the deleted project instead",
     "Project trash": "Project trash",
@@ -124,5 +124,6 @@
     "The epic will return to the active list.": "The epic will return to the active list.",
     "Unsaved epic changes are discarded when adding a comment.": "Unsaved epic changes are discarded when adding a comment.",
     "Update epic": "Update epic",
-    "Update the epic details.": "Update the epic details."
+    "Update the epic details.": "Update the epic details.",
+    "Showing the latest :shown of :total comments.": "Showing the latest :shown of :total comments."
 }

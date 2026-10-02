@@ -115,7 +115,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertSee('project-name-conflict')
             ->assertSee('project-conflict-create-new')
             ->assertSee('project-conflict-restore')
-            ->assertSee(__('A deleted project already uses this name.', ['name' => $deletedProject->name]));
+            ->assertSee(__('A deleted project already uses the name :name.', ['name' => $deletedProject->name]));
 
         $this->post(route('projects.store'), [
             'name' => $deletedProject->name,

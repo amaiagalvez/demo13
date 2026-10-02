@@ -40,4 +40,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('epics', EpicController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

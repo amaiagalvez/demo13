@@ -23,7 +23,7 @@ class EpicFactory extends Factory
         return [
             'name' => fake()->unique()->sentence(3),
             'start_date' => $startDate,
-            'end_date' => fake()->dateTimeBetween($startDate . ' +1 day', '+1 year')->format('Y-m-d'),
+            'end_date' => fake()->dateTimeBetween($startDate.' +1 day', '+1 year')->format('Y-m-d'),
             'project_id' => Project::factory(),
         ];
     }

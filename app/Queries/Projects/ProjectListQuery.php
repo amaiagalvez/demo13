@@ -4,6 +4,7 @@ namespace App\Queries\Projects;
 
 use App\Models\Project;
 use App\Queries\ListQueryBase;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -11,28 +12,27 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 final class ProjectListQuery extends ListQueryBase
 {
+    private const SEARCH_COLUMNS = [
+        'projects.name',
+        'project_customers.name',
+        'projects.start_date',
+        'projects.end_date',
+    ];
+
     /**
      * @return LengthAwarePaginator<int, Project>
      */
     public function active(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            Project::query()
-                ->with('customer')
-                ->join('customers as project_customers', 'project_customers.id', '=', 'projects.customer_id')
-                ->select('projects.*')
+            $this->withCustomer(Project::query())
                 ->orderBy('projects.start_date')
                 ->orderBy('projects.end_date')
                 ->orderBy('project_customers.name')
                 ->orderBy('projects.name')
                 ->orderBy('projects.id'),
             $search,
-            searchColumns: [
-                'projects.name',
-                'project_customers.name',
-                'projects.start_date',
-                'projects.end_date',
-            ],
+            searchColumns: self::SEARCH_COLUMNS,
         );
     }
 
@@ -42,19 +42,22 @@ final class ProjectListQuery extends ListQueryBase
     public function trashed(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            Project::onlyTrashed()
-                ->with('customer')
-                ->join('customers as project_customers', 'project_customers.id', '=', 'projects.customer_id')
-                ->select('projects.*')
+            $this->withCustomer(Project::onlyTrashed())
                 ->latest('projects.deleted_at'),
             $search,
-            searchColumns: [
-                'projects.name',
-                'project_customers.name',
-                'projects.start_date',
-                'projects.end_date',
-                'projects.deleted_at',
-            ],
+            searchColumns: [...self::SEARCH_COLUMNS, 'projects.deleted_at'],
         );
+    }
+
+    /**
+     * @param  Builder<Project>  $query
+     * @return Builder<Project>
+     */
+    private function withCustomer(Builder $query): Builder
+    {
+        return $query
+            ->with('customer')
+            ->join('customers as project_customers', 'project_customers.id', '=', 'projects.customer_id')
+            ->select('projects.*');
     }
 }

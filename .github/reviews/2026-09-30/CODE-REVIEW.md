@@ -213,3 +213,22 @@ MAINT-001, MAINT-002, CONS-001, CONS-002, CONS-003.
 - TEST-001: fixed. Added store/update concurrency tests in `tests/Feature/Epics/EpicCrudTest.php` and the
   restore concurrency test in `tests/Feature/Epics/EpicTrashTest.php`.
 - Commands: `vendor/bin/pint --dirty --format agent` (fixed), `php artisan test --compact` → 153 passed (571 assertions).
+
+### Second round (pending findings)
+
+- CONS-003: fixed. Keys renamed to `A deleted customer|project already uses the name :name.` in the 4 locales;
+  usages and tests updated. New `tests/Unit/Translations/TranslationFilesTest.php` checks key parity and
+  `:placeholder` preservation across locales.
+- CONS-002: fixed. Project form: `minlength="4"` on name, end date wrapped in `flux:field` with
+  `x-bind:min="form.start_date"`. Epic form: end date `min` = start + 1 day via new `addDays()` in
+  `resources/js/app.js` (covered by `tests/Browser/Epics/EpicFormTest.php`).
+- CONS-001: fixed. `ProjectListQuery` uses `SEARCH_COLUMNS` + `withCustomer()`; `ProjectListTransformer`
+  shares `columns()` between active and trash rows.
+- PERF-INFO-001 (option B): `EpicListQuery::RECENT_COMMENTS_LIMIT = 20` limits embedded comments; payload adds
+  `commentsCount` and the form shows "Showing the latest :shown of :total comments." when truncated.
+- MAINT-001: fixed. Anonymous components in `resources/views/components/list/` (`header`, `flash`, `search`,
+  `row-actions`, `confirm-modal`) replace the duplicated blocks in the 3 list views; `data-test` values unchanged.
+  Row actions now pass the edit payload through `data-payload` instead of `data-customer|project|epic`.
+- Commands: `npm run build`; `vendor/bin/pint --dirty --format agent` (passed); `php artisan test --compact` →
+  156 passed (601 assertions); Dusk Epics 2 passed, Customers 7 passed, Projects 1 failed
+  (`ProjectCustomerSelectTest` expects English "Create customer:" while `APP_LOCALE=eu`; pre-existing, untouched).

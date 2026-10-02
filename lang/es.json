@@ -3,7 +3,7 @@
     "Add a customer to your records.": "Añade un cliente a tus registros.",
     "Cancel": "Cancelar",
     "Clear": "Limpiar",
-    "A deleted customer already uses this name.": "Un cliente eliminado ya usa este nombre.",
+    "A deleted customer already uses the name :name.": "Un cliente eliminado ya usa el nombre :name.",
     "Create a new customer": "Crear un cliente nuevo",
     "Create customer": "Crear cliente",
     "Created at": "Creado el",
@@ -46,7 +46,7 @@
     "Project restored successfully. No new project was created with the repeated name.": "Proyecto restaurado correctamente. No se ha creado otro proyecto con el nombre repetido.",
     "Project cannot be restored while another active project uses this name.": "No se puede restaurar el proyecto porque otro proyecto activo ya usa este nombre.",
     "Project name already in trash": "El nombre del proyecto ya está en la papelera",
-    "A deleted project already uses this name.": "Un proyecto eliminado ya usa el nombre :name.",
+    "A deleted project already uses the name :name.": "Un proyecto eliminado ya usa el nombre :name.",
     "Create a new project": "Crear un proyecto nuevo",
     "Restore the deleted project instead": "Restaurar el proyecto eliminado",
     "Project trash": "Papelera de proyectos",
@@ -124,5 +124,6 @@
     "The epic will return to the active list.": "La épica volverá a la lista activa.",
     "Unsaved epic changes are discarded when adding a comment.": "Al añadir un comentario se descartan los cambios no guardados de la épica.",
     "Update epic": "Actualizar épica",
-    "Update the epic details.": "Actualiza los datos de la épica."
+    "Update the epic details.": "Actualiza los datos de la épica.",
+    "Showing the latest :shown of :total comments.": "Se muestran los :shown comentarios más recientes de :total."
 }
