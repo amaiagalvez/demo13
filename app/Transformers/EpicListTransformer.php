@@ -135,7 +135,7 @@ class EpicListTransformer
                 'label' => __('Epics'),
                 'url' => route('epics.index'),
                 'icon' => 'arrow-left',
-                'test' => null,
+                'test' => 'epic-list-link',
             ],
             'create' => false,
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [

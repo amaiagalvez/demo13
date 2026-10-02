@@ -132,7 +132,7 @@ class ProjectListTransformer
                 'label' => __('Projects'),
                 'url' => route('projects.index'),
                 'icon' => 'arrow-left',
-                'test' => null,
+                'test' => 'project-list-link',
             ],
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [

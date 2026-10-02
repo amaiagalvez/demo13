@@ -128,7 +128,7 @@ class CustomerListTransformer
                 'label' => __('Customers'),
                 'url' => route('customers.index'),
                 'icon' => 'arrow-left',
-                'test' => null,
+                'test' => 'customer-list-link',
             ],
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
