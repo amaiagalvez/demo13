@@ -31,4 +31,23 @@ class ListSearchFragmentTest extends TestCase
                 ->assertDontSee('<!DOCTYPE html>');
         }
     }
+
+    public function test_current_list_breadcrumb_links_to_the_full_list_url(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        foreach ([
+            'customers.index',
+            'customers.trash.index',
+            'projects.index',
+            'projects.trash.index',
+            'epics.index',
+            'epics.trash.index',
+        ] as $route) {
+            $url = route($route, ['search' => 'reload-check']);
+
+            $this->get($url)
+                ->assertSee('href="'.$url.'"', false);
+        }
+    }
 }

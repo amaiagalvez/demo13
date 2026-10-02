@@ -14,6 +14,24 @@ class CustomerTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->travelTo('2026-10-02 12:00:00');
+        $customer = Customer::factory()->create([
+            'name' => 'Customer with dates',
+            'created_at' => '2026-01-03 09:00:00',
+        ]);
+        $activeResponse = $this->get(route('customers.index'));
+        $customer->delete();
+
+        $response = $this->get(route('customers.trash.index'));
+
+        $activeResponse->assertDontSee(__('Deleted at'));
+        $response->assertSeeInOrder([__('Name'), __('Created at'), __('Deleted at'), __('Actions')])
+            ->assertSeeInOrder(['Customer with dates', '2026-01-03', '2026-10-02']);
+    }
+
     public function test_trash_only_lists_deleted_customers(): void
     {
         $this->actingAs(User::factory()->create());

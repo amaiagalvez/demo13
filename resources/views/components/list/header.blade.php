@@ -13,9 +13,13 @@
             <flux:breadcrumbs.item :href="$list['navigation']['url']" wire:navigate>
                 {{ $list['resource'] }}
             </flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ __('Trash') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="request()->fullUrl()">
+                {{ __('Trash') }}
+            </flux:breadcrumbs.item>
         @else
-            <flux:breadcrumbs.item>{{ $list['resource'] }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="request()->fullUrl()">
+                {{ $list['resource'] }}
+            </flux:breadcrumbs.item>
         @endif
     </flux:breadcrumbs>
 

@@ -43,7 +43,8 @@ final class ProjectListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withCustomer(Project::onlyTrashed())
-                ->latest('projects.deleted_at'),
+                ->latest('projects.deleted_at')
+                ->orderBy('projects.id'),
             $search,
             searchColumns: [...self::SEARCH_COLUMNS, 'projects.deleted_at'],
         );

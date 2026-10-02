@@ -14,6 +14,48 @@ class EpicTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->travelTo('2026-10-02 12:00:00');
+        $epic = Epic::factory()->create([
+            'name' => 'Epic with dates',
+            'start_date' => '2026-01-03',
+            'end_date' => '2026-08-04',
+        ]);
+        EpicComment::factory()->for($epic)->create();
+        $activeResponse = $this->get(route('epics.index'));
+        $epic->delete();
+
+        $response = $this->get(route('epics.trash.index'));
+
+        $activeResponse->assertDontSee(__('Deleted at'));
+        $response->assertSeeInOrder([
+            __('Name'), __('Project'), __('Customer'), __('Start date'), __('End date'),
+            __('Comments'), __('Deleted at'), __('Actions'),
+        ])->assertSeeInOrder([
+            'Epic with dates', $epic->project->name, $epic->project->customer->name,
+            '2026-01-03', '2026-08-04', '2026-10-02',
+        ]);
+        $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"', false);
+    }
+
+    public function test_trash_orders_by_deletion_timestamp_descending_then_id_ascending(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->travelTo('2026-10-02 12:00:00');
+        $olderEpic = Epic::factory()->trashed()->create(['name' => 'Older deleted epic']);
+        $newerEpic = Epic::factory()->trashed()->create(['name' => 'Newer deleted epic']);
+        $tiedEpic = Epic::factory()->trashed()->create(['name' => 'Tied deleted epic']);
+        $olderEpic->forceFill(['deleted_at' => now()->subHour()])->saveQuietly();
+
+        $response = $this->get(route('epics.trash.index'));
+
+        $response->assertSeeInOrder([
+            $newerEpic->name, $tiedEpic->name, $olderEpic->name,
+        ]);
+    }
+
     public function test_deleted_epics_can_be_restored_or_permanently_deleted(): void
     {
         $this->actingAs(User::factory()->create());

@@ -14,6 +14,26 @@ class ProjectTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->travelTo('2026-10-02 12:00:00');
+        $project = Project::factory()->create([
+            'name' => 'Project with dates',
+            'start_date' => '2026-01-03',
+            'end_date' => '2026-08-04',
+        ]);
+        $activeResponse = $this->get(route('projects.index'));
+        $project->delete();
+
+        $response = $this->get(route('projects.trash.index'));
+
+        $activeResponse->assertDontSee(__('Deleted at'));
+        $response->assertSeeInOrder([
+            __('Name'), __('Customer'), __('Start date'), __('End date'), __('Deleted at'), __('Actions'),
+        ])->assertSeeInOrder(['Project with dates', $project->customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
+    }
+
     public function test_deleted_projects_can_be_restored_or_permanently_deleted(): void
     {
         $this->actingAs(User::factory()->create());
@@ -82,15 +102,17 @@ class ProjectTrashTest extends TestCase
     public function test_trash_lists_most_recently_deleted_projects_first(): void
     {
         $this->actingAs(User::factory()->create());
+        $this->travelTo('2026-10-02 12:00:00');
         $olderProject = Project::factory()->trashed()->create(['name' => 'Older deleted project']);
         $newerProject = Project::factory()->trashed()->create(['name' => 'Newer deleted project']);
-        $olderProject->forceFill(['deleted_at' => now()->subDay()])->saveQuietly();
+        $tiedProject = Project::factory()->trashed()->create(['name' => 'Tied deleted project']);
+        $olderProject->forceFill(['deleted_at' => now()->subHour()])->saveQuietly();
 
-        $this->get(route('projects.trash.index'))
-            ->assertSeeInOrder([
-                'Newer deleted project',
-                'Older deleted project',
-            ]);
+        $response = $this->get(route('projects.trash.index'));
+
+        $response->assertSeeInOrder([
+            $newerProject->name, $tiedProject->name, $olderProject->name,
+        ]);
     }
 
     public function test_project_cannot_be_restored_when_an_active_project_uses_its_name(): void

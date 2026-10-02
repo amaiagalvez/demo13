@@ -83,6 +83,9 @@
                 <flux:table.columns>
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
                     <flux:table.column>{{ $list['dateHeading'] }}</flux:table.column>
+                    @if (!$list['create'])
+                        <flux:table.column>{{ __('Deleted at') }}</flux:table.column>
+                    @endif
                     <flux:table.column class="text-end">
                         <span class="sr-only">{{ __('Actions') }}</span>
                     </flux:table.column>
@@ -95,6 +98,9 @@
                             <flux:table.cell class="font-medium">{{ $row['name'] }}
                             </flux:table.cell>
                             <flux:table.cell>{{ $row['date'] }}</flux:table.cell>
+                            @if (!$list['create'])
+                                <flux:table.cell>{{ $row['deletedAt'] }}</flux:table.cell>
+                            @endif
                             <flux:table.cell class="text-end">
                                 <x-list.row-actions :actions="$row['actions']" prefix="customer"
                                     payload-key="customer" edit-handler="editCustomer" />
@@ -102,7 +108,7 @@
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="3" class="py-8 text-center text-zinc-500">
+                            <flux:table.cell :colspan="$list['create'] ? 3 : 4" class="py-8 text-center text-zinc-500">
                                 <div class="flex flex-col items-center gap-3 px-4 py-4">
                                     <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
                                         aria-hidden="true" />

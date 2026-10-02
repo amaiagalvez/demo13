@@ -29,7 +29,7 @@ final class CustomerListQuery extends ListQueryBase
     public function trashed(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            Customer::onlyTrashed()->latest('deleted_at'),
+            Customer::onlyTrashed()->latest('deleted_at')->orderBy('id'),
             $search,
             searchColumns: ['name', 'deleted_at'],
         );

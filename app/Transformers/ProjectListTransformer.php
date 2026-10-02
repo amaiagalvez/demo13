@@ -81,6 +81,7 @@ class ProjectListTransformer
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
+                'deletedAt' => $project->deleted_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',

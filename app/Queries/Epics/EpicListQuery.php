@@ -60,7 +60,8 @@ final class EpicListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withProjectAndCustomer(Epic::onlyTrashed())
-                ->latest('epics.deleted_at'),
+                ->latest('epics.deleted_at')
+                ->orderBy('epics.id'),
             $search,
             searchColumns: [...self::SEARCH_COLUMNS, 'epics.deleted_at'],
         );

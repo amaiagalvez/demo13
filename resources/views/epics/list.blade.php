@@ -121,6 +121,9 @@
                     <flux:table.column>{{ __('Start date') }}</flux:table.column>
                     <flux:table.column>{{ __('End date') }}</flux:table.column>
                     <flux:table.column>{{ __('Comments') }}</flux:table.column>
+                    @if (!$list['create'])
+                        <flux:table.column>{{ __('Deleted at') }}</flux:table.column>
+                    @endif
                     <flux:table.column class="text-end">
                         <span class="sr-only">{{ __('Actions') }}</span>
                     </flux:table.column>
@@ -142,6 +145,9 @@
                                     {{ $row['commentsCount'] }}
                                 </flux:badge>
                             </flux:table.cell>
+                            @if (!$list['create'])
+                                <flux:table.cell>{{ $row['deletedAt'] }}</flux:table.cell>
+                            @endif
                             <flux:table.cell class="text-end">
                                 <x-list.row-actions :actions="$row['actions']" prefix="epic"
                                     payload-key="epic" edit-handler="editEpic" />
@@ -149,7 +155,7 @@
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="7" class="py-8 text-center text-zinc-500">
+                            <flux:table.cell :colspan="$list['create'] ? 7 : 8" class="py-8 text-center text-zinc-500">
                                 <div class="flex flex-col items-center gap-3 px-4 py-4">
                                     <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
                                         aria-hidden="true" />

@@ -43,14 +43,16 @@ class CustomerListQueryTest extends TestCase
 
     public function test_trashed_list_shows_most_recently_deleted_customers_first(): void
     {
+        $this->travelTo('2026-10-02 12:00:00');
         $olderCustomer = Customer::factory()->trashed()->create();
         $newerCustomer = Customer::factory()->trashed()->create();
-        $olderCustomer->forceFill(['deleted_at' => now()->subDay()])->saveQuietly();
+        $tiedCustomer = Customer::factory()->trashed()->create();
+        $olderCustomer->forceFill(['deleted_at' => now()->subHour()])->saveQuietly();
 
         $customers = app(CustomerListQuery::class)->trashed('');
 
         $this->assertSame(
-            [$newerCustomer->id, $olderCustomer->id],
+            [$newerCustomer->id, $tiedCustomer->id, $olderCustomer->id],
             $customers->pluck('id')->all(),
         );
     }

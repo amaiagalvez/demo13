@@ -95,6 +95,7 @@ class EpicListTransformer
             'create' => false,
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
+                'deletedAt' => $epic->deleted_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',

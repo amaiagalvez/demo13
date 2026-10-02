@@ -28,9 +28,7 @@ class CustomerListTransformer
             ],
             'create' => true,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
-                'id' => $customer->id,
-                'name' => $customer->name,
-                'date' => $customer->created_at?->format('Y-m-d'),
+                ...$this->columns($customer),
                 'actions' => [
                     [
                         'type' => 'form-modal',
@@ -64,7 +62,7 @@ class CustomerListTransformer
     {
         return [
             'resource' => __('Customers'),
-            'dateHeading' => __('Deleted at'),
+            'dateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No customers match your search.'),
@@ -77,9 +75,8 @@ class CustomerListTransformer
             ],
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
-                'id' => $customer->id,
-                'name' => $customer->name,
-                'date' => $customer->deleted_at?->format('Y-m-d'),
+                ...$this->columns($customer),
+                'deletedAt' => $customer->deleted_at?->format('Y-m-d'),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -107,6 +104,18 @@ class CustomerListTransformer
                     ],
                 ],
             ])->all(),
+        ];
+    }
+
+    /**
+     * @return array{id: int, name: string, date: ?string}
+     */
+    private function columns(Customer $customer): array
+    {
+        return [
+            'id' => $customer->id,
+            'name' => $customer->name,
+            'date' => $customer->created_at?->format('Y-m-d'),
         ];
     }
 
