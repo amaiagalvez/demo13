@@ -1,7 +1,14 @@
 <x-forms.tracked-resource prefix="epic" context-field="_epic_form" id-field="_epic_id">
     <flux:field>
-        <flux:label>{{ __('Name') }} <span class="text-red-600" aria-hidden="true">*</span>
-        </flux:label>
+        <div class="flex items-center gap-1">
+            <flux:label>{{ __('Name') }} <span class="text-red-600" aria-hidden="true">*</span>
+            </flux:label>
+            <flux:tooltip toggleable :content="__('Use at least 4 characters.')">
+                <flux:button type="button" icon="information-circle" size="xs" variant="ghost"
+                    :aria-label="__('Use at least 4 characters.')"
+                    data-test="epic-name-info" />
+            </flux:tooltip>
+        </div>
         <flux:input name="name" x-model="form.name" minlength="4" maxlength="255" required
             autofocus data-test="epic-name" />
         <flux:error name="name" />
@@ -47,7 +54,7 @@
                 <flux:heading size="lg" id="epic-comments-heading">{{ __('Comments') }}
                 </flux:heading>
 
-                <form method="POST" x-bind:action="form.commentAction"
+                <form method="POST" x-bind:action="form.commentAction" novalidate
                     x-data="{ isSubmitting: false, isDirty: false }"
                     x-on:form-dirty-change="isDirty = $event.detail.isDirty"
                     x-on:submit="if (!isDirty || isSubmitting) { $event.preventDefault(); return; } isSubmitting = true"

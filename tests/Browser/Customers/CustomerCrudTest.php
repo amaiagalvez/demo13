@@ -228,6 +228,30 @@ class CustomerCrudTest extends DuskTestCase
         $this->assertDatabaseCount('customers', 1);
     }
 
+    public function test_short_customer_name_uses_server_validation(): void
+    {
+        $user = User::factory()->create();
+
+        $this->browse(function (Browser $browser) use ($user): void {
+            $browser->loginAs($user)
+                ->visit('/customers')
+                ->click('[data-test="customer-create-button"]')
+                ->waitFor('dialog[open]')
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="customer-name"]\').form.noValidate',
+                    true,
+                )
+                ->type('dialog[open] [data-test="customer-name"]', 'Ane')
+                ->waitForReload(fn (Browser $browser) => $browser->click(
+                    'dialog[open] [data-test="customer-submit"]'
+                ))
+                ->assertSeeIn(
+                    'dialog[open]',
+                    __('validation.min.string', ['attribute' => 'name', 'min' => 4]),
+                );
+        });
+    }
+
     public function test_edit_validation_error_does_not_leak_into_the_create_form(): void
     {
         $user = User::factory()->create();

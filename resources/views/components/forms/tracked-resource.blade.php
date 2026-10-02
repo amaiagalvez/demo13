@@ -11,7 +11,7 @@
         <flux:subheading x-text="form.subtitle"></flux:subheading>
     </div>
 
-    <form method="POST" x-bind:action="form.action"
+    <form method="POST" x-bind:action="form.action" novalidate
         x-data="{ isSubmitting: false, isDirty: false }"
         x-on:form-dirty-change="isDirty = $event.detail.isDirty"
         x-on:submit="if (!isDirty || isSubmitting) { $event.preventDefault(); return; } isSubmitting = true"

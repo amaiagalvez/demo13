@@ -27,6 +27,10 @@ class EpicCommentTest extends DuskTestCase
                 ->click('[data-test="epic-edit-'.$epic->id.'"]')
                 ->waitFor('dialog[open] [data-test="epic-comments"]')
                 ->assertSeeIn('dialog[open]', __('No comments yet.'))
+                ->assertScript(
+                    'document.querySelector(\'dialog[open] [data-test="epic-comment-body"]\').form.noValidate',
+                    true,
+                )
                 ->type('dialog[open] [data-test="epic-comment-body"]', $commentBody)
                 ->waitForReload(fn (Browser $browser) => $browser->click(
                     'dialog[open] [data-test="epic-comment-submit"]'
