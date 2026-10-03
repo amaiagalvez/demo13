@@ -176,7 +176,12 @@ class ProjectInputValidationTest extends TestCase
             'name' => $deletedProject->name,
             'start_date' => self::START_DATE,
             'customer_id' => $customer->id,
-        ])->assertRedirect(route('projects.index'));
+        ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('deleted_project_conflict', [
+                'id' => $deletedProject->id,
+                'name' => $deletedProject->name,
+            ]);
 
         $this->get(route('projects.index'))
             ->assertOk()

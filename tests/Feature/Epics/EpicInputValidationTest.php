@@ -252,6 +252,9 @@ class EpicInputValidationTest extends TestCase
 
         $this->get(route('epics.index'))
             ->assertOk()
+            ->assertSee('epic-name-conflict')
+            ->assertSee('epic-conflict-create-new')
+            ->assertSee('epic-conflict-restore')
             ->assertSee('aria-labelledby="epic-name-conflict-heading"', false)
             ->assertSee('id="epic-name-conflict-heading"', false);
 

@@ -303,6 +303,7 @@ class CustomerCrudTest extends TestCase
 
         $this->get(route('customers.index'))
             ->assertOk()
+            ->assertSee('customer-name-conflict')
             ->assertSee('customer-conflict-create-new')
             ->assertSee('customer-conflict-restore')
             ->assertSee('aria-labelledby="customer-name-conflict-heading"', false)
