@@ -110,7 +110,7 @@ final class ProjectListQuery extends ListQueryBase
     private function withCustomer(Builder $query): Builder
     {
         return $query
-            ->with('customer')
+            ->with('customer:id,name')
             ->join('customers as project_customers', 'project_customers.id', '=', 'projects.customer_id')
             ->select('projects.*');
     }

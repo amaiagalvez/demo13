@@ -103,13 +103,16 @@ final class EpicListQuery extends ListQueryBase
     }
 
     /**
+     * A row only renders the project name and the name of its customer, so both eager loads are
+     * limited to those columns plus the keys needed to match the relations.
+     *
      * @param  Builder<Epic>  $query
      * @return Builder<Epic>
      */
     private function withProjectAndCustomer(Builder $query): Builder
     {
         return $query
-            ->with('project.customer')
+            ->with(['project:id,name,customer_id', 'project.customer:id,name'])
             ->join('projects as epic_projects', 'epic_projects.id', '=', 'epics.project_id')
             ->join('customers as epic_customers', 'epic_customers.id', '=', 'epic_projects.customer_id')
             ->select('epics.*')

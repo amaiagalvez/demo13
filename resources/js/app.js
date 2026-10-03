@@ -498,7 +498,11 @@ document.addEventListener('alpine:init', () => {
         requestController: null,
 
         init() {
-            this.handlePopstate = () => this.refreshList(new URL(window.location.href), false);
+            this.handlePopstate = () => {
+                const url = new URL(window.location.href);
+
+                void this.refreshList(url, false).catch(() => window.location.reload());
+            };
             window.addEventListener('popstate', this.handlePopstate);
         },
 
@@ -543,7 +547,8 @@ document.addEventListener('alpine:init', () => {
 
             if (clearLink) {
                 event.preventDefault();
-                this.refreshList(new URL(clearLink.href));
+                void this.refreshList(new URL(clearLink.href))
+                    .catch(() => window.location.assign(clearLink.href));
 
                 return;
             }
@@ -552,7 +557,8 @@ document.addEventListener('alpine:init', () => {
 
             if (paginationLink) {
                 event.preventDefault();
-                this.refreshList(new URL(paginationLink.href));
+                void this.refreshList(new URL(paginationLink.href))
+                    .catch(() => window.location.assign(paginationLink.href));
             }
         },
 
@@ -566,7 +572,7 @@ document.addEventListener('alpine:init', () => {
                 url.searchParams.set('search', query);
             }
 
-            this.refreshList(url);
+            void this.refreshList(url).catch(() => window.location.assign(url.href));
         },
 
         async refreshList(url, updateHistory = true) {

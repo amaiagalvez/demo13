@@ -26,3 +26,4 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [ ] /fix-review 06.model-consistency-audit.md antes de modificar pide confirmación y al terminar marca la tarea como realizada
 [ ] repasa la configuración de los AGENTES y analiza si hay alguna manera de ahorrar tokens y de mejorar la forma de trabajar.
 [ ] prepara un plan que cree seeders para llenar las tablas con cientos de registros y luego analice el rendimiento del listado
+[ ] Repasar los errores que da el SonarQube y buscar una posible solucion. Preguntar antes de cambiar nada

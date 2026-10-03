@@ -6,8 +6,7 @@
             </flux:label>
             <flux:tooltip toggleable :content="__('Use at least 4 characters.')">
                 <flux:button type="button" icon="information-circle" size="xs" variant="ghost"
-                    :aria-label="__('Use at least 4 characters.')"
-                    data-test="project-name-info" />
+                    :aria-label="__('Use at least 4 characters.')" data-test="project-name-info" />
             </flux:tooltip>
         </div>
         <flux:input name="name" x-model="form.name" minlength="4" maxlength="255" required
@@ -15,8 +14,8 @@
         <flux:error name="name" />
     </flux:field>
     <flux:field>
-        <flux:label>{{ __('Start date') }} <span class="text-red-600"
-                aria-hidden="true">*</span></flux:label>
+        <flux:label>{{ __('Start date') }} <span class="text-red-600" aria-hidden="true">*</span>
+        </flux:label>
         <flux:input type="date" name="start_date" x-model="form.start_date" required
             data-test="project-start-date" />
         <flux:error name="start_date" />
@@ -44,8 +43,7 @@
                 }
                 window.jQuery($el).val(customerId || null).trigger('change.select2')
             "
-            required aria-label="{{ __('Customer') }}" data-test="project-customer"
-            data-project-customer-select
+            required data-test="project-customer" data-project-customer-select
             data-customer-store-url="{{ route('customers.store', [], false) }}"
             data-customer-search-url="{{ route('customers.options', [], false) }}"
             data-create-label="{{ __('Create customer') }}"

@@ -50,22 +50,8 @@ class CustomerController extends Controller
         $name = $request->string('name')->toString();
         $deletedCustomer = $query->findTrashedByName($name);
 
-        if ($deletedCustomer && ! $request->boolean('reuse_deleted_name')) {
-            if ($request->expectsJson()) {
-                $message = __('A deleted customer already uses the name :name.', ['name' => $deletedCustomer->name]);
-
-                return response()->json([
-                    'message' => $message,
-                    'errors' => ['name' => [$message]],
-                ], 409);
-            }
-
-            return to_route('customers.index')
-                ->withInput()
-                ->with('deleted_customer_conflict', [
-                    'id' => $deletedCustomer->id,
-                    'name' => $deletedCustomer->name,
-                ]);
+        if ($deletedCustomer !== null && ! $request->boolean('reuse_deleted_name')) {
+            return $this->deletedNameConflict($request, $deletedCustomer);
         }
 
         try {
@@ -79,6 +65,25 @@ class CustomerController extends Controller
         }
 
         return to_route('customers.index')->with('status', __('Customer created successfully.'));
+    }
+
+    private function deletedNameConflict(CustomerRequest $request, Customer $deletedCustomer): RedirectResponse|JsonResponse
+    {
+        if ($request->expectsJson()) {
+            $message = __('A deleted customer already uses the name :name.', ['name' => $deletedCustomer->name]);
+
+            return response()->json([
+                'message' => $message,
+                'errors' => ['name' => [$message]],
+            ], 409);
+        }
+
+        return to_route('customers.index')
+            ->withInput()
+            ->with('deleted_customer_conflict', [
+                'id' => $deletedCustomer->id,
+                'name' => $deletedCustomer->name,
+            ]);
     }
 
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse

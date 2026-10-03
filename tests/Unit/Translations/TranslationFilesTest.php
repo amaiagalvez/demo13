@@ -50,7 +50,6 @@ class TranslationFilesTest extends TestCase
 
     public function test_every_english_json_key_is_used_by_application_sources(): void
     {
-        $root = dirname(__DIR__, 3);
         $sources = [];
 
         $sources = $this->applicationSources();
