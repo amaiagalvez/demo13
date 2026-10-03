@@ -5,6 +5,7 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [] añadir created_by, updated_by, deleted_by en tdodas las tablas (modificar migrations, no crear nueva) Crear un Trait que modifique los valorres de esos campos cada vez que se hace una operacón sobre los dtos de la tabla
 [] añadir datatables
 [] installar debugbar
+[] gestion de roles y permisos
 [] en los select hay dos opciones: 
     1. si el formulario se abre en modo create, en el select o select2 solo se mostrarán los que tengan active=1
     2. si el formulario se abre en modo edición, en el select o select2 se mostraran el elemento sseleccionado (tenga o no active=1) y el resto de elementos seran solo los que tengan acitive=1 

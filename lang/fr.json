@@ -132,5 +132,7 @@
     "Showing the latest :shown of :total comments.": "Affichage des :shown commentaires les plus récents sur :total.",
     "Appearance settings": "Paramètres d’apparence",
     "Profile settings": "Paramètres du profil",
-    "Security settings": "Paramètres de sécurité"
+    "Security settings": "Paramètres de sécurité",
+    "Loading comments...": "Chargement des commentaires...",
+    "Unable to load comments.": "Impossible de charger les commentaires."
 }

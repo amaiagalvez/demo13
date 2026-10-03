@@ -18,8 +18,10 @@
             'start_date' => old('start_date', ''),
             'end_date' => old('end_date', ''),
             'project_id' => old('project_id', ''),
-            'comments' => $editingEpicPayload['comments'] ?? [],
+            'comments' => [],
             'commentsCount' => $editingEpicPayload['commentsCount'] ?? 0,
+            'commentsLoading' => false,
+            'commentsError' => '',
             'commentAction' => $editingEpicPayload['commentAction'] ?? '',
             'commentBody' => '',
             'context' => $editingEpic ? old('_epic_form') : 'create',
@@ -58,6 +60,8 @@
                 project_id: '',
                 comments: [],
                 commentsCount: 0,
+                commentsLoading: false,
+                commentsError: '',
                 commentAction: '',
                 commentBody: '',
                 context: 'create',
@@ -69,8 +73,12 @@
             };
         },
         editEpic(epic, commentBody = '') {
+            this.commentRequest?.abort();
             this.form = {
                 ...epic,
+                comments: [],
+                commentsLoading: false,
+                commentsError: '',
                 project_id: String(epic.project_id),
                 commentBody,
                 context: `edit-${epic.id}`,
@@ -80,6 +88,45 @@
                 subtitle: @js(__('Update the epic details.')),
                 submitLabel: @js(__('Update epic')),
             };
+            this.loadEpicComments();
+        },
+        async loadEpicComments() {
+            this.commentRequest?.abort();
+            const controller = new AbortController();
+            const epicId = this.form.id;
+            this.commentRequest = controller;
+            this.form.comments = [];
+            this.form.commentsLoading = true;
+            this.form.commentsError = '';
+
+            try {
+                const response = await fetch(this.form.commentsUrl, {
+                    headers: { Accept: 'application/json' },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    throw new Error();
+                }
+
+                const result = await response.json();
+
+                if (this.form.id === epicId) {
+                    this.form.comments = result.comments;
+                }
+            } catch {
+                if (!controller.signal.aborted && this.form.id === epicId) {
+                    this.form.commentsError = @js(__('Unable to load comments.'));
+                }
+            } finally {
+                if (this.form.id === epicId) {
+                    this.form.commentsLoading = false;
+                }
+
+                if (this.commentRequest === controller) {
+                    this.commentRequest = null;
+                }
+            }
         },
         confirmAction(action) {
             this.confirmation = {
@@ -94,7 +141,7 @@
     }"
         @if ($commentedEpic) x-init="editEpic(@js($commentedEpic), @js($hasCommentErrors ? old('body', '') : '')); $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
         @elseif ($errors->any())
-            x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
+            x-init="@if ($editingEpicPayload) loadEpicComments(); @endif $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
         @elseif ($deletedEpicConflict)
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))" @endif
         class="flex flex-col gap-4">

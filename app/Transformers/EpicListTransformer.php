@@ -5,7 +5,6 @@ namespace App\Transformers;
 use App\Models\Epic;
 use App\Models\Project;
 use App\Models\Customer;
-use App\Models\EpicComment;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class EpicListTransformer
@@ -47,18 +46,8 @@ class EpicListTransformer
                             'end_date' => $epic->end_date?->toDateString() ?? '',
                             'project_id' => $epic->project_id,
                             'commentAction' => route('epics.comments.store', $epic),
+                            'commentsUrl' => route('epics.comments.index', $epic),
                             'commentsCount' => (int) $epic->comments_count,
-                            'comments' => $epic->comments->map(function (EpicComment $comment): array {
-                                $author = $comment->user?->name;
-
-                                return [
-                                    'id' => $comment->id,
-                                    'author' => $author ?? __('Deleted user'),
-                                    'dateTime' => $comment->created_at?->toIso8601String(),
-                                    'writtenAt' => $comment->created_at?->format('Y-m-d H:i'),
-                                    'body' => $comment->body,
-                                ];
-                            })->all(),
                         ],
                     ],
                     [

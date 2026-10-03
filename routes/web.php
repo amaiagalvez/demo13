@@ -60,6 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('epics/trash/{epic}', [EpicTrashController::class, 'destroy'])
         ->whereNumber('epic')
         ->name('epics.trash.destroy');
+    Route::get('epics/{epic}/comments', [EpicCommentController::class, 'index'])
+        ->whereNumber('epic')
+        ->name('epics.comments.index');
     Route::post('epics/{epic}/comments', [EpicCommentController::class, 'store'])->name('epics.comments.store');
     Route::resource('epics', EpicController::class)->only(['index', 'store', 'update', 'destroy']);
 });

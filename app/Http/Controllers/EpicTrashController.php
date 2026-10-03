@@ -22,11 +22,11 @@ class EpicTrashController extends Controller
         $search = $request->search();
         $epics = $query->trashed($search);
 
-        return view('epics.list', [
+        return $this->listView($request, 'epics.list', [
             'epics' => $epics,
             'availableProjects' => collect(),
             'list' => $transformer->trash($epics, $search),
-        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
+        ]);
     }
 
     public function restore(EpicRestoreRequest $request): RedirectResponse

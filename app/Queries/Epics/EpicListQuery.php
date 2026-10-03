@@ -6,7 +6,6 @@ use App\Models\Epic;
 use App\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * @extends ListQueryBase<Epic>
@@ -35,11 +34,6 @@ final class EpicListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withProjectAndCustomer(Epic::query()->where('epics.active', true))
-                ->with(['comments' => fn (Relation $query) => $query
-                    ->with('user')
-                    ->latest()
-                    ->latest('id')
-                    ->limit(self::RECENT_COMMENTS_LIMIT)])
                 ->orderByRaw('epics.start_date IS NULL')
                 ->orderBy('epics.start_date')
                 ->orderByRaw('epics.end_date IS NULL')

@@ -7,7 +7,6 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\EpicComment;
 use App\Queries\Epics\EpicListQuery;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCommentTest extends TestCase
@@ -43,7 +42,7 @@ class EpicCommentTest extends TestCase
         $this->assertTrue($commentCreatedAt->equalTo(now()));
     }
 
-    public function test_edit_payload_contains_comments_with_author_and_date(): void
+    public function test_epic_comments_are_loaded_on_demand_with_author_and_date(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
@@ -52,77 +51,54 @@ class EpicCommentTest extends TestCase
             'created_at' => '2026-10-01 09:30:00',
         ]);
 
-        $response = $this->get(route('epics.index'))
+        $this->get(route('epics.index'))
             ->assertOk()
-            ->assertSee('Visible comment')
-            ->assertSee('Ane Author')
-            ->assertSee('2026-10-01 09:30')
-            ->assertSee('2026-10-01T09:30:00+00:00')
-            ->assertSee('x-bind:datetime="comment.dateTime"', false);
+            ->assertDontSee('Visible comment')
+            ->assertDontSee('Ane Author');
+
+        $this->getJson(route('epics.comments.index', $epic))
+            ->assertOk()
+            ->assertJsonPath('comments.0.body', 'Visible comment')
+            ->assertJsonPath('comments.0.author', 'Ane Author')
+            ->assertJsonPath('comments.0.writtenAt', '2026-10-01 09:30')
+            ->assertJsonPath('comments.0.dateTime', '2026-10-01T09:30:00+00:00');
     }
 
-    public function test_list_embeds_only_the_most_recent_comments_of_each_epic_but_counts_all(): void
+    public function test_comment_endpoint_returns_only_the_latest_comments_for_the_requested_epic(): void
     {
         $this->actingAs(User::factory()->create());
         $limit = EpicListQuery::RECENT_COMMENTS_LIMIT;
         $epic = Epic::factory()->create();
         $otherEpic = Epic::factory()->create();
+
         EpicComment::factory()->for($epic)->create([
             'body' => 'Oldest hidden comment',
             'created_at' => now()->subDays(2),
         ]);
-        EpicComment::factory()->count($limit)->for($epic)->create(['created_at' => now()->subDay()]);
+
+        foreach (range(1, $limit) as $index) {
+            EpicComment::factory()->for($epic)->create([
+                'body' => 'Recent comment '.$index,
+                'created_at' => now()->subMinutes($limit - $index),
+            ]);
+        }
+
         EpicComment::factory()->for($otherEpic)->create(['body' => 'Other epic comment']);
 
-        $response = $this->get(route('epics.index'))->assertOk();
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertDontSee('Oldest hidden comment')
+            ->assertDontSee('Recent comment 1')
+            ->assertDontSee('Other epic comment')
+            ->assertSee('epic-comments-count-'.$epic->id, false);
 
-        $list = $response->viewData('list');
-
-        if (! is_array($list)) {
-            self::fail('The epics list view data must be an array.');
-        }
-
-        $rows = $list['rows'] ?? null;
-
-        if (! is_iterable($rows) && ! $rows instanceof Arrayable) {
-            self::fail('The epics list rows must be iterable.');
-        }
-
-        $row = collect($rows)->firstWhere('id', $epic->id);
-
-        if (! is_array($row)) {
-            self::fail('The epic row must be present in the list payload.');
-        }
-
-        $actions = $row['actions'] ?? null;
-
-        if (! is_array($actions)) {
-            self::fail('The epic row must embed its actions.');
-        }
-
-        $action = $actions[0] ?? null;
-
-        if (! is_array($action)) {
-            self::fail('The epic row must embed its edit action.');
-        }
-
-        $payload = $action['epic'] ?? null;
-
-        if (! is_array($payload)) {
-            self::fail('The edit action must embed the epic payload.');
-        }
-
-        $comments = $payload['comments'] ?? null;
-
-        if (! is_array($comments)) {
-            self::fail('The epic payload must embed its comments.');
-        }
-
-        $this->assertCount($limit, $comments);
-        $this->assertSame($limit + 1, $payload['commentsCount']);
-        $response->assertDontSee('Oldest hidden comment')
-            ->assertSee('Other epic comment')
-            ->assertSee('epic-comments-truncated');
+        $this->getJson(route('epics.comments.index', $epic))
+            ->assertOk()
+            ->assertJsonCount($limit, 'comments')
+            ->assertJsonMissing(['body' => 'Oldest hidden comment'])
+            ->assertJsonMissing(['body' => 'Other epic comment'])
+            ->assertJsonPath('comments.0.body', 'Recent comment '.$limit)
+            ->assertJsonPath('comments.'.($limit - 1).'.body', 'Recent comment 1');
     }
 
     public function test_comment_body_is_required(): void
@@ -157,6 +133,23 @@ class EpicCommentTest extends TestCase
             ->assertRedirect(route('login'));
 
         $this->assertDatabaseCount('epic_comments', 0);
+    }
+
+    public function test_guests_cannot_load_epic_comments(): void
+    {
+        $epic = Epic::factory()->create();
+
+        $this->get(route('epics.comments.index', $epic))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_trashed_epics_do_not_expose_their_comments(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->trashed()->create();
+
+        $this->getJson(route('epics.comments.index', $epic))
+            ->assertNotFound();
     }
 
     public function test_comments_keep_existing_when_their_author_is_deleted(): void

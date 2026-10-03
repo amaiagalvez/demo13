@@ -83,15 +83,24 @@
                     </div>
                 </form>
 
-                <p x-show="form.comments.length === 0" class="text-sm text-zinc-500"
+                <p x-show="form.commentsLoading" class="text-sm text-zinc-500"
+                    data-test="epic-comments-loading">{{ __('Loading comments...') }}</p>
+
+                <p x-show="form.commentsError" x-text="form.commentsError" role="alert"
+                    class="text-sm text-red-600" data-test="epic-comments-error"></p>
+
+                <p x-show="!form.commentsLoading && !form.commentsError && form.comments.length === 0"
+                    class="text-sm text-zinc-500"
                     data-test="epic-comments-empty">{{ __('No comments yet.') }}</p>
 
-                <p x-show="form.commentsCount > form.comments.length" class="text-xs text-zinc-500"
+                <p x-show="!form.commentsLoading && !form.commentsError && form.commentsCount > form.comments.length"
+                    class="text-xs text-zinc-500"
                     data-test="epic-comments-truncated"
                     x-text="@js(__('Showing the latest :shown of :total comments.')).replace(':shown', form.comments.length).replace(':total', form.commentsCount)">
                 </p>
 
-                <ul class="flex flex-col gap-3" x-show="form.comments.length > 0">
+                <ul class="flex flex-col gap-3"
+                    x-show="!form.commentsLoading && !form.commentsError && form.comments.length > 0">
                     <template x-for="comment in form.comments" :key="comment.id">
                         <li class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
                             data-test="epic-comment">

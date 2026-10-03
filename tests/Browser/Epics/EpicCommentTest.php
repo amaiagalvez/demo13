@@ -6,6 +6,7 @@ use App\Models\Epic;
 use App\Models\User;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
+use App\Models\EpicComment;
 use Illuminate\Support\Str;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
@@ -18,15 +19,19 @@ class EpicCommentTest extends DuskTestCase
         $user = User::factory()->create(['name' => 'Dusk commenter']);
         $epicName = 'Dusk epic '.Str::uuid()->toString();
         $epic = Epic::factory()->create(['name' => $epicName]);
+        $existingComment = 'Existing comment '.Str::uuid()->toString();
+        EpicComment::factory()->for($epic)->for($user)->create(['body' => $existingComment]);
         $commentBody = 'Dusk comment '.Str::uuid()->toString();
 
-        $this->browse(function (Browser $browser) use ($user, $epic, $epicName, $commentBody): void {
+        $this->browse(function (Browser $browser) use ($user, $epic, $epicName, $existingComment, $commentBody): void {
             $browser->loginAs($user)
                 ->visit('/epics?search='.urlencode($epicName))
-                ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '0')
+                ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '1')
+                ->assertDontSee($existingComment)
                 ->click('[data-test="epic-edit-'.$epic->id.'"]')
                 ->waitFor('dialog[open] [data-test="epic-comments"]')
-                ->assertSeeIn('dialog[open]', __('No comments yet.'))
+                ->waitFor('dialog[open] [data-test="epic-comment"]')
+                ->assertSeeIn('dialog[open]', $existingComment)
                 ->assertScript(
                     'document.querySelector(\'dialog[open] [data-test="epic-comment-body"]\').form.noValidate',
                     true,
@@ -37,9 +42,10 @@ class EpicCommentTest extends DuskTestCase
                 ))
                 ->waitFor('dialog[open] [data-test="epic-comment"]')
                 ->assertInputValue('dialog[open] [data-test="epic-name"]', $epicName)
+                ->assertSeeIn('dialog[open]', $existingComment)
                 ->assertSeeIn('dialog[open] [data-test="epic-comment"]', $commentBody)
                 ->assertSeeIn('dialog[open] [data-test="epic-comment"]', 'Dusk commenter')
-                ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '1');
+                ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '2');
         });
 
         $this->assertDatabaseHas('epic_comments', [

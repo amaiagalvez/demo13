@@ -23,11 +23,11 @@ class EpicController extends Controller
         $search = $request->search();
         $epics = $query->active($search);
 
-        return view('epics.list', [
+        return $this->listView($request, 'epics.list', [
             'epics' => $epics,
             'availableProjects' => Project::query()->with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']),
             'list' => $transformer->active($epics, $search),
-        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
+        ]);
     }
 
     public function store(EpicRequest $request): RedirectResponse
