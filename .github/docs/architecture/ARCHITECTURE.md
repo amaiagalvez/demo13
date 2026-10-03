@@ -47,8 +47,9 @@ deleted from a trash view.
 
 ## Database
 
-Engine: MySQL-compatible MariaDB in Docker; SQLite is used for isolated in-memory
-tests.
+Engine: MySQL-compatible MariaDB in Docker. PHPUnit uses the `mysql` connection
+and the `laravel_test` database configured in `phpunit.xml`; the test suite does
+not use SQLite.
 
 Customers, projects, epics, and users have an `active` boolean, defaulting to true.
 Resource index lists include only active, non-deleted records; inactive lists include

@@ -4,15 +4,15 @@ description: Execute a complete read-only Laravel code audit and save a dated re
 argument-hint: Run the complete Laravel audit and generate .github/reviews/YYYY-MM-DD/CODE-REVIEW.md.
 mode: subagent
 permissions:
-  - action: edit
-    resource: ".github/reviews/**"
-    effect: allow
-  - action: edit
-    resource: "*"
-    effect: deny
-  - action: subagent
-    resource: "*"
-    effect: allow
+    - action: edit
+      resource: ".github/reviews/**"
+      effect: allow
+    - action: edit
+      resource: "*"
+      effect: deny
+    - action: subagent
+      resource: "*"
+      effect: allow
 ---
 
 # Laravel Code Review Orchestrator
@@ -82,8 +82,8 @@ Record actual results.
 Validation safety rules:
 
 - Never run `composer setup`, `migrate:fresh`, `migrate:refresh`, seeders, or any command that can modify a persistent database.
-- Run PHPUnit against an ephemeral database when possible, for example `DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --compact`.
-- If only a persistent database is available, do not run tests that use `RefreshDatabase`, `DatabaseMigrations`, or destructive migrations; record the check as NOT RUN and explain why.
+- This project's PHPUnit suite uses MySQL/MariaDB and `DB_DATABASE=laravel_test` as configured in `phpunit.xml`; do not override it with SQLite.
+- If the configured `laravel_test` database is not known to be isolated, do not run tests that use `RefreshDatabase`, `DatabaseMigrations`, or destructive migrations; record the check as NOT RUN and explain why.
 - Run checks in the project's Docker/container environment when the host lacks the required PHP, Composer, or Node runtime. Do not install tooling as part of the review.
 - Run frontend builds only with the runtime declared by CI or the project configuration. If that runtime is unavailable, record the actual failure and do not change lockfiles or generated assets.
 - Run Dusk only when a browser driver and an isolated test database are already available. Otherwise record Dusk as NOT RUN rather than attempting setup or downloading drivers.
