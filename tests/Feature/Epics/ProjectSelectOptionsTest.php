@@ -12,6 +12,52 @@ class ProjectSelectOptionsTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_epic_list_offers_project_form_when_no_projects_exist(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertViewHas('hasProjects', false)
+            ->assertSee(__('No active projects are available. Open the project form to create one.'))
+            ->assertSee(__('Open project form'))
+            ->assertSee('href="' . route('projects.index', ['create' => 1]) . '"', false)
+            ->assertSee('epic-no-project-form-button');
+    }
+
+    public function test_epic_list_offers_project_form_when_only_inactive_projects_exist(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Project::factory()->inactive()->create();
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertViewHas('hasProjects', false)
+            ->assertSee('epic-no-project-form-button');
+    }
+
+    public function test_epic_list_offers_project_form_when_only_deleted_projects_exist(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Project::factory()->trashed()->create();
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertViewHas('hasProjects', false)
+            ->assertSee('epic-no-project-form-button');
+    }
+
+    public function test_epic_list_hides_project_form_notice_when_an_active_project_exists(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Project::factory()->create();
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertViewHas('hasProjects', true)
+            ->assertDontSee('epic-no-project-form-button');
+    }
+
     public function test_epic_form_does_not_preload_every_project(): void
     {
         $this->actingAs(User::factory()->create());

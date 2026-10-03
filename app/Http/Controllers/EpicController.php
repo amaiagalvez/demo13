@@ -28,16 +28,16 @@ class EpicController extends Controller
         $projectId = old('project_id');
         $selectedProject = is_numeric($projectId)
             ? Project::query()
-                ->with('customer:id,name')
-                ->find((int) $projectId, ['id', 'name', 'customer_id'])
+            ->with('customer:id,name')
+            ->find((int) $projectId, ['id', 'name', 'customer_id'])
             : null;
 
         return $this->listView($request, 'epics.list', [
             'epics' => $epics,
-            'hasProjects' => Project::query()->exists(),
+            'hasProjects' => Project::query()->where('active', true)->exists(),
             'selectedProjectOption' => $selectedProject === null ? null : [
                 'id' => $selectedProject->id,
-                'text' => $selectedProject->name.' ('.($selectedProject->customer->name ?? '—').')',
+                'text' => $selectedProject->name . ' (' . ($selectedProject->customer->name ?? '—') . ')',
             ],
             'list' => $transformer->active($epics, $search),
         ]);

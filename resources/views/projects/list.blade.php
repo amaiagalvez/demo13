@@ -82,7 +82,9 @@
     }"
         @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-form' }))"
         @elseif ($deletedProjectConflict)
-            x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-name-conflict' }))" @endif
+            x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-name-conflict' }))"
+        @elseif ($list['create'] && request()->boolean('create'))
+            x-init="createProject(); $nextTick(() => $dispatch('modal-show', { name: 'project-form' }))" @endif
         class="flex flex-col gap-4">
         <x-list.header :list="$list" prefix="project" :create-label="__('New project')"
             create-click="createProject()" />
