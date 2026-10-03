@@ -11,10 +11,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property bool $active
  * @property-read bool $epics_exists
+ * @property-read int $epics_count
+ * @property-read int $comments_count
  */
 #[Fillable(['name', 'start_date', 'end_date', 'customer_id'])]
 #[UsePolicy(ProjectPolicy::class)]
@@ -56,5 +59,15 @@ class Project extends Model
     public function epics(): HasMany
     {
         return $this->hasMany(Epic::class);
+    }
+
+    /**
+     * Comments written on the epics of this project; trashed epics are excluded.
+     *
+     * @return HasManyThrough<EpicComment, Epic, $this>
+     */
+    public function comments(): HasManyThrough
+    {
+        return $this->hasManyThrough(EpicComment::class, Epic::class, 'project_id', 'epic_id');
     }
 }

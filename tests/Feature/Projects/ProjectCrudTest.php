@@ -7,6 +7,7 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Models\EpicComment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use App\Transformers\ProjectListTransformer;
@@ -199,6 +200,23 @@ class ProjectCrudTest extends TestCase
             ->assertDontSee('Website redesign');
     }
 
+    public function test_project_list_shows_the_number_of_active_epics_and_their_comments(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+        Epic::factory()->for($project)->create();
+        $commentedEpic = Epic::factory()->for($project)->create();
+        EpicComment::factory()->count(3)->for($commentedEpic)->create();
+        EpicComment::factory()->count(4)->for(Epic::factory()->for($project)->inactive())->create();
+        EpicComment::factory()->count(5)->for(Epic::factory()->for($project)->trashed())->create();
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['project-epics-count-'.$project->id, '2'])
+            ->assertSeeInOrder(['project-comments-count-'.$project->id, '3']);
+    }
+
     public function test_projects_are_ordered_by_start_date_end_date_and_customer_name(): void
     {
         $this->actingAs(User::factory()->create());
@@ -294,6 +312,15 @@ class ProjectCrudTest extends TestCase
 
         $this->assertSame('—', $list['rows'][0]['customer']);
         $this->assertSame('—', $list['rows'][0]['actions'][0]['project']['customer_name']);
+    }
+
+    public function test_empty_project_list_uses_the_shared_empty_state(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->assertOk()
+            ->assertSee('data-test="list-empty-state"', false)
+            ->assertSee(__('No projects yet.'));
     }
 
     public function test_guests_are_redirected_to_login_from_the_projects_list(): void

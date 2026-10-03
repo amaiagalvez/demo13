@@ -7,6 +7,7 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Models\EpicComment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Events\QueryExecuted;
@@ -71,20 +72,25 @@ class CustomerCrudTest extends TestCase
         $this->assertModelExists($project);
     }
 
-    public function test_customer_list_shows_the_number_of_active_projects_and_epics(): void
+    public function test_customer_list_shows_the_number_of_active_projects_epics_and_comments(): void
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
         $project = Project::factory()->for($customer)->create();
-        Epic::factory()->count(3)->for($project)->create();
-        Project::factory()->for($customer)->inactive()->create();
-        Epic::factory()->for($project)->inactive()->create();
-        Epic::factory()->for($project)->trashed()->create();
+        Project::factory()->for($customer)->create();
+        Epic::factory()->for($project)->create();
+        $commentedEpic = Epic::factory()->for($project)->create();
+        EpicComment::factory()->count(5)->for($commentedEpic)->create();
+        $inactiveProjectEpic = Epic::factory()->for(Project::factory()->for($customer)->inactive())->create();
+        EpicComment::factory()->count(4)->for($inactiveProjectEpic)->create();
+        EpicComment::factory()->count(6)->for(Epic::factory()->for($project)->inactive())->create();
+        EpicComment::factory()->count(7)->for(Epic::factory()->for($project)->trashed())->create();
 
         $this->get(route('customers.index'))
             ->assertOk()
-            ->assertSeeInOrder(['customer-projects-count-'.$customer->id, '1'])
-            ->assertSeeInOrder(['customer-epics-count-'.$customer->id, '3']);
+            ->assertSeeInOrder(['customer-projects-count-'.$customer->id, '2'])
+            ->assertSeeInOrder(['customer-epics-count-'.$customer->id, '3'])
+            ->assertSeeInOrder(['customer-comments-count-'.$customer->id, '5']);
     }
 
     public function test_customer_with_a_trashed_project_cannot_be_deleted(): void

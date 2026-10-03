@@ -164,7 +164,7 @@ class CustomerListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, projectsCount: int, epicsCount: int}
+     * @return array{id: int, name: string, projectsCount: int, epicsCount: int, commentsCount: int}
      */
     private function columns(Customer $customer): array
     {
@@ -173,6 +173,7 @@ class CustomerListTransformer
             'name' => $customer->name,
             'projectsCount' => (int) $customer->projects_count,
             'epicsCount' => (int) $customer->epics_count,
+            'commentsCount' => (int) $customer->comments_count,
         ];
     }
 

@@ -87,6 +87,7 @@
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
                     <flux:table.column>{{ __('Projects') }}</flux:table.column>
                     <flux:table.column>{{ __('Epics') }}</flux:table.column>
+                    <flux:table.column>{{ __('Comments') }}</flux:table.column>
                     @if ($list['extraDateHeading'])
                         <flux:table.column>{{ $list['extraDateHeading'] }}</flux:table.column>
                     @endif
@@ -114,6 +115,12 @@
                                     {{ $row['epicsCount'] }}
                                 </flux:badge>
                             </flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" icon="chat-bubble-left"
+                                    :data-test="'customer-comments-count-'.$row['id']">
+                                    {{ $row['commentsCount'] }}
+                                </flux:badge>
+                            </flux:table.cell>
                             @if ($list['extraDateHeading'])
                                 <flux:table.cell>
                                     <x-list.local-time :datetime="$row['extraDate']"
@@ -122,15 +129,16 @@
                             @endif
                         </flux:table.row>
                     @empty
-                        <flux:table.row>
-                            <flux:table.cell :colspan="$list['create'] ? 4 : 5" class="py-8 text-center text-zinc-500">
-                                <div class="flex flex-col items-center gap-3 px-4 py-4">
-                                    <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
-                                        aria-hidden="true" />
-                                    <span>{{ $list['emptyMessage'] }}</span>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
+                        <x-list.empty-state :colspan="$list['create'] ? 5 : 6" :message="$list['emptyMessage']">
+                            @if ($list['create'] && $list['search']['value'] === '')
+                                <flux:modal.trigger name="customer-form">
+                                    <flux:button size="sm" variant="primary" icon="plus"
+                                        x-on:click="createCustomer()" data-test="customer-empty-create">
+                                        {{ __('New customer') }}
+                                    </flux:button>
+                                </flux:modal.trigger>
+                            @endif
+                        </x-list.empty-state>
                     @endforelse
                 </flux:table.rows>
             </x-list.table>

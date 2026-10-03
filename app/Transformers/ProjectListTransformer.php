@@ -171,7 +171,7 @@ class ProjectListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string}
+     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string, epicsCount: int, commentsCount: int}
      */
     private function columns(Project $project): array
     {
@@ -181,6 +181,8 @@ class ProjectListTransformer
             'customer' => $project->customer?->name ?? '—',
             'startDate' => $project->start_date->format('Y-m-d'),
             'endDate' => $project->end_date?->format('Y-m-d') ?? '',
+            'epicsCount' => (int) $project->epics_count,
+            'commentsCount' => (int) $project->comments_count,
         ];
     }
 

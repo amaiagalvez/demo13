@@ -16,6 +16,23 @@ class CustomerCrudTest extends DuskTestCase
 
     use DatabaseMigrations;
 
+    public function test_empty_customer_list_offers_a_create_action(): void
+    {
+        $user = User::factory()->create();
+
+        $this->browse(function (Browser $browser) use ($user): void {
+            $browser->loginAs($user)
+                ->visit('/customers?search=missing')
+                ->assertSee(__('No customers match your search.'))
+                ->assertMissing('[data-test="customer-empty-create"]')
+                ->visit('/customers')
+                ->assertSee(__('No customers yet.'))
+                ->click('[data-test="customer-empty-create"]')
+                ->waitFor('dialog[open] [data-test="customer-name"]')
+                ->assertSeeIn('dialog[open]', __('New customer'));
+        });
+    }
+
     public function test_customer_trash_timestamp_displays_local_time(): void
     {
         $user = User::factory()->create();

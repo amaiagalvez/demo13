@@ -110,6 +110,8 @@
                     <flux:table.column>{{ __('Customer') }}</flux:table.column>
                     <flux:table.column>{{ __('Start date') }}</flux:table.column>
                     <flux:table.column>{{ __('End date') }}</flux:table.column>
+                    <flux:table.column>{{ __('Epics') }}</flux:table.column>
+                    <flux:table.column>{{ __('Comments') }}</flux:table.column>
                     @if ($list['extraDateHeading'])
                         <flux:table.column>{{ $list['extraDateHeading'] }}</flux:table.column>
                     @endif
@@ -132,6 +134,18 @@
                             <flux:table.cell>
                                 <x-list.local-time :datetime="$row['endDate']" format="date" />
                             </flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" icon="rectangle-stack"
+                                    :data-test="'project-epics-count-'.$row['id']">
+                                    {{ $row['epicsCount'] }}
+                                </flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" icon="chat-bubble-left"
+                                    :data-test="'project-comments-count-'.$row['id']">
+                                    {{ $row['commentsCount'] }}
+                                </flux:badge>
+                            </flux:table.cell>
                             @if ($list['extraDateHeading'])
                                 <flux:table.cell>
                                     <x-list.local-time :datetime="$row['extraDate']"
@@ -140,15 +154,7 @@
                             @endif
                         </flux:table.row>
                     @empty
-                        <flux:table.row>
-                            <flux:table.cell :colspan="$list['create'] ? 5 : 6" class="py-8 text-center text-zinc-500">
-                                <div class="flex flex-col items-center gap-3 px-4 py-4">
-                                    <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
-                                        aria-hidden="true" />
-                                    <span>{{ $list['emptyMessage'] }}</span>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
+                        <x-list.empty-state :colspan="$list['create'] ? 7 : 8" :message="$list['emptyMessage']" />
                     @endforelse
                 </flux:table.rows>
             </x-list.table>

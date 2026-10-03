@@ -107,6 +107,15 @@ class EpicCrudTest extends TestCase
         $this->assertSame('—', $list['rows'][0]['actions'][0]['epic']['project_label']);
     }
 
+    public function test_empty_epic_list_uses_the_shared_empty_state(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('epics.index'))
+            ->assertOk()
+            ->assertSee('data-test="list-empty-state"', false)
+            ->assertSee(__('No epics yet.'));
+    }
+
     public function test_database_rejects_duplicate_epic_names_in_the_same_project(): void
     {
         $project = Project::factory()->create();

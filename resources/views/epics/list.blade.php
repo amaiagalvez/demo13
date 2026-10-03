@@ -268,15 +268,7 @@
                             @endif
                         </flux:table.row>
                     @empty
-                        <flux:table.row>
-                            <flux:table.cell :colspan="$list['create'] ? 7 : 8" class="py-8 text-center text-zinc-500">
-                                <div class="flex flex-col items-center gap-3 px-4 py-4">
-                                    <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
-                                        aria-hidden="true" />
-                                    <span>{{ $list['emptyMessage'] }}</span>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
+                        <x-list.empty-state :colspan="$list['create'] ? 7 : 8" :message="$list['emptyMessage']" />
                     @endforelse
                 </flux:table.rows>
             </x-list.table>

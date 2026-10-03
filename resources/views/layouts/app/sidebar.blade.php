@@ -37,23 +37,12 @@
 
         <flux:spacer />
 
-        <flux:sidebar.nav>
-            <flux:sidebar.item icon="folder-git-2"
-                href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-            </flux:sidebar.item>
-
-            <flux:sidebar.item icon="book-open-text"
-                href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
-            </flux:sidebar.item>
-        </flux:sidebar.nav>
-
         <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
     </flux:sidebar>
 
     <!-- Mobile User Menu -->
-    <flux:header class="border-b border-zinc-200 bg-zinc-50/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 lg:hidden">
+    <flux:header
+        class="border-b border-zinc-200 bg-zinc-50/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 lg:hidden">
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
         <flux:spacer />

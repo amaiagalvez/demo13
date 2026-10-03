@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property-read bool $projects_exists
  * @property-read int $projects_count
  * @property-read int $epics_count
+ * @property-read int $comments_count
  */
 #[Fillable(['name'])]
 #[UsePolicy(CustomerPolicy::class)]
