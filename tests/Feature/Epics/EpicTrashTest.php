@@ -74,6 +74,18 @@ class EpicTrashTest extends TestCase
         ]);
     }
 
+    public function test_trash_can_be_searched_by_epic_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $matchingEpic = Epic::factory()->trashed()->create(['name' => 'Archived epic match']);
+        $otherEpic = Epic::factory()->trashed()->create(['name' => 'Unrelated archived epic']);
+
+        $this->get(route('epics.trash.index', ['search' => 'epic match']))
+            ->assertOk()
+            ->assertSee($matchingEpic->name)
+            ->assertDontSee($otherEpic->name);
+    }
+
     public function test_deleted_epics_can_be_restored_or_permanently_deleted(): void
     {
         $this->actingAs(User::factory()->create());

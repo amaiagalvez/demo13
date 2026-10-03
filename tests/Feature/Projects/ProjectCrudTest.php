@@ -214,6 +214,33 @@ class ProjectCrudTest extends TestCase
             ->assertDontSee('Mobile application');
     }
 
+    public function test_projects_can_be_searched_by_their_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        Project::factory()->for($customer)->create(['name' => 'Searchable project']);
+        Project::factory()->for($customer)->create(['name' => 'Unrelated project']);
+
+        $this->get(route('projects.index', ['search' => 'Searchable project']))
+            ->assertOk()
+            ->assertSee('Searchable project')
+            ->assertDontSee('Unrelated project');
+    }
+
+    public function test_project_search_is_kept_in_pagination_links(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+
+        foreach (range(1, 6) as $index) {
+            Project::factory()->for($customer)->create(['name' => "Repeat project {$index}"]);
+        }
+
+        $this->get(route('projects.index', ['search' => 'Repeat']))
+            ->assertOk()
+            ->assertSee('search=Repeat', false);
+    }
+
     public function test_projects_cannot_be_searched_by_their_unshown_creation_date(): void
     {
         $this->actingAs(User::factory()->create());
@@ -305,6 +332,17 @@ class ProjectCrudTest extends TestCase
                 'Alpha project',
                 'Zulu project',
             ]);
+    }
+
+    public function test_project_list_shows_pagination_when_more_than_one_page_exists(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        Project::factory()->count(16)->for($customer)->create();
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertSee('project-pagination', false);
     }
 
     public function test_project_with_epics_cannot_be_deleted(): void

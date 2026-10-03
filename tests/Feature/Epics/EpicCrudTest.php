@@ -187,6 +187,33 @@ class EpicCrudTest extends TestCase
             ->assertDontSee('Other epic');
     }
 
+    public function test_epics_can_be_searched_by_their_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->create(['name' => 'Searchable epic']);
+        Epic::factory()->for($project)->create(['name' => 'Unrelated epic']);
+
+        $this->get(route('epics.index', ['search' => 'Searchable epic']))
+            ->assertOk()
+            ->assertSee('Searchable epic')
+            ->assertDontSee('Unrelated epic');
+    }
+
+    public function test_epic_search_is_kept_in_pagination_links(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+
+        foreach (range(1, 6) as $index) {
+            Epic::factory()->for($project)->create(['name' => "Repeat epic {$index}"]);
+        }
+
+        $this->get(route('epics.index', ['search' => 'Repeat']))
+            ->assertOk()
+            ->assertSee('search=Repeat', false);
+    }
+
     public function test_epics_can_be_searched_by_start_and_end_date(): void
     {
         $this->actingAs(User::factory()->create());
@@ -212,6 +239,17 @@ class EpicCrudTest extends TestCase
             ->assertSee('Epic starts on date')
             ->assertSee('Epic ends on date')
             ->assertDontSee('Epic on other dates');
+    }
+
+    public function test_epic_list_shows_pagination_when_more_than_one_page_exists(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->count(16)->for($project)->create();
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertSee('epic-pagination', false);
     }
 
     public function test_epic_list_shows_the_number_of_comments(): void

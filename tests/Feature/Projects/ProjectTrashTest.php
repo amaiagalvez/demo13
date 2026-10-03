@@ -33,7 +33,15 @@ class ProjectTrashTest extends TestCase
 
         $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
-            '<thead', __('Actions'), __('Name'), __('Customer'), __('Start date'), __('End date'), __('Epics'), __('Comments'), __('Deleted at'),
+            '<thead',
+            __('Actions'),
+            __('Name'),
+            __('Customer'),
+            __('Start date'),
+            __('End date'),
+            __('Epics'),
+            __('Comments'),
+            __('Deleted at'),
         ], false)->assertSeeInOrder(['Project with dates', $customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
     }
 
@@ -138,8 +146,22 @@ class ProjectTrashTest extends TestCase
         $response = $this->get(route('projects.trash.index'));
 
         $response->assertSeeInOrder([
-            $newerProject->name, $tiedProject->name, $olderProject->name,
+            $newerProject->name,
+            $tiedProject->name,
+            $olderProject->name,
         ]);
+    }
+
+    public function test_trash_can_be_searched_by_project_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $matchingProject = Project::factory()->trashed()->create(['name' => 'Archived project match']);
+        $otherProject = Project::factory()->trashed()->create(['name' => 'Unrelated archived project']);
+
+        $this->get(route('projects.trash.index', ['search' => 'project match']))
+            ->assertOk()
+            ->assertSee($matchingProject->name)
+            ->assertDontSee($otherProject->name);
     }
 
     public function test_project_cannot_be_restored_when_an_active_project_uses_its_name(): void
