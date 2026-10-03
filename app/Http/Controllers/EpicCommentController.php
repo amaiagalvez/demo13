@@ -11,7 +11,7 @@ use App\Http\Requests\EpicCommentRequest;
 
 class EpicCommentController extends Controller
 {
-    public function index(Epic $epic): JsonResponse
+    public function show(Epic $epic): JsonResponse
     {
         $this->authorize('view', $epic);
 
