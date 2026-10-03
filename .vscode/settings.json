@@ -1,5 +1,5 @@
 {
-    "php.validate.executablePath": "${workspaceFolder}/.vscode/php-docker",
+    "php.validate.executablePath": ".vscode/php-docker",
     "Laravel.phpEnvironment": "docker",
     "Laravel.phpCommand": [
         "docker",

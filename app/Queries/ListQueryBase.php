@@ -22,7 +22,7 @@ abstract class ListQueryBase
 
     /**
      * @param  Builder<TModel>  $query
-     * @param  non-empty-list<string>  $searchColumns
+     * @param  non-empty-list<literal-string>  $searchColumns
      * @return LengthAwarePaginator<int, TModel>
      */
     protected function paginate(
@@ -32,13 +32,11 @@ abstract class ListQueryBase
     ): LengthAwarePaginator {
         if ($search !== '') {
             $pattern = '%'.$this->escapeLike($search).'%';
+            $clause = ' like ? escape \''.self::LIKE_ESCAPE.'\'';
 
-            $query->where(function (Builder $query) use ($pattern, $searchColumns): void {
+            $query->where(function (Builder $query) use ($pattern, $clause, $searchColumns): void {
                 foreach ($searchColumns as $column) {
-                    $query->orWhereRaw(
-                        sprintf('%s like ? escape \'%s\'', $column, self::LIKE_ESCAPE),
-                        [$pattern],
-                    );
+                    $query->orWhereRaw($column.$clause, [$pattern]);
                 }
             });
         }

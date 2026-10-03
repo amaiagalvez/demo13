@@ -29,6 +29,10 @@ return new class extends Migration
             $table->string('active_name')->nullable()->storedAs('IF(deleted_at IS NULL, name, NULL)');
             $table->unique('active_name');
         });
+
+        Schema::table('customers', function (Blueprint $table): void {
+            $table->index(['deleted_at', 'id']);
+        });
     }
 
     public function down(): void
