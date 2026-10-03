@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\ProjectRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
+use App\Http\Requests\ProjectSelectOptionsRequest;
+use App\Queries\Projects\ProjectSelectOptionsQuery;
 use App\Support\Database\UniqueConstraintViolation;
 
 class ProjectController extends Controller
@@ -22,11 +25,25 @@ class ProjectController extends Controller
     ): View|string {
         $search = $request->search();
         $projects = $query->active($search);
+        $customerId = old('customer_id');
+        $selectedCustomer = is_numeric($customerId)
+            ? Customer::query()->find((int) $customerId, ['id', 'name'])
+            : null;
 
         return $this->listView($request, 'projects.list', [
             'projects' => $projects,
-            'availableCustomers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'hasCustomers' => Customer::query()->exists(),
+            'selectedCustomer' => $selectedCustomer,
             'list' => $transformer->active($projects, $search),
+        ]);
+    }
+
+    public function selectOptions(
+        ProjectSelectOptionsRequest $request,
+        ProjectSelectOptionsQuery $query,
+    ): JsonResponse {
+        return response()->json([
+            'results' => $query->search($request->search()),
         ]);
     }
 

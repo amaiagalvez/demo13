@@ -4,6 +4,7 @@ namespace Tests\Browser\Epics;
 
 use App\Models\Epic;
 use App\Models\User;
+use App\Models\Project;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
@@ -28,6 +29,63 @@ class EpicFormTest extends DuskTestCase
                 ->click('[data-test="epic-edit-'.$epic->id.'"]')
                 ->waitFor('dialog[open] [data-test="epic-end-date"]')
                 ->assertAttribute('dialog[open] [data-test="epic-end-date"]', 'min', '2027-01-01');
+        });
+    }
+
+    public function test_opening_the_project_select_loads_remote_project_options(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create([
+            'name' => 'Remote project '.Str::uuid()->toString(),
+        ]);
+        $epicName = 'Remote epic '.Str::uuid()->toString();
+
+        $this->browse(function (Browser $browser) use ($user, $project, $epicName): void {
+            $browser->loginAs($user)
+                ->visit('/epics')
+                ->click('[data-test="epic-create-button"]')
+                ->waitFor('dialog[open] [data-test="epic-project"]')
+                ->click('dialog[open] [data-test="epic-project"]')
+                ->waitUntil(
+                    'document.querySelector(\'[data-test="epic-project"] option[value="'.(string) $project->id.'"]\') !== null',
+                    10,
+                )
+                ->select('[data-test="epic-project"]', (string) $project->id)
+                ->type('dialog[open] [data-test="epic-name"]', $epicName)
+                ->waitUntil('document.querySelector(\'[data-test="epic-submit"]\').disabled === false', 10)
+                ->click('dialog[open] [data-test="epic-submit"]')
+                ->waitFor('[data-test="epic-status"]');
+        });
+
+        $this->assertDatabaseHas('epics', [
+            'name' => $epicName,
+            'project_id' => $project->id,
+        ]);
+    }
+
+    public function test_opening_the_project_select_loads_other_projects_for_an_existing_epic(): void
+    {
+        $user = User::factory()->create();
+        $epic = Epic::factory()->create();
+        $otherProject = Project::factory()->create([
+            'name' => 'Other project '.Str::uuid()->toString(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $epic, $otherProject): void {
+            $browser->loginAs($user)
+                ->visit('/epics?search='.urlencode($epic->name))
+                ->click('[data-test="epic-edit-'.$epic->id.'"]')
+                ->waitFor('dialog[open] [data-test="epic-project"]')
+                ->click('dialog[open] [data-test="epic-project"]')
+                ->waitUntil(
+                    'document.querySelector(\'dialog[open] [data-test="epic-project"] option[value="'.$otherProject->id.'"]\') !== null',
+                    10,
+                )
+                ->assertSelected('dialog[open] [data-test="epic-project"]', (string) $epic->project_id)
+                ->assertSeeIn(
+                    'dialog[open] [data-test="epic-project"]',
+                    $otherProject->name,
+                );
         });
     }
 }

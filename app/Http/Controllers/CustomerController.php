@@ -11,7 +11,9 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
+use App\Http\Requests\CustomerSelectOptionsRequest;
 use App\Support\Database\UniqueConstraintViolation;
+use App\Queries\Customers\CustomerSelectOptionsQuery;
 
 class CustomerController extends Controller
 {
@@ -26,6 +28,15 @@ class CustomerController extends Controller
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
             'list' => $transformer->active($customers, $search),
+        ]);
+    }
+
+    public function selectOptions(
+        CustomerSelectOptionsRequest $request,
+        CustomerSelectOptionsQuery $query,
+    ): JsonResponse {
+        return response()->json([
+            'results' => $query->search($request->search()),
         ]);
     }
 

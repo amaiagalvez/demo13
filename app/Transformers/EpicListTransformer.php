@@ -45,6 +45,7 @@ class EpicListTransformer
                             'start_date' => $epic->start_date?->toDateString() ?? '',
                             'end_date' => $epic->end_date?->toDateString() ?? '',
                             'project_id' => $epic->project_id,
+                            'project_label' => $this->projectLabel($epic),
                             'commentAction' => route('epics.comments.store', $epic),
                             'commentsUrl' => route('epics.comments.index', $epic),
                             'commentsCount' => (int) $epic->comments_count,
@@ -182,6 +183,17 @@ class EpicListTransformer
             'endDate' => $epic->end_date?->format('Y-m-d') ?? '',
             'commentsCount' => (int) $epic->comments_count,
         ];
+    }
+
+    private function projectLabel(Epic $epic): string
+    {
+        $project = $epic->project;
+
+        if (! $project instanceof Project) {
+            return '—';
+        }
+
+        return $project->name.' ('.($project->customer->name ?? '—').')';
     }
 
     /**

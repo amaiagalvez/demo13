@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('customers/trash/{customer}', [CustomerTrashController::class, 'destroy'])
         ->whereNumber('customer')
         ->name('customers.trash.destroy');
+    Route::get('customers/options', [CustomerController::class, 'selectOptions'])
+        ->name('customers.options');
     Route::resource('customers', CustomerController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('projects/inactive', [ProjectInactiveController::class, 'index'])->name('projects.inactive.index');
     Route::patch('projects/inactive/{project}', [ProjectInactiveController::class, 'reactivate'])
@@ -45,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('projects/trash/{project}', [ProjectTrashController::class, 'destroy'])
         ->whereNumber('project')
         ->name('projects.trash.destroy');
+    Route::get('projects/options', [ProjectController::class, 'selectOptions'])
+        ->name('projects.options');
     Route::resource('projects', ProjectController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('epics/inactive', [EpicInactiveController::class, 'index'])->name('epics.inactive.index');
     Route::patch('epics/inactive/{epic}', [EpicInactiveController::class, 'reactivate'])

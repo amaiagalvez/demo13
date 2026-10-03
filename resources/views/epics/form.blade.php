@@ -18,14 +18,23 @@
             <span class="text-red-600" aria-hidden="true">*</span>
         </flux:label>
         <flux:select id="epic-project-id" name="project_id" x-model="form.project_id" required
+            x-on:focus="searchProjects()" x-bind:aria-busy="projectOptionsLoading"
             data-test="epic-project">
             <option value="">{{ __('Select a project') }}</option>
-            @foreach ($availableProjects as $project)
-                <option value="{{ $project->id }}">{{ $project->name }}
-                    ({{ $project->customer->name }})</option>
-            @endforeach
+            <template x-for="project in projectOptions" :key="project.id">
+                <option x-bind:value="String(project.id)" x-text="project.text"></option>
+            </template>
         </flux:select>
         <flux:error name="project_id" />
+        <flux:text x-show="projectOptionsLoading" role="status" data-test="epic-project-loading">
+            {{ __('Loading projects...') }}
+        </flux:text>
+        <flux:text x-show="projectOptionsSearched && !projectOptionsLoading && !projectOptionsError && projectOptionsResultCount === 0"
+            role="status" data-test="epic-project-empty">
+            {{ __('No projects match your search.') }}
+        </flux:text>
+        <flux:text x-show="projectOptionsError" x-text="projectOptionsError" role="alert"
+            data-test="epic-project-error" />
     </flux:field>
     <flux:field>
         <flux:label>{{ __('Start date') }}</flux:label>

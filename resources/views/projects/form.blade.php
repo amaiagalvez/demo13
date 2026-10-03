@@ -32,18 +32,31 @@
             <span class="text-red-600" aria-hidden="true">*</span>
         </flux:label>
         <select id="project-customer-id" name="customer_id" x-model="form.customer_id"
-            x-effect="window.jQuery($el).val(form.customer_id || null).trigger('change.select2')"
+            x-effect="
+                const customerId = String(form.customer_id || '');
+                if (customerId && form.customer_name) {
+                    let option = Array.from($el.options).find((item) => item.value === customerId);
+                    if (!option) {
+                        option = new Option(form.customer_name, customerId, true, true);
+                        $el.add(option);
+                    }
+                    option.selected = true;
+                }
+                window.jQuery($el).val(customerId || null).trigger('change.select2')
+            "
             required aria-label="{{ __('Customer') }}" data-test="project-customer"
             data-project-customer-select
-            data-customer-store-url="{{ route('customers.store') }}"
+            data-customer-store-url="{{ route('customers.store', [], false) }}"
+            data-customer-search-url="{{ route('customers.options', [], false) }}"
             data-create-label="{{ __('Create customer') }}"
             data-create-error="{{ __('Unable to create customer.') }}"
+            data-search-error="{{ __('Unable to load customers.') }}"
             data-no-results-label="{{ __('No customers found.') }}"
             data-placeholder="{{ __('Select a customer') }}">
             <option></option>
-            @foreach ($availableCustomers as $customer)
-                <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-            @endforeach
+            @if ($selectedCustomer)
+                <option value="{{ $selectedCustomer->id }}">{{ $selectedCustomer->name }}</option>
+            @endif
         </select>
         <flux:error name="customer_id" />
         <p role="alert" x-show="form.customerCreateError" x-text="form.customerCreateError"

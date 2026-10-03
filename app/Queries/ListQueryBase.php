@@ -18,7 +18,7 @@ abstract class ListQueryBase
      * backslash behaves the same on every engine and does not depend on the server's
      * implicit escape character or on its sql_mode.
      */
-    private const LIKE_ESCAPE = '!';
+    protected const LIKE_ESCAPE = '!';
 
     /**
      * @param  Builder<TModel>  $query
@@ -31,7 +31,7 @@ abstract class ListQueryBase
         array $searchColumns,
     ): LengthAwarePaginator {
         if ($search !== '') {
-            $pattern = '%'.$this->escapeLike($search).'%';
+            $pattern = $this->searchPattern($search);
             $clause = ' like ? escape \''.self::LIKE_ESCAPE.'\'';
 
             $query->where(function (Builder $query) use ($pattern, $clause, $searchColumns): void {
@@ -53,12 +53,12 @@ abstract class ListQueryBase
     /**
      * Escape the LIKE wildcards and the escape character itself in a search term.
      */
-    private function escapeLike(string $search): string
+    protected function searchPattern(string $search): string
     {
-        return strtr($search, [
+        return '%'.strtr($search, [
             '%' => self::LIKE_ESCAPE.'%',
             '_' => self::LIKE_ESCAPE.'_',
             self::LIKE_ESCAPE => self::LIKE_ESCAPE.self::LIKE_ESCAPE,
-        ]);
+        ]).'%';
     }
 }

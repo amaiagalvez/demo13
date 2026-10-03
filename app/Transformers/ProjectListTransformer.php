@@ -44,6 +44,7 @@ class ProjectListTransformer
                             'start_date' => $project->start_date->toDateString(),
                             'end_date' => $project->end_date?->toDateString() ?? '',
                             'customer_id' => $project->customer_id,
+                            'customer_name' => $project->customer->name ?? '',
                         ],
                     ],
                     $project->epics_exists ? [

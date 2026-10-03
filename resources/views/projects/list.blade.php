@@ -8,6 +8,7 @@
             'start_date' => old('start_date', ''),
             'end_date' => old('end_date', ''),
             'customer_id' => old('customer_id', ''),
+            'customer_name' => $selectedCustomer?->name ?? '',
             'customerCreateError' => '',
             'customerCreating' => false,
             'context' => $editingProject ? old('_project_form') : 'create',
@@ -44,6 +45,7 @@
                 start_date: '',
                 end_date: '',
                 customer_id: '',
+                customer_name: '',
                 customerCreateError: '',
                 customerCreating: false,
                 context: 'create',
@@ -87,7 +89,7 @@
         <x-list.header :list="$list" prefix="project" :create-label="__('New project')"
             create-click="createProject()" />
 
-        @if ($list['create'] && $availableCustomers->isEmpty())
+        @if ($list['create'] && ! $hasCustomers)
             <flux:callout icon="exclamation-triangle" variant="warning">
                 {{ __('No active customers are available. Create one from the project form.') }}
             </flux:callout>

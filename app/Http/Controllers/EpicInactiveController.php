@@ -21,7 +21,8 @@ class EpicInactiveController extends Controller
 
         return $this->listView($request, 'epics.list', [
             'epics' => $epics,
-            'availableProjects' => collect(),
+            'hasProjects' => false,
+            'selectedProjectOption' => null,
             'list' => $transformer->inactive($epics, $search),
         ]);
     }

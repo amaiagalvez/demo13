@@ -41,6 +41,13 @@
 <x-layouts::app :title="$list['resource']">
     <div x-data="{
         form: @js($initialForm),
+        projectOptions: @js($selectedProjectOption ? [$selectedProjectOption] : []),
+        projectOptionsUrl: @js(route('projects.options', [], false)),
+        projectOptionsRequest: null,
+        projectOptionsLoading: false,
+        projectOptionsSearched: false,
+        projectOptionsResultCount: 0,
+        projectOptionsError: '',
         confirmation: {
             action: '',
             method: 'DELETE',
@@ -51,7 +58,52 @@
         },
         storeUrl: @js(route('epics.store')),
         updateUrl: @js(route('epics.update', '__EPIC__')),
+        async searchProjects() {
+            this.projectOptionsRequest?.abort();
+            const controller = new AbortController();
+            this.projectOptionsRequest = controller;
+            this.projectOptionsLoading = true;
+            this.projectOptionsError = '';
+
+            const url = new URL(this.projectOptionsUrl, window.location.href);
+            url.searchParams.set('q', '');
+
+            try {
+                const response = await fetch(url, {
+                    headers: { Accept: 'application/json' },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    throw new Error();
+                }
+
+                const result = await response.json();
+                const selectedProject = this.projectOptions.find(
+                    (project) => String(project.id) === String(this.form.project_id),
+                );
+                const results = result.results;
+                this.projectOptionsResultCount = results.length;
+                this.projectOptions = selectedProject && !results.some(
+                    (project) => String(project.id) === String(selectedProject.id),
+                ) ? [selectedProject, ...results] : results;
+                this.projectOptionsSearched = true;
+            } catch {
+                if (!controller.signal.aborted) {
+                    this.projectOptionsError = @js(__('Unable to load projects.'));
+                }
+            } finally {
+                if (this.projectOptionsRequest === controller) {
+                    this.projectOptionsLoading = false;
+                }
+            }
+        },
         createEpic() {
+            this.projectOptionsRequest?.abort();
+            this.projectOptions = [];
+            this.projectOptionsSearched = false;
+            this.projectOptionsResultCount = 0;
+            this.projectOptionsError = '';
             this.form = {
                 id: null,
                 name: '',
@@ -74,6 +126,14 @@
         },
         editEpic(epic, commentBody = '') {
             this.commentRequest?.abort();
+            this.projectOptionsRequest?.abort();
+            this.projectOptions = [{
+                id: String(epic.project_id),
+                text: epic.project_label,
+            }];
+            this.projectOptionsSearched = false;
+            this.projectOptionsResultCount = 0;
+            this.projectOptionsError = '';
             this.form = {
                 ...epic,
                 comments: [],
@@ -148,7 +208,7 @@
         <x-list.header :list="$list" prefix="epic" :create-label="__('New epic')"
             create-click="createEpic()" />
 
-        @if ($list['create'] && $availableProjects->isEmpty())
+        @if ($list['create'] && ! $hasProjects)
             <flux:callout icon="exclamation-triangle" variant="warning">
                 {{ __('No active projects are available. Create a project before adding epics.') }}
             </flux:callout>

@@ -277,8 +277,24 @@ window.initializeProjectCustomerSelect = (element) => {
         placeholder: element.dataset.placeholder,
         allowClear: true,
         tags: true,
+        ajax: {
+            url: element.dataset.customerSearchUrl,
+            dataType: 'json',
+            delay: 250,
+            headers: { Accept: 'application/json' },
+            data: (params) => ({ q: params.term ?? '' }),
+            processResults: (data) => ({
+                results: data.results.map((result) => ({
+                    ...result,
+                    // Select2 4.0.13 calls its AJAX normalizer unbound.
+                    _resultId: `select2-${element.id}-result-${result.id}`,
+                })),
+            }),
+            cache: true,
+        },
         language: {
             noResults: () => element.dataset.noResultsLabel,
+            errorLoading: () => element.dataset.searchError,
         },
         createTag: (params) => {
             const name = params.term.trim();
@@ -301,6 +317,7 @@ window.initializeProjectCustomerSelect = (element) => {
         const projectForm = window.Alpine.$data(root);
 
         if (!customerOption.newTag) {
+            projectForm.form.customer_name = customerOption.text;
             projectForm.form.customerCreateError = '';
             element.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -335,12 +352,14 @@ window.initializeProjectCustomerSelect = (element) => {
 
             const option = new Option(result.name, String(result.id), true, true);
             element.add(option);
+            projectForm.form.customer_name = result.name;
             select.val(String(result.id));
             element.dispatchEvent(new Event('change', { bubbles: true }));
         } catch (error) {
             element.querySelector(`option[value="${CSS.escape(temporaryValue)}"]`)?.remove();
             select.val(null).trigger('change.select2');
             element.dispatchEvent(new Event('change', { bubbles: true }));
+            projectForm.form.customer_name = '';
             projectForm.form.customerCreateError = error.message || element.dataset.createError;
         } finally {
             projectForm.form.customerCreating = false;

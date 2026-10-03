@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Epic;
 use App\Models\Project;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\EpicRequest;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
+use App\Http\Requests\ProjectSelectOptionsRequest;
+use App\Queries\Projects\ProjectSelectOptionsQuery;
 use App\Support\Database\UniqueConstraintViolation;
 
 class EpicController extends Controller
@@ -22,11 +25,30 @@ class EpicController extends Controller
     ): View|string {
         $search = $request->search();
         $epics = $query->active($search);
+        $projectId = old('project_id');
+        $selectedProject = is_numeric($projectId)
+            ? Project::query()
+                ->with('customer:id,name')
+                ->find((int) $projectId, ['id', 'name', 'customer_id'])
+            : null;
 
         return $this->listView($request, 'epics.list', [
             'epics' => $epics,
-            'availableProjects' => Project::query()->with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']),
+            'hasProjects' => Project::query()->exists(),
+            'selectedProjectOption' => $selectedProject === null ? null : [
+                'id' => $selectedProject->id,
+                'text' => $selectedProject->name.' ('.($selectedProject->customer->name ?? '—').')',
+            ],
             'list' => $transformer->active($epics, $search),
+        ]);
+    }
+
+    public function selectOptions(
+        ProjectSelectOptionsRequest $request,
+        ProjectSelectOptionsQuery $query,
+    ): JsonResponse {
+        return response()->json([
+            'results' => $query->search($request->search()),
         ]);
     }
 

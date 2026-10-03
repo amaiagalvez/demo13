@@ -24,7 +24,7 @@ class ProjectTrashController extends Controller
 
         return $this->listView($request, 'projects.list', [
             'projects' => $projects,
-            'availableCustomers' => collect(),
+            'hasCustomers' => false,
             'list' => $transformer->trash($projects, $search),
         ]);
     }

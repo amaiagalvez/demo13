@@ -40,6 +40,10 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 )
                 ->click('#select2-project-customer-id-container')
                 ->type('dialog[open] .select2-container--open .select2-search__field', 'Northwind')
+                ->waitUntil(
+                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode($existingCustomerName).')',
+                    10,
+                )
                 ->assertSeeIn('dialog[open] .select2-results', $existingCustomerName)
                 ->click('dialog[open] .select2-results__option--selectable')
                 ->waitUntil('document.querySelector(\'[data-test="project-submit"]\').disabled === false', 10)
@@ -48,6 +52,10 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 ->type(
                     'dialog[open] .select2-container--open .select2-search__field',
                     $newCustomerName,
+                )
+                ->waitUntil(
+                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode(__('Create customer').': '.$newCustomerName).')',
+                    10,
                 )
                 ->assertSeeIn(
                     'dialog[open] .select2-results',
