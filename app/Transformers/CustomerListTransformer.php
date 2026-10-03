@@ -5,7 +5,7 @@ namespace App\Transformers;
 use App\Models\Customer;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class CustomerListTransformer
+class CustomerListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
@@ -21,7 +21,7 @@ class CustomerListTransformer
             'emptyMessage' => $search === ''
                 ? __('No customers yet.')
                 : __('No customers match your search.'),
-            'search' => $this->search(route('customers.index'), $search),
+            'search' => $this->search(route('customers.index'), $search, __('Search customers...')),
             'navigation' => [
                 'label' => __('Trash'),
                 'url' => route('customers.trash.index'),
@@ -78,7 +78,7 @@ class CustomerListTransformer
             'state' => 'inactive',
             'extraDateHeading' => __('Updated at'),
             'emptyMessage' => $search === '' ? __('No inactive records.') : __('No customers match your search.'),
-            'search' => $this->search(route('customers.inactive.index'), $search),
+            'search' => $this->search(route('customers.inactive.index'), $search, __('Search customers...')),
             'navigation' => [
                 'label' => __('Customers'),
                 'url' => route('customers.index'),
@@ -120,7 +120,7 @@ class CustomerListTransformer
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No customers match your search.'),
-            'search' => $this->search(route('customers.trash.index'), $search),
+            'search' => $this->search(route('customers.trash.index'), $search, __('Search customers...')),
             'navigation' => [
                 'label' => __('Customers'),
                 'url' => route('customers.index'),
@@ -174,18 +174,6 @@ class CustomerListTransformer
             'projectsCount' => (int) $customer->projects_count,
             'epicsCount' => (int) $customer->epics_count,
             'commentsCount' => (int) $customer->comments_count,
-        ];
-    }
-
-    /**
-     * @return array{action: string, value: string, placeholder: string}
-     */
-    private function search(string $action, string $value): array
-    {
-        return [
-            'action' => $action,
-            'value' => $value,
-            'placeholder' => __('Search customers...'),
         ];
     }
 }

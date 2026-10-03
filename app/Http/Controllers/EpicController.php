@@ -28,8 +28,8 @@ class EpicController extends Controller
         $projectId = old('project_id');
         $selectedProject = is_numeric($projectId)
             ? Project::query()
-            ->with('customer:id,name')
-            ->find((int) $projectId, ['id', 'name', 'customer_id'])
+                ->with('customer:id,name')
+                ->find((int) $projectId, ['id', 'name', 'customer_id'])
             : null;
 
         return $this->listView($request, 'epics.list', [
@@ -37,7 +37,7 @@ class EpicController extends Controller
             'hasProjects' => Project::query()->where('active', true)->exists(),
             'selectedProjectOption' => $selectedProject === null ? null : [
                 'id' => $selectedProject->id,
-                'text' => $selectedProject->name . ' (' . ($selectedProject->customer->name ?? '—') . ')',
+                'text' => $selectedProject->name.' ('.($selectedProject->customer->name ?? '—').')',
             ],
             'list' => $transformer->active($epics, $search),
         ]);
@@ -52,13 +52,12 @@ class EpicController extends Controller
         ]);
     }
 
-    public function store(EpicRequest $request): RedirectResponse
+    public function store(EpicRequest $request, EpicListQuery $query): RedirectResponse
     {
-        $deletedEpic = Epic::onlyTrashed()
-            ->where('project_id', $request->integer('project_id'))
-            ->where('name', $request->string('name')->toString())
-            ->latest('deleted_at')
-            ->first();
+        $deletedEpic = $query->findTrashedByName(
+            $request->string('name')->toString(),
+            $request->integer('project_id'),
+        );
 
         if ($deletedEpic && ! $request->boolean('reuse_deleted_name')) {
             return to_route('epics.index')

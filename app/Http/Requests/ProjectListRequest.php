@@ -3,27 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Models\Project;
-use Illuminate\Foundation\Http\FormRequest;
 
-class ProjectListRequest extends FormRequest
+class ProjectListRequest extends SearchableListRequest
 {
     public function authorize(): bool
     {
         return $this->user()?->can('viewAny', Project::class) ?? false;
-    }
-
-    /**
-     * @return array<string, array<int, string>>
-     */
-    public function rules(): array
-    {
-        return [
-            'search' => ['nullable', 'string', 'max:255'],
-        ];
-    }
-
-    public function search(): string
-    {
-        return $this->string('search')->trim()->toString();
     }
 }

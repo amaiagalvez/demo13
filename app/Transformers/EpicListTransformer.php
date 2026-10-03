@@ -6,7 +6,7 @@ use App\Models\Epic;
 use App\Models\Project;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class EpicListTransformer
+class EpicListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
@@ -22,7 +22,7 @@ class EpicListTransformer
             'emptyMessage' => $search === ''
                 ? __('No epics yet.')
                 : __('No epics match your search.'),
-            'search' => $this->search(route('epics.index'), $search),
+            'search' => $this->search(route('epics.index'), $search, __('Search epics...')),
             'navigation' => [
                 'label' => __('Trash'),
                 'url' => route('epics.trash.index'),
@@ -78,7 +78,7 @@ class EpicListTransformer
             'state' => 'inactive',
             'extraDateHeading' => __('Updated at'),
             'emptyMessage' => $search === '' ? __('No inactive records.') : __('No epics match your search.'),
-            'search' => $this->search(route('epics.inactive.index'), $search),
+            'search' => $this->search(route('epics.inactive.index'), $search, __('Search epics...')),
             'navigation' => [
                 'label' => __('Epics'),
                 'url' => route('epics.index'),
@@ -120,7 +120,7 @@ class EpicListTransformer
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No epics match your search.'),
-            'search' => $this->search(route('epics.trash.index'), $search),
+            'search' => $this->search(route('epics.trash.index'), $search, __('Search epics...')),
             'navigation' => [
                 'label' => __('Epics'),
                 'url' => route('epics.index'),
@@ -190,17 +190,5 @@ class EpicListTransformer
         }
 
         return $project->name.' ('.($project->customer?->name ?? '—').')';
-    }
-
-    /**
-     * @return array{action: string, value: string, placeholder: string}
-     */
-    private function search(string $action, string $value): array
-    {
-        return [
-            'action' => $action,
-            'value' => $value,
-            'placeholder' => __('Search epics...'),
-        ];
     }
 }

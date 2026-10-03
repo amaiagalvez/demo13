@@ -81,6 +81,13 @@ final class EpicListQuery extends ListQueryBase
         );
     }
 
+    public function findTrashedByName(string $name, int $projectId): ?Epic
+    {
+        $query = Epic::onlyTrashed()->where('project_id', $projectId);
+
+        return $this->firstTrashedByName($query, $name);
+    }
+
     /**
      * @param  Builder<Epic>  $query
      * @return Builder<Epic>

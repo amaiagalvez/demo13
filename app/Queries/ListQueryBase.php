@@ -51,6 +51,15 @@ abstract class ListQueryBase
     }
 
     /**
+     * @param  Builder<TModel>  $query
+     * @return TModel|null
+     */
+    protected function firstTrashedByName(Builder $query, string $name): ?Model
+    {
+        return $query->where('name', $name)->latest('deleted_at')->first();
+    }
+
+    /**
      * Escape the LIKE wildcards and the escape character itself in a search term.
      */
     protected function searchPattern(string $search): string

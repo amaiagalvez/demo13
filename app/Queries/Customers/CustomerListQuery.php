@@ -22,7 +22,7 @@ final class CustomerListQuery extends ListQueryBase
         return $this->paginate(
             $this->withActiveCounts(
                 Customer::query()->where('active', true)->orderBy('name'),
-            )->withExists(['projects' => fn(Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)]),
+            )->withExists(['projects' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)]),
             $search,
             searchColumns: ['name'],
         );
@@ -52,6 +52,11 @@ final class CustomerListQuery extends ListQueryBase
         );
     }
 
+    public function findTrashedByName(string $name): ?Customer
+    {
+        return $this->firstTrashedByName(Customer::onlyTrashed(), $name);
+    }
+
     /**
      * Only the live slice of the customer is counted: active projects, the active epics they own and
      * the comments written on those epics; deleted records are excluded by the joins below.
@@ -64,8 +69,8 @@ final class CustomerListQuery extends ListQueryBase
         return $query
             ->select('customers.*')
             ->withCount([
-                'projects' => fn(Builder $projects) => $projects->where('projects.active', true),
-                'epics' => fn(Builder $epics) => $epics
+                'projects' => fn (Builder $projects) => $projects->where('projects.active', true),
+                'epics' => fn (Builder $epics) => $epics
                     ->where('epics.active', true)
                     ->where('projects.active', true),
             ])

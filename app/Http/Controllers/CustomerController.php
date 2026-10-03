@@ -40,13 +40,10 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function store(CustomerRequest $request): RedirectResponse|JsonResponse
+    public function store(CustomerRequest $request, CustomerListQuery $query): RedirectResponse|JsonResponse
     {
         $name = $request->string('name')->toString();
-        $deletedCustomer = Customer::onlyTrashed()
-            ->where('name', $name)
-            ->latest('deleted_at')
-            ->first();
+        $deletedCustomer = $query->findTrashedByName($name);
 
         if ($deletedCustomer && ! $request->boolean('reuse_deleted_name')) {
             if ($request->expectsJson()) {

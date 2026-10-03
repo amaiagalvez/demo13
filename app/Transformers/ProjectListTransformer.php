@@ -5,7 +5,7 @@ namespace App\Transformers;
 use App\Models\Project;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class ProjectListTransformer
+class ProjectListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
@@ -21,7 +21,7 @@ class ProjectListTransformer
             'emptyMessage' => $search === ''
                 ? __('No projects yet.')
                 : __('No projects match your search.'),
-            'search' => $this->search(route('projects.index'), $search),
+            'search' => $this->search(route('projects.index'), $search, __('Search projects...')),
             'navigation' => [
                 'label' => __('Trash'),
                 'url' => route('projects.trash.index'),
@@ -85,7 +85,7 @@ class ProjectListTransformer
             'state' => 'inactive',
             'extraDateHeading' => __('Updated at'),
             'emptyMessage' => $search === '' ? __('No inactive records.') : __('No projects match your search.'),
-            'search' => $this->search(route('projects.inactive.index'), $search),
+            'search' => $this->search(route('projects.inactive.index'), $search, __('Search projects...')),
             'navigation' => [
                 'label' => __('Projects'),
                 'url' => route('projects.index'),
@@ -127,7 +127,7 @@ class ProjectListTransformer
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No projects match your search.'),
-            'search' => $this->search(route('projects.trash.index'), $search),
+            'search' => $this->search(route('projects.trash.index'), $search, __('Search projects...')),
             'navigation' => [
                 'label' => __('Projects'),
                 'url' => route('projects.index'),
@@ -183,18 +183,6 @@ class ProjectListTransformer
             'endDate' => $project->end_date?->format('Y-m-d') ?? '',
             'epicsCount' => (int) $project->epics_count,
             'commentsCount' => (int) $project->comments_count,
-        ];
-    }
-
-    /**
-     * @return array{action: string, value: string, placeholder: string}
-     */
-    private function search(string $action, string $value): array
-    {
-        return [
-            'action' => $action,
-            'value' => $value,
-            'placeholder' => __('Search projects...'),
         ];
     }
 }

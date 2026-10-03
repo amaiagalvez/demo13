@@ -187,6 +187,33 @@ class EpicCrudTest extends TestCase
             ->assertDontSee('Other epic');
     }
 
+    public function test_epics_can_be_searched_by_start_and_end_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->create([
+            'name' => 'Epic starts on date',
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-31',
+        ]);
+        Epic::factory()->for($project)->create([
+            'name' => 'Epic ends on date',
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-10-01',
+        ]);
+        Epic::factory()->for($project)->create([
+            'name' => 'Epic on other dates',
+            'start_date' => '2026-10-02',
+            'end_date' => '2026-10-03',
+        ]);
+
+        $this->get(route('epics.index', ['search' => '2026-10-01']))
+            ->assertOk()
+            ->assertSee('Epic starts on date')
+            ->assertSee('Epic ends on date')
+            ->assertDontSee('Epic on other dates');
+    }
+
     public function test_epic_list_shows_the_number_of_comments(): void
     {
         $this->actingAs(User::factory()->create());

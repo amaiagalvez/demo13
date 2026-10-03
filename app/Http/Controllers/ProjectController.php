@@ -47,13 +47,10 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function store(ProjectRequest $request): RedirectResponse
+    public function store(ProjectRequest $request, ProjectListQuery $query): RedirectResponse
     {
         $name = $request->string('name')->toString();
-        $deletedProject = Project::onlyTrashed()
-            ->where('name', $name)
-            ->latest('deleted_at')
-            ->first();
+        $deletedProject = $query->findTrashedByName($name);
 
         if ($deletedProject && ! $request->boolean('reuse_deleted_name')) {
             return to_route('projects.index')

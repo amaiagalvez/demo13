@@ -69,6 +69,11 @@ final class ProjectListQuery extends ListQueryBase
         );
     }
 
+    public function findTrashedByName(string $name): ?Project
+    {
+        return $this->firstTrashedByName(Project::onlyTrashed(), $name);
+    }
+
     /**
      * Only active epics and the comments written on them are counted; deleted ones are excluded by
      * the relations.
