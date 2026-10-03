@@ -126,10 +126,17 @@
                             <flux:table.cell class="font-medium">{{ $row['name'] }}
                             </flux:table.cell>
                             <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['startDate'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $row['endDate'] }}</flux:table.cell>
+                            <flux:table.cell>
+                                <x-list.local-time :datetime="$row['startDate']" format="date" />
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <x-list.local-time :datetime="$row['endDate']" format="date" />
+                            </flux:table.cell>
                             @if ($list['extraDateHeading'])
-                                <flux:table.cell>{{ $row['extraDate'] }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <x-list.local-time :datetime="$row['extraDate']"
+                                        format="datetime" />
+                                </flux:table.cell>
                             @endif
                         </flux:table.row>
                     @empty

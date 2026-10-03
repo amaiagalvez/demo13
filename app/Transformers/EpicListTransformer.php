@@ -89,7 +89,7 @@ class EpicListTransformer
             'create' => false,
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
-                'extraDate' => $epic->updated_at?->format('Y-m-d H:i'),
+                'extraDate' => $epic->updated_at?->toIso8601String(),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -131,7 +131,7 @@ class EpicListTransformer
             'create' => false,
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
-                'extraDate' => $epic->deleted_at?->format('Y-m-d'),
+                'extraDate' => $epic->deleted_at?->toIso8601String(),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',

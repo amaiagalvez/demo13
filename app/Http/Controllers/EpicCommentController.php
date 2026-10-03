@@ -28,7 +28,6 @@ class EpicCommentController extends Controller
                     'id' => $comment->id,
                     'author' => $author === null ? __('Deleted user') : $author->name,
                     'dateTime' => $comment->created_at?->toIso8601String(),
-                    'writtenAt' => $comment->created_at?->format('Y-m-d H:i'),
                     'body' => $comment->body,
                 ];
             })

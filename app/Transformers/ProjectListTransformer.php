@@ -96,7 +96,7 @@ class ProjectListTransformer
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
-                'extraDate' => $project->updated_at?->format('Y-m-d H:i'),
+                'extraDate' => $project->updated_at?->toIso8601String(),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -138,7 +138,7 @@ class ProjectListTransformer
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
-                'extraDate' => $project->deleted_at?->format('Y-m-d'),
+                'extraDate' => $project->deleted_at?->toIso8601String(),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',

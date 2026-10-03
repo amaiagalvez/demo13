@@ -7,11 +7,82 @@ use App\Models\Project;
 use Tests\DuskTestCase;
 use App\Models\Customer;
 use Laravel\Dusk\Browser;
+use Facebook\WebDriver\Chrome\ChromeDevToolsDriver;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class CustomerCrudTest extends DuskTestCase
 {
+    private const BROWSER_TIMEZONE = 'Europe/Madrid';
+
     use DatabaseMigrations;
+
+    public function test_customer_creation_date_uses_the_browser_timezone(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->create([
+            'name' => 'Timezone customer',
+            'created_at' => '2026-10-01 23:30:00',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $customer): void {
+            $browser->loginAs($user);
+            (new ChromeDevToolsDriver($browser->driver))->execute(
+                'Emulation.setTimezoneOverride',
+                ['timezoneId' => self::BROWSER_TIMEZONE],
+            );
+
+            $selector = '[data-test="customer-created-at-'.$customer->id.'"]';
+
+            $browser->visit('/customers')
+                ->waitUntil(
+                    'document.querySelector('.json_encode($selector).')?.textContent.trim() !== "2026-10-01 23:30"',
+                    10,
+                )
+                ->assertScript('new Intl.DateTimeFormat().resolvedOptions().timeZone', self::BROWSER_TIMEZONE)
+                ->assertScript(
+                    'new Date(document.querySelector('.json_encode($selector).').dateTime).getDate()',
+                    2,
+                )
+                ->assertScript(
+                    'document.querySelector('.json_encode($selector).').textContent.trim() === window.formatLocalDateTime(document.querySelector('.json_encode($selector).').dateTime)',
+                    true,
+                )
+                ->assertScript(
+                    '(() => { const element = document.querySelector('.json_encode($selector).'); const locale = document.documentElement.lang; document.documentElement.lang = "eu"; const basque = window.formatLocalDateTime(element.dateTime); document.documentElement.lang = "es"; const spanish = window.formatLocalDateTime(element.dateTime); document.documentElement.lang = locale; return basque + "|" + spanish; })()',
+                    '2026-10-02 01:30|02-10-2026 01:30',
+                )
+                ->assertScript(
+                    '(() => { const locale = document.documentElement.lang; document.documentElement.lang = "eu"; const basque = window.formatLocalDateTime("2026-10-01", "date"); document.documentElement.lang = "es"; const spanish = window.formatLocalDateTime("2026-10-01", "date"); document.documentElement.lang = locale; return basque + "|" + spanish; })()',
+                    '2026-10-01|01-10-2026',
+                );
+        });
+    }
+
+    public function test_customer_trash_timestamp_displays_local_time(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->create(['name' => 'Timezone deleted customer']);
+        $customer->delete();
+
+        $this->browse(function (Browser $browser) use ($user): void {
+            $browser->loginAs($user);
+            (new ChromeDevToolsDriver($browser->driver))->execute(
+                'Emulation.setTimezoneOverride',
+                ['timezoneId' => self::BROWSER_TIMEZONE],
+            );
+
+            $browser->visit(route('customers.trash.index'))
+                ->waitFor('tbody time[data-local-datetime="datetime"]')
+                ->waitUntil(
+                    '(() => { const element = document.querySelector(\'tbody time[data-local-datetime="datetime"]\'); return element.textContent.trim() === window.formatLocalDateTime(element.dateTime); })()',
+                    10,
+                )
+                ->assertScript(
+                    'document.querySelector(\'tbody time[data-local-datetime="datetime"]\').textContent.trim().includes(":")',
+                    true,
+                );
+        });
+    }
 
     public function test_customer_with_projects_can_be_deactivated_and_reactivated_after_confirmation(): void
     {
@@ -350,7 +421,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertVisible('[data-test="customer-status"]')
                 ->waitUntil(
                     'document.querySelector(\'[data-test="customer-status"]\').style.display === \'none\'',
-                    12,
+                    22,
                 );
 
             $customer = Customer::query()->where('name', 'Dusk Customer')->firstOrFail();

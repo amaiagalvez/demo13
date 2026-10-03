@@ -29,6 +29,7 @@ class CustomerCrudTest extends TestCase
             ->assertOk()
             ->assertSee('role="status"', false)
             ->assertSee('aria-live="polite"', false)
+            ->assertSee('datetime="'.$customer->created_at?->toIso8601String().'"', false)
             ->assertSee('customer-create')
             ->assertSee('aria-labelledby="customer-form-heading"', false)
             ->assertSee('id="customer-form-heading"', false)

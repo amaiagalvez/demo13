@@ -90,7 +90,7 @@ class CustomerListTransformer
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
-                'extraDate' => $customer->updated_at?->format('Y-m-d H:i'),
+                'extraDate' => $customer->updated_at?->toIso8601String(),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -133,7 +133,7 @@ class CustomerListTransformer
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
-                'extraDate' => $customer->deleted_at?->format('Y-m-d'),
+                'extraDate' => $customer->deleted_at?->toIso8601String(),
                 'actions' => [
                     [
                         'type' => 'confirm-modal',
@@ -174,7 +174,7 @@ class CustomerListTransformer
         return [
             'id' => $customer->id,
             'name' => $customer->name,
-            'date' => $customer->created_at?->format('Y-m-d'),
+            'date' => $customer->created_at?->toIso8601String(),
         ];
     }
 

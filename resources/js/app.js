@@ -4,6 +4,101 @@ import select2 from 'select2';
 window.$ = window.jQuery = $;
 select2(window, $);
 
+const formatLocalDateTime = (value, format = 'datetime') => {
+    if (!value) {
+        return '';
+    }
+
+    const locale = document.documentElement.lang || undefined;
+    const normalizedLocale = locale?.toLowerCase() || '';
+    const isBasque = /^eu(?:-|$)/.test(normalizedLocale);
+    const isSpanish = /^es(?:-|$)/.test(normalizedLocale);
+
+    if (format === 'date') {
+        const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+        if (!parts) {
+            return value;
+        }
+
+        const [, year, month, day] = parts;
+
+        if (isBasque) {
+            return `${year}-${month}-${day}`;
+        }
+
+        if (isSpanish) {
+            return `${day}-${month}-${year}`;
+        }
+
+        const date = new Date(`${year}-${month}-${day}T12:00:00`);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return new Intl.DateTimeFormat(locale, { dateStyle: 'short' }).format(date);
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    if (isBasque || isSpanish) {
+        const year = String(date.getFullYear()).padStart(4, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+
+        return isBasque
+            ? `${year}-${month}-${day} ${hour}:${minute}`
+            : `${day}-${month}-${year} ${hour}:${minute}`;
+    }
+
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(date);
+};
+
+window.formatLocalDateTime = formatLocalDateTime;
+
+const localizeDateTimes = (root = document) => {
+    const elements = [];
+
+    if (root instanceof Element && root.matches('[data-local-datetime]')) {
+        elements.push(root);
+    }
+
+    if (root instanceof Element || root instanceof Document) {
+        elements.push(...root.querySelectorAll('[data-local-datetime]'));
+    }
+
+    elements.forEach((element) => {
+        const formatted = formatLocalDateTime(element.dateTime, element.dataset.localDatetime);
+
+        if (element.textContent.trim() !== formatted) {
+            element.textContent = formatted;
+        }
+    });
+};
+
+const localDateTimeObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node instanceof Element) {
+                localizeDateTimes(node);
+            }
+        });
+    });
+});
+
+if (document.documentElement) {
+    localDateTimeObserver.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+localizeDateTimes();
+
 const trackedFormStates = new WeakMap();
 
 function trackedFormValues(form) {

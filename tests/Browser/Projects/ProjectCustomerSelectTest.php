@@ -72,7 +72,20 @@ class ProjectCustomerSelectTest extends DuskTestCase
 
             $browser
                 ->click('dialog[open] [data-test="project-submit"]')
-                ->waitFor('[data-test="project-status"]');
+                ->waitFor('[data-test="project-status"]')
+                ->visit('/projects?search='.urlencode($projectName))
+                ->waitUntil(
+                    '(() => { const element = document.querySelector(\'tbody time[data-local-datetime="date"]\'); return element && element.textContent.trim() === window.formatLocalDateTime(element.dateTime, "date"); })()',
+                    10,
+                )
+                ->assertScript(
+                    'document.querySelector(\'tbody time[data-local-datetime="date"]\').dateTime',
+                    '2026-10-01',
+                )
+                ->assertScript(
+                    '!document.querySelector(\'tbody time[data-local-datetime="date"]\').textContent.trim().includes(":")',
+                    true,
+                );
         });
 
         $customer = Customer::query()->where('name', $newCustomerName)->firstOrFail();

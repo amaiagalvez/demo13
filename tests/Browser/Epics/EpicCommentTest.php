@@ -8,6 +8,7 @@ use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
 use App\Models\EpicComment;
 use Illuminate\Support\Str;
+use Facebook\WebDriver\Chrome\ChromeDevToolsDriver;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class EpicCommentTest extends DuskTestCase
@@ -53,5 +54,60 @@ class EpicCommentTest extends DuskTestCase
             'user_id' => $user->id,
             'body' => $commentBody,
         ]);
+    }
+
+    public function test_comment_time_is_displayed_in_the_browser_timezone(): void
+    {
+        $user = User::factory()->create();
+        $epic = Epic::factory()->create([
+            'name' => 'Timezone epic '.Str::uuid()->toString(),
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-02',
+        ]);
+        EpicComment::factory()->for($epic)->for($user)->create([
+            'body' => 'Timezone comment',
+            'created_at' => '2026-10-01 09:30:00',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $epic): void {
+            $browser->loginAs($user);
+            (new ChromeDevToolsDriver($browser->driver))->execute(
+                'Emulation.setTimezoneOverride',
+                ['timezoneId' => 'Europe/Madrid'],
+            );
+
+            $browser->visit('/epics?search='.urlencode($epic->name))
+                ->assertScript(
+                    'document.querySelector(\'tbody time[data-local-datetime="date"]\').dateTime',
+                    '2026-10-01',
+                )
+                ->assertScript(
+                    '!document.querySelector(\'tbody time[data-local-datetime="date"]\').textContent.trim().includes(":")',
+                    true,
+                )
+                ->assertScript(
+                    'document.querySelector(\'tbody time[data-local-datetime="date"]\').textContent.trim() === window.formatLocalDateTime(document.querySelector(\'tbody time[data-local-datetime="date"]\').dateTime, "date")',
+                    true,
+                )
+                ->click('[data-test="epic-edit-'.$epic->id.'"]')
+                ->waitFor('dialog[open] [data-test="epic-comment-written-at"]')
+                ->assertScript('new Intl.DateTimeFormat().resolvedOptions().timeZone', 'Europe/Madrid')
+                ->assertScript(
+                    'new Date(document.querySelector(\'[data-test="epic-comment-written-at"]\').dateTime).getHours()',
+                    11,
+                )
+                ->assertScript(
+                    'document.querySelector(\'[data-test="epic-comment-written-at"]\').textContent.trim() === window.formatLocalDateTime(document.querySelector(\'[data-test="epic-comment-written-at"]\').dateTime)',
+                    true,
+                )
+                ->assertScript(
+                    '(() => { const time = document.querySelector(\'[data-test="epic-comment-written-at"]\'); const locale = document.documentElement.lang; document.documentElement.lang = "eu"; const basque = window.formatLocalDateTime(time.dateTime); document.documentElement.lang = "es"; const spanish = window.formatLocalDateTime(time.dateTime); document.documentElement.lang = locale; return basque + "|" + spanish; })()',
+                    '2026-10-01 11:30|01-10-2026 11:30',
+                )
+                ->assertScript(
+                    '(() => { const locale = document.documentElement.lang; document.documentElement.lang = "eu"; const basque = window.formatLocalDateTime("2026-10-01", "date"); document.documentElement.lang = "es"; const spanish = window.formatLocalDateTime("2026-10-01", "date"); document.documentElement.lang = locale; return basque + "|" + spanish; })()',
+                    '2026-10-01|01-10-2026',
+                );
+        });
     }
 }

@@ -116,7 +116,9 @@
                             <div class="flex items-center justify-between gap-2 text-xs text-zinc-500">
                                 <span class="font-medium text-zinc-700 dark:text-zinc-300"
                                     x-text="comment.author"></span>
-                                <time x-bind:datetime="comment.dateTime" x-text="comment.writtenAt"></time>
+                                <time x-bind:datetime="comment.dateTime"
+                                    x-text="window.formatLocalDateTime(comment.dateTime, 'datetime')"
+                                    data-test="epic-comment-written-at"></time>
                             </div>
                             <p class="mt-2 whitespace-pre-line text-sm" x-text="comment.body"></p>
                         </li>

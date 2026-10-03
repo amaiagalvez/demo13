@@ -60,7 +60,6 @@ class EpicCommentTest extends TestCase
             ->assertOk()
             ->assertJsonPath('comments.0.body', 'Visible comment')
             ->assertJsonPath('comments.0.author', 'Ane Author')
-            ->assertJsonPath('comments.0.writtenAt', '2026-10-01 09:30')
             ->assertJsonPath('comments.0.dateTime', '2026-10-01T09:30:00+00:00');
     }
 
