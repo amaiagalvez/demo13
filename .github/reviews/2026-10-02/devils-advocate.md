@@ -1,142 +1,194 @@
 # Devil's Advocate — 2026-10-02
 
-Every candidate finding was challenged before it reached the consolidated report.
+Purpose: challenge every finding from the ten specialist reports before consolidation, per
+`.github/agents/devil-advocate.agent.md`. The review is READ-ONLY; nothing was modified.
 
-## Hypotheses raised, then refuted with evidence
+## Challenge log — findings I attacked and their verdict
 
-### REJECTED — "Eager-loading comments with `limit(20)` applies the limit globally across all epics in the page"
+### Falsified by experiment (removed)
 
-This was the strongest candidate HIGH finding of the review. `Relation::getEager()`
-(`vendor/laravel/framework/src/Illuminate/Database/Eloquent/Relations/Relation.php:244-249`)
-simply returns `$this->get()`, and there is no `getResultsByParent()` anywhere in the framework —
-which appeared to prove a single global `LIMIT 20` and a silent data-loss bug in
-`EpicListQuery::active()`.
-
-**Refuted empirically.** Three epics with 30 comments each, queried through
-`App\Queries\Epics\EpicListQuery::active()` on an isolated database:
+**CLEAN-002 (original version) — "multi-line PHP concatenation embeds a newline in the Flux modal name".**
+I compiled `resources/views/components/list/header.blade.php` in-container and read the output as
+`['name' => $prefix.\n            '-form']`, and inferred a literal newline in the value. That inference was **wrong**.
+PHP's `.` operator ignores whitespace, including newlines, between operands. Executed proof:
 
 ```
-Proof2 epic 1 count=30 loaded=20
-Proof2 epic 2 count=30 loaded=20
-Proof2 epic 0 count=30 loaded=20
-SUM LOADED = 60
-
-Q: select * from (select *, row_number() over (partition by `epic_comments`.`epic_id`
-   order by `created_at` desc, `id` desc) as `laravel_row` from `epic_comments` ...
+$ php -r '$prefix = "customer";
+$name = $prefix.
+            "-form";
+var_dump($name, $name === "customer-form");'
+string(13) "customer-form"
+bool(true)
 ```
 
-Laravel 13 resolves constrained `hasMany` eager loads with a single window-function query. The
-limit is per parent and there is no N+1. **Dropped.**
+**Verdict: REJECTED as a defect.** The formatting is merely ugly. Removed from the finding list and recorded in
+`clean-code.md` under "Notes / not findings" so nobody re-raises it.
 
-### REJECTED — "Searching for the live search input loses focus / caret after each fragment refresh"
+**CLEAN-002 (revised) — "`x-on:click` prop is an injection surface".**
+Re-examined. All three call sites pass literal repository strings
+(`create-click="createCustomer()"`, `"createProject()"`, `"createEpic()"`), and Blade `{{ }}` escapes the attribute.
+There is no path from user input to that prop, and it is not a vulnerability.
+**Verdict: demoted to LOW "injection surface" observation.** It survives only as a documentation request, and I have
+dropped it from the consolidated report's action plan — it requires no action.
 
-`resources/js/app.js:477` calls `window.Alpine.morph(this.$root, results.outerHTML)` where
-`$root` is the very element that carries `x-data="listSearch(...)"` and contains the search input.
+### Duplicates (merged)
 
-**Refuted.** Alpine's morph plugin patches the existing DOM in place, so the component instance and
-focus survive; `tests/Browser/Customers/CustomerCrudTest.php:85-91` asserts exactly that
-(`window.listSearchPageState` set before the search is still `'preserved'` after the morph).
-**Dropped.**
+**LAR-002 and TEST-001 are the same defect.** Both report `phpstan analyse` failing on
+`app/Http/Controllers/Controller.php:20`. Different specialists found it independently because the Laravel reviewer
+ran PHPStan and the testing reviewer reasoned about `composer ci:check`'s ordering.
+**Verdict: merged into a single finding (`BUG-002`), referenced from both reports.**
 
-### REJECTED — "Case-insensitive uniqueness lets you create `acme` when `ACME` exists"
+**TEST-002 and LAR-001 are the same defect.** Both report `View::fragmentIf()` returning a string and breaking
+`assertViewHas`/`viewData`.
+**Verdict: merged into a single finding (`BUG-001`).**
 
-`active_name` inherits `utf8mb4_unicode_ci`, and `SELECT 'ACME' = 'acme' COLLATE
-utf8mb4_unicode_ci` returns `1` on the live server. On its own this looks like a bug.
+**PERF-002 and BUS-001 overlap.** PERF-002 reported the unbounded `get()` and flagged the `active` filter as a
+side observation; BUS-001 reported the missing `active` filter as the primary issue.
+**Verdict: merged into `BUS-001`**, which is the real problem. The unbounded-load half of PERF-002 is *not* a finding
+at this data scale (5 rows) and is dropped — see below.
 
-**Refuted as a defect.** `Rule::unique(Customer::class)` resolves through the same connection and
-therefore the same collation, so validation and the database always agree — the user is told "the
-name has already been taken" instead of hitting a constraint violation. Kept only as a note in
-`database.md` DB-002 so nobody later "fixes" the collation and silently changes behaviour.
+**MAINT-001 and the 2026-09-30 review's MAINT-001 are unrelated** despite the ID. Different subject. Kept, with the
+ID prefix distinguishing them.
 
-### REJECTED — "`create_customer_conflict`/`resolve_name_conflict` request flags are dead"
+### Style / personal preference (rejected)
 
-Both look like leftovers: `*RestoreRequest` validates `resolve_name_conflict` and the controllers
-use it only to choose a different success **message**; `reuse_deleted_name` only skips a branch.
+**"Extract the three list views into a shared component" (CLEAN-001).** Attacked on three grounds: (a) the column
+sets genuinely differ — 3, 5 and 7 columns, plus different parent-payload shapes; (b) `ARCHITECTURE.md:122-123`
+explicitly rejects abstractions not justified by a concrete problem; (c) the shared parts are *already* extracted
+(`x-list.table`, `x-list.row-actions`, `x-list.confirm-modal`, `x-forms.tracked-resource`).
+**Verdict: KEPT but downgraded.** The duplication is real and measurable (I quoted the three copies verbatim), but
+the honest recommendation is narrower than "extract a generic list component": extract the Alpine `x-data` block
+only. I rewrote the recommendation in the consolidated finding to say exactly that, and set it to P2. I am
+**not** recommending a generic list-page component, which is what the 2026-09-30 review correctly warned against.
 
-**Refuted.** `resources/views/components/name-conflict-modal.blade.php:27,35` shows both flags are
-the machine-readable form of the two buttons the user actually clicks ("create a new one" vs
-"restore the deleted one"). They are the payload for a two-way decision, not dead code.
-**Dropped.**
+**CLEAN-003 — the nine `UniqueConstraintViolation` call sites.** Attacked: the two styles are not duplication, they
+are different *requirements* — restore needs a different response than store/update. And the fix (a trait or abstract
+controller) is explicitly forbidden by `ARCHITECTURE.md:122-123`.
+**Verdict: downgraded MEDIUM → LOW, and the recommendation is now "accept it, revisit at four resources".** Dropped
+from the action plan entirely.
 
-### REJECTED — "The comment drawer cannot re-open after posting a comment"
+**CLEAN-005 — duplicated `orderBy` chains in `EpicListQuery`.** Nine lines repeated twice, adjacent in the same
+class. **Verdict: KEPT at LOW / P3.** The extraction is a single private method on the existing class — no new type.
 
-`resources/views/epics/list.blade.php:4-13` resolves `commented_epic_id` by searching
-`$list['rows']`, which only holds the current page (5 rows).
+**DB-002 — `STORED` generated column wastes space.** Attacked: five rows, `STORED` is required for a
+UNIQUE-indexed generated column in MySQL 8/MariaDB (a `VIRTUAL` column cannot be indexed without an explicit
+prefix), so this is not even a free choice.
+**Verdict: demoted to INFO.** Removed from the action plan.
 
-**Refuted.** A comment can only be posted from the drawer of a row that was on screen, and
-`EpicCommentController::store()` returns `back()`, which restores the previous URL *including*
-`?page=`. The same page is re-rendered, so the epic is always present. **Dropped.**
+**ARCH-005 — missing `config/view.php`, `config/hashing.php`.** Pure opinion. **Verdict: REJECTED.**
 
-### REJECTED — "Local Docker disables SQL strict mode (`--sql-mode=""`), weakening validation"
+**PERF-005 — no index usable for `LIKE '%x%'`.** Attacked: five rows. A trigram index would be absurd.
+**Verdict: demoted to INFO and dropped from the action plan.**
 
-`config/database.php` sets `'strict' => true` for both mysql and mariadb connections, and Laravel
-applies the mode per connection through `PDO::MYSQL_ATTR_INIT_COMMAND`, which overrides the server
-default. **Dropped** (documented as verified-clean in `laravel.md`).
+**DB-004 / DB-005 — missing indexes, confirmed by EXPLAIN.** Same attack: `customers` has 5 rows.
+**Verdict: demoted to LOW with an explicit "no action now" recommendation.** Kept only so the EXPLAIN evidence
+exists; dropped from the action plan.
 
-### REJECTED — "`EnsureUserIsActive` breaks the login POST because it runs in the `web` group"
+### Pattern-driven recommendations (rejected outright)
 
-`bootstrap/app.php:17` appends it to `web`, and `web` runs before the route's own middleware.
+**"Add an error tracker (Sentry/Bugsnag)."** No deployment target is declared anywhere in the repository.
+`ARCHITECTURE.md:127-133` mentions only environment and credentials.
+**Verdict: REJECTED.**
 
-**Refuted.** `$request->user()` is `null` before authentication, so the guard short-circuits;
-`prependToPriorityList(before: AuthenticatesRequests::class)` places it ahead of `auth` for
-protected routes. Nine tests in `InactiveUserTest` cover login, 2FA (including mid-challenge
-deactivation), passkey and remember-me. **Dropped.**
+**"Add structured JSON logging."** There is no log consumer to emit JSON for. **REJECTED.**
 
-### REJECTED — "The three list views should be merged into one generic component"
+**"Add uptime monitoring / alerting."** Nothing to alert on; `failed_jobs` and `cache` are provably empty (no jobs,
+no `Cache::` calls). **VERIFIED AND REJECTED** — this is the "recommend a stack because a stack exists" pattern the
+review rules prohibit.
 
-Rejected on the project's own rules: `.github/docs/review-rules.md:27-42` forbids introducing
-abstractions without a concrete problem, and the columns and search forms genuinely differ. The
-finding was downgraded to **FE-001 (LOW, cleanup)** and scoped explicitly to the duplicated Alpine
-block and fragment wrapper, using the existing `x-list.*` component precedent.
+**"Add distributed caching / Redis."** Redis appears in `.env` as unused boilerplate; there is no `Cache::` call and
+no job. `ARCHITECTURE.md:77-81` says so. **REJECTED.**
 
-### REJECTED — "`data-payload="{{ json_encode($payload) }}"` is an XSS vector"
+**"Add optimistic locking on `updated_at`."** Would surface conflicts to users in an app where a record is edited
+by one person at a time. **REJECTED** — it would *reduce* usability without solving a real problem.
 
-`resources/views/components/list/row-actions.blade.php:16,27` puts raw JSON into an HTML attribute
-that Alpine parses with `JSON.parse`.
+**"Add a trait / base model for `active`."** Three models, one boolean. Forbidden by
+`ARCHITECTURE.md:122-123`. **REJECTED.** The honest recommendation is one sentence of documentation (ARCH-002).
 
-**Refuted.** Blade's `{{ }}` applies `e()` (`htmlspecialchars` with `ENT_QUOTES` and
-double-encoding), so the browser decodes the attribute back to exactly the original JSON string
-before `JSON.parse` runs. Recorded in `security.md` as checked-and-safe rather than dropped
-silently, because the pattern looks wrong at a glance.
+### Severity challenged and reduced
 
-## Duplicates merged
+**SEC-001 (`.env` APP_KEY).** Attacked hard: `git ls-files` proves `.env` is **not tracked**, and the file lives in
+the developer's own working tree. Nothing leaked. Calling a developer's local dev key a HIGH finding is an
+exaggeration — the security agent's own rules say "Do not exaggerate severity."
+**Verdict: demoted HIGH → LOW, reframed as "hardening".** It survives only because of the paired `APP_DEBUG=true` +
+`0.0.0.0:80` exposure, which is OPS-004. I merged the actionable half into `OPS-001` (bind to loopback) and kept the
+secret-hygiene half as an INFO.
 
-| Kept | Merged into it |
-|---|---|
-| `laravel.md` LAR-001 | `testing.md` TEST-001 (the failing test) — one root cause, reported once as BUG-001 with the test as evidence |
-| `database.md` DB-001 | `performance.md` PERF-002 — one issue (missing indexes), reported once with both the DDL and the EXPLAIN view |
-| `devops.md` DEV-001 | `security.md` SEC-001 — identical evidence (`docker compose ps`); kept as a single MEDIUM finding |
-| `testing.md` TEST-003 | `architecture.md` ARCH-001 — one documentation defect, reported once |
-| `frontend.md` FE-002 | `maintainability.md` MAINT-001 — one orphan key |
+**SEC-004 (all policies return `true`).** Attacked: `ARCHITECTURE.md:40-44` documents this as intended product
+scope, and `http.instructions.md` says "do not add roles unasked". Reporting documented intent as a vulnerability
+would violate the review rules.
+**Verdict: KEPT at MEDIUM but reframed entirely** — the finding is no longer "there is a vulnerability", it is
+"the policy file reads as if it enforces ownership when it enforces nothing, and no test would catch a future
+role change". The recommendation is a comment, not a role system.
 
-## Severity downgrades after challenge
+**SEC-003 (`authenticateUsing` reimplements credential lookup).** Attacked: there is no bypass; the pipeline still
+runs `EnsureLoginIsNotThrottled`; the `Login` listener covers the deactivation race; and every behaviour is tested
+by `InactiveUserTest`. Confidence is MEDIUM because I did not execute a modified provider.
+**Verdict: KEPT at MEDIUM with MEDIUM confidence** — an honest "maintenance risk, no demonstrated bypass", which is
+exactly what the agent rules call a *probable risk*.
 
-| Finding | Initial | Final | Reason |
-|---|---|---|---|
-| `deactivate`/`reactivate` lost update | MEDIUM | LOW (CONC-002) | Idempotent boolean display flag; no invariant depends on it. |
-| Parent-deletion TOCTOU | MEDIUM | MEDIUM (kept) | It breaks an invariant written in `ARCHITECTURE.md:65`. Downgraded from HIGH: the window is milliseconds and there is no data loss. |
-| Missing list indexes | MEDIUM | LOW (PERF-002 / DB-001) | 5 rows today. Recommending indexes now would be speculative optimisation. |
-| One query per request from `EnsureUserIsActive` | MEDIUM | LOW (PERF-003) | Primary-key lookup; removing it would weaken a security behaviour. |
-| Unbounded select option lists | MEDIUM | MEDIUM (kept) | It is the only performance issue with a realistic trigger (search-as-you-type re-fetching everything). |
-| Duplicated list views | MEDIUM | LOW (FE-001) | Cleanup, not a defect; a fourth resource would justify it. |
-| Orphan translation key | MEDIUM | LOW (MAINT-001) | Four dead lines. |
-| No telemetry | MEDIUM | LOW (OBS-001) | Proportionate to the project scope. |
+**CONC-002 (check-then-act on parent delete).** Attacked: requires two simultaneous requests on the same record in
+an app with a handful of users; and the *force-delete* path is actually protected by the FK `RESTRICT`, which turns
+the worst case into a 500 rather than corruption.
+**Verdict: KEPT at LOW.** It is a real TOCTOU with a documented invariant behind it, but it is not HIGH.
 
-## Rejected as style / personal preference
+**FE-005 (jQuery/Select2 in the main bundle).** Attacked: I did not measure bundle size, and the rules forbid
+speculative optimisation.
+**Verdict: KEPT at LOW with an explicit "do not do this now" recommendation**, and it does not appear in the action
+plan.
 
-The following were considered and are **not** in the consolidated report:
+### Unsupported / unverifiable (removed or downgraded)
 
-- Multi-line PHP expressions in Blade attributes
-  (`resources/views/components/list/header.blade.php:29-30,34-35`) — valid, Pint-clean, and
-  arguably more readable as-is.
-- Suggesting interfaces, repositories, DTOs, a service layer, or a base `TrashController` to remove
-  the three-way duplication — forbidden by `.github/docs/review-rules.md:27-42` without a concrete
-  problem.
-- `PER_PAGE = 5` being an odd number to choose — a product decision, not a defect.
-- Rule ordering differences between `CustomerRequest` (`max` before `min`) and the other two
-  (`min` before `max`) — semantically identical, and already recorded in
-  `.github/tasks/06.model-consistency-audit.md` (C-06).
-- `resources/views/layouts/app/sidebar.blade.php:42,47` `target="_blank"` without
-  `rel="noopener noreferrer"` — implied by modern browsers, not exploitable.
-- PHP 8.3 in CI vs 8.4 locally — already documented in `ARCHITECTURE.md:129`. Reported as DEV-002
-  only because a new contributor will hit it, not as a defect.
+**OBS-002 / MAINT-005 / DEP-004.** These are observations about missing tooling, not defects. DEP-004 in particular
+("verify dependabot covers both ecosystems") I did **not** read the file, so I removed it rather than assert
+anything about its contents. **Verdict: REMOVED from the consolidated report.**
+
+### Confirmed — survived every challenge
+
+- **BUG-001** — `View::fragmentIf()` returns a string. Independently reproduced (`4 failed, 233 passed`), root cause
+  read out of framework source, and confirmed present in committed HEAD via `git show HEAD:<file>`.
+- **BUG-002** — PHPStan error. Independently reproduced twice.
+- **BUG-003** — `ArchitectureTest` failure. Independently reproduced.
+- **BUS-001** — missing `active` filter, proven with live data: an inactive customer (`Bezero 2`, `active=0`) is
+  currently offered in the project form. Already an accepted TODO in `todo.md`.
+- **DB-001** — collation divergence. Proven from the live `SHOW CREATE TABLE` collation plus the partial-index DDL.
+- **BUS-005** — restore-conflict copy says "active" while the guard checks all non-deleted rows. Proven by reading
+  both lines.
+- **OPS-002** — PHPUnit `<env>` non-forcing. Proven by executing the framework's own resolution logic in-container.
+- **DEP-005** — `rm -f composer.lock` in a bind-mounted compose service. Read directly from the file.
+
+## Action plan
+
+Ordered by impact, no aesthetic items.
+
+### P0 — CI is red; nothing else can be verified until these land
+
+1. `BUG-001` — return the `View` instead of a rendered string from the nine list `index()` actions.
+2. `BUG-002` — `@param view-string $view` on `Controller::listView()`. (One line; unblocks PHPStan, which currently
+   stops CI before the suite runs.)
+3. `BUG-003` — rename `EpicCommentController::index` to `show` so the architecture rule stays meaningful.
+
+### P1 — correctness gaps that a user can hit today
+
+4. `BUS-001` — filter the parent selects by `active`; the empty-state copy already promises this.
+5. `BUS-005` — correct the "another active X uses this name" copy in three trash controllers, in all four locales.
+6. `OPS-002` — add `force="true"` to the `DB_*` entries in `phpunit.xml` so an ambient variable cannot redirect the
+   suite at another database.
+
+### P2 — keep it maintainable
+
+7. `CLEAN-001` — extract the duplicated Alpine `x-data` block from the three list views (narrow scope only).
+8. `MAINT-001` — turn the uniqueness invariant into an assertion instead of prose.
+9. `ARCH-001` / `OPS-001` — correct the test-database documentation and make the `ci` job use `laravel_test`.
+10. `DEP-005` — stop deleting lockfiles in the compose helper services.
+11. `OBS-001` — surface list-refresh failures instead of throwing into an unhandled rejection.
+12. `BUS-006` — make the comment redirect unconditional, removing an untested fallback.
+
+### P3 — when convenient
+
+13. `CLEAN-005` — extract the duplicated ordering chain in `EpicListQuery`.
+14. `CONC-001` — make `deactivate`/`reactivate` atomic single-query updates.
+15. `CONC-002` — wrap the parent-delete guard and the delete in one transaction.
+16. `DEP-001` — drop the pinned linux-x64 native binaries from `optionalDependencies`.
+17. `FE-003` / `FE-005` / `MAINT-005` — optional UX and seed-data improvements.
+18. `OPS-003` / `OPS-004` — align local `sql_mode` with production; bind the app port to loopback.

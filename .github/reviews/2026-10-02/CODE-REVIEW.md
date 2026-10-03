@@ -1,111 +1,106 @@
 # Code Review
 
 **Date:** 2026-10-02
-**Scope:** full repository, read-only
-**Baseline:** `5cd03c9` (`t-07`), working tree clean at the time of writing
-**Rules:** `.github/docs/review-rules.md`, `.github/docs/architecture/ARCHITECTURE.md`
+**Repository:** `/home/amaia/Mahaigaina/l13/demo13`
+**Snapshot:** HEAD `781ccbb` **plus an uncommitted working tree that was changing during the review** — see
+[Working tree note](#working-tree-note).
+**Mode:** READ-ONLY. No application code, tests, dependencies, lockfiles, configuration or database data were
+modified. The only files written are this report and the specialist reports beside it.
 
 ## Executive Summary
 
-The application is in good shape for its size. Static analysis is clean (PHPStan level 9),
-formatting is clean (Pint), dependencies are free of known advisories, the layering rules are
-enforced by the test suite rather than by convention, and the inactive-user security feature is
-unusually well covered (nine tests across password, 2FA, passkey and remember-me paths).
+This is a small, well-built Laravel 13 CRUD application with a genuinely strong test suite and unusually good
+project documentation. The architecture matches the problem: no repository/service/DTO layers, thin controllers,
+list querying and row shaping deliberately separated, and machine-enforced rules that catch the obvious mistakes.
+`ARCHITECTURE.md` even records its own rejected patterns, which is why this review rejects several plausible-looking
+refactors instead of recommending them.
 
-**One confirmed blocking defect: the test suite is red.** `php artisan test` returns
-**1 failed, 236 passed**. `tests/Feature/Epics/EpicCommentTest.php:77` calls
-`$response->viewData('list')`, but all nine list `index()` actions return a *rendered string* rather
-than a `View`, because `View::fragmentIf()` returns a string in both branches. This makes CI red on
-any code change.
+**All twelve documented business rules are implemented and covered by tests.** I verified each one individually
+(see `.github/reviews/2026-10-02/business.md`). The correctness of the concurrency design is the standout: name
+uniqueness is enforced by a stored generated column plus a unique index, so the database — not application code —
+is the arbiter, and the race-absorbing helper is tested for all nine resource/write-path combinations.
 
-Three medium findings are worth acting on this sprint:
+**The dominant problem is that CI is red.** Three independent defects break it, and they are ordered badly: PHPStan
+fails first, so the four failing tests are invisible in CI and the pipeline stops before reporting them.
 
-1. `phpunit.xml` declares `DB_DATABASE=laravel_test`, but PHPUnit silently ignores a `<env>` value
-   that already exists in the environment. CI therefore runs the suite against `laravel` and nobody
-   ever creates `laravel_test`. Local/CI parity is accidental and a fresh clone cannot run the tests.
-2. `ARCHITECTURE.md` states that SQLite is the test engine. It is not, and the suite **fails** on
-   SQLite (7 tests) because `ListQueryBase`'s `LIKE` escaping relies on MySQL's implicit `\` escape.
-3. The parent-deletion guards are check-then-act, so a concurrent project creation can soft-delete a
-   customer that has just gained a project — breaking an invariant stated in `ARCHITECTURE.md`.
+1. All nine list `index()` actions return a **rendered string** instead of a `View`, because
+   `View::fragmentIf()` always renders. Four tests that assert on view data fail. (`BUG-001`)
+2. PHPStan level 9 reports one error, which halts CI before the suite runs. (`BUG-002`)
+3. A new JSON endpoint trips the project's own architecture test. (`BUG-003`)
 
-Two hypotheses that looked like serious bugs were refuted with evidence during the review and are
-**not** in this report: the per-epic comment limit works correctly (Laravel 13 uses a single
-window-function query), and the list search does not lose focus across the Alpine morph.
+Beyond that, findings are modest and mostly documentation or hardening. The one user-visible gap is that **inactive
+parents are still offered in the create/edit dropdowns** while the UI copy claims otherwise (`BUS-001`) — already
+recorded as a TODO by the author, and provably live in the current database.
 
-Nothing CRITICAL was found. No exploitable vulnerability was found.
+No critical vulnerability was found. There is no SQL injection (all values are bound; the only `orderByRaw` calls are
+constant literals), no XSS (all user data goes through `x-text` or escaped Blade), no mass-assignment path to the
+`active` flag, and no authorization bypass — the open-permissions model is documented intent, and CI is hardened
+(pinned SHAs, `contents: read`, `persist-credentials: false`).
 
 ## Detected Stack
 
-Verified from `composer.json`, `composer.lock`, `package.json`, `docker-compose.yml`,
-`Dockerfile.dusk`, `phpunit.xml` and `.github/workflows/tests.yml` — nothing assumed.
+Verified against `composer.json`, `composer.lock`, `package.json`, `package-lock.json`, `docker-compose.yml`,
+`Dockerfile.dusk` and `.github/workflows/tests.yml`. Nothing below is assumed.
 
-| Layer | Actual |
-|---|---|
-| PHP | `^8.3` in `composer.json`; PHP **8.4** in Docker; PHP **8.3** in CI (deliberate, `ARCHITECTURE.md:129`) |
-| Framework | Laravel **13.17** |
-| Auth | Fortify **1.37.2** — registration, password reset, email verification, 2FA, passkeys (`@laravel/passkeys ^0.2.0`) |
-| Frontend | Blade + Livewire **4.1** + Flux **2.13.1** + Blaze **1.0** (Volt-style `⚡` views); Alpine bundled |
-| Build | Vite **8** + `vite-plus 0.3.0`, Tailwind **4**, jQuery 3.7 + select2 4 |
-| Database | MariaDB **11.7** (Docker); SQLite/pgsql branch exists in migrations but is **not exercised** |
-| Cache / session / queue | `database` driver for all three; **no jobs, no events, no listeners, no scheduled tasks** in app code |
-| Redis / Horizon | **Not present.** Redis vars in `.env.example` are unused boilerplate |
-| Tests | PHPUnit **12.5**, Paratest 7.20, Dusk **8.7** |
-| Static analysis | Larastan **3.9** / PHPStan **level 9**, Pint **1.27** |
-| CI/CD | GitHub Actions: `ci` (Pint + PHPStan + PHPUnit on PHP 8.3 / Node 22 / MariaDB 11.7) and `dusk`; Dependabot weekly for actions/composer/npm |
-| API | **None.** One JSON endpoint branch (`CustomerController::store`) for select2 inline creation |
-| Observability | Daily file log only; Pulse/Telescope/Nightwatch explicitly disabled |
+| Component | Version / status | Source |
+|---|---|---|
+| PHP | `^8.3` (CI uses 8.3, Docker image uses 8.4) | `composer.json:14`, `.github/workflows/tests.yml:76`, `Dockerfile.dusk:1` |
+| Laravel Framework | `^13.17` (13.17 resolved) | `composer.json:17` |
+| Livewire | `^4.1` + `livewire/flux` `^2.13.1` + `livewire/blaze` `^1.0` | `composer.json:18-20` |
+| Fortify | `^1.37.2` | `composer.json:16` |
+| Passkeys | `@laravel/passkeys` `^0.2.0` | `package.json:11` |
+| Frontend | Blade + Alpine (bundled), Tailwind `^4.0.7`, Vite `^8.0.0` (8.3.2 resolved), `vite-plus` 0.3.0 | `package.json` |
+| JS extras | jQuery 3.7 + Select2 4 for one dropdown | `package.json:12-13` |
+| Database | **MariaDB 11.7.2** (docker `db`), `utf8mb4_unicode_ci` | `docker-compose.yml:200-201`, verified via `SELECT VERSION()` |
+| Cache | `database` driver (`cache`, `cache_locks` tables) | `.env:32`, `config/cache.php:18` |
+| Session | `database` driver (`sessions` table) | `.env:28`, `config/session.php:21` |
+| Queues | `database` driver configured; **zero jobs dispatched** | `config/queue.php:16`, `ARCHITECTURE.md:77-81` |
+| Redis / Horizon | **NOT PRESENT** | no package, no config usage |
+| Inertia / Vue / React | **NOT PRESENT** | no package |
+| API routes | **NONE** — web UI only | `routes/web.php`, `routes/settings.php` |
+| Tests | PHPUnit `^12.5.23` (**not Pest**), Paratest `^7.20` available, Dusk `^8.7` | `composer.json:24-25,30` |
+| Static analysis | Larastan `^3.9` + PHPStan, **level 9** | `phpstan.neon:15`, `AGENTS.md:43` |
+| Formatting | Pint `^1.27`, preset `laravel` | `pint.json` |
+| CI/CD | GitHub Actions, one workflow, three jobs (`changes`, `ci`, `dusk`) | `.github/workflows/tests.yml` |
+| Docker | `webdevops/php-apache-dev:8.4` + `Dockerfile.dusk`; MariaDB, phpMyAdmin, MailHog | `docker-compose.yml` |
 
 ## Checks Executed
 
-All commands were run inside the project's own container
-(`docker compose exec -T -e XDEBUG_MODE=off laravel13 …`), as required by `AGENTS.md`.
-`composer ci:check` was deliberately **not** used (its prepare step clears the config cache).
+All checks were run inside the project's Docker environment, per `AGENTS.md`. `composer setup`, `migrate:fresh`,
+`migrate:refresh` and seeders were **never** run. `database-query` was used read-only (SELECT/SHOW/EXPLAIN only).
 
-| # | Command | Result |
+| Check | Command | Result |
 |---|---|---|
-| 1 | `./vendor/bin/pint --test` | **PASS** — 128 files, no fixes needed |
-| 2 | `./vendor/bin/phpstan analyse --no-progress` | **[OK] No errors** — level 9 over `app/ bootstrap/ config/ database/ resources/ routes/ tests/` |
-| 3 | `composer audit --no-interaction` | **No security vulnerability advisories found** |
-| 4 | `php artisan test --compact` | **1 failed, 236 passed (1201 assertions), 22.27 s** |
-| 5 | `php artisan test --compact --filter=EpicCommentTest` | **1 failed, 6 passed** — `The response is not a view.` at line 77 |
-| 6 | `env DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --compact` | **7 failed, 230 passed** — see TEST-003 |
-| 7 | `SHOW CREATE TABLE customers\|projects\|epics\|epic_comments\|users` | Captured verbatim in `database.md` |
-| 8 | `EXPLAIN` on the project list and customer search queries | `type: ALL, key: NULL, Using temporary; Using filesort` |
-| 9 | `npm ls --depth=0` | Dependency tree resolves cleanly |
-| 10 | `npm audit --omit=dev` | **found 0 vulnerabilities** |
-| 11 | `SELECT 'ACME' = 'acme' COLLATE utf8mb4_unicode_ci` | `1` (case-insensitive, consistent with `Rule::unique`) |
-| 12 | Framework behaviour probe: 3 epics × 30 comments through `EpicListQuery::active()` | 20 comments loaded **per epic**, single window-function query (refuted a HIGH hypothesis) |
-| 13 | `docker compose ps` | Confirmed `0.0.0.0:80->80/tcp` on the app vs `127.0.0.1` on db/phpMyAdmin/mailhog |
+| PHPUnit | `docker compose exec -e XDEBUG_MODE=off laravel13 php artisan test --compact` | **FAIL** — `4 failed, 233 passed (1168 assertions)` at HEAD; `1 failed, 238 passed (1208 assertions)` on the working tree |
+| PHPStan | `docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/phpstan analyse --no-progress` | **FAIL** — `1 error` |
+| Pint | `docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/pint --parallel --test` | **PASS** — 128 files |
+| Composer audit | `docker compose exec -e XDEBUG_MODE=off laravel13 composer audit` | **PASS** — no advisories |
+| npm audit | `docker compose run --rm --no-deps --entrypoint npm laravel13-npm audit --omit=dev` | **PASS** — 0 vulnerabilities |
+| Schema inspection | Boost `database-schema`, `SHOW CREATE TABLE`, `SHOW INDEX`, `EXPLAIN` | Executed, read-only |
+| Blade compilation | `blade.compiler->compileString()` in-container | Executed (used to test CLEAN-002, which it falsified) |
+| Dusk | — | **NOT RUN** — no browser driver availability verified in this environment. Per the orchestrator's safety rules, not attempted. |
+| `npm run build` | — | **NOT RUN** — regenerates `public/build`, i.e. modifies generated assets. |
+| `npm run lint` / `npm run typecheck` | — | **NOT APPLICABLE** — no such scripts exist (`package.json:6-9` defines only `build` and `dev`). |
 
-**Test isolation.** The host has no PHP/Composer, so all PHP ran in Docker. Because `RefreshDatabase`
-performs `migrate:fresh`, an isolated MariaDB database named `laravel_review` was created for this
-review and the suite was pointed at it with `-e DB_DATABASE=laravel_review` (verified effective: the
-`UniqueConstraintViolationException` text reported `Database: laravel_review`). The project's
-`laravel` and `laravel_test` databases were **not** written to by this review. `laravel_review` may
-be dropped with
-`docker compose exec -T db sh -c "mariadb -uroot -ptormenta -e 'DROP DATABASE laravel_review'"`.
+### A caveat on `composer ci:check`
 
-**Dusk: NOT RUN.** `tests/Browser/*` uses the `DatabaseMigrations` trait, which runs
-`migrate:fresh` + `migrate:rollback` against the **persistent** `laravel_test` database. Per the
-read-only rules, destructive migrations against a persistent database are not executed. It also
-cannot be redirected without editing `tests/DuskTestCase.php`, which hardcodes
-`laravel_test` in both `setUp()` and `getEnvironmentSetUp()`. Chromium and chromedriver *are*
-present in `laravel13-dusk` (`/usr/bin/chromium`, `/usr/bin/chromedriver`), so CI remains the
-verification path for the browser suite.
+`composer.json:63-66` defines `ci:check` → `test` → `test:prepare` (`config:clear`, `pint --test`,
+`types:check`) **then** `php artisan test`. Because PHPStan runs first and fails, CI never reaches the suite. So the
+four failing tests reported above are real but currently *masked* by `BUG-002`.
 
-**`npm run build`: NOT RUN.** The `laravel13-npm` service command begins with
-`npm install -g npm@latest && … && npm install`, which can rewrite `package-lock.json`, and the build
-itself overwrites the `public/build` assets currently being served to the running container (and to
-any concurrent Dusk run). Building was judged not appropriate in a read-only review. Non-destructive
-equivalents (`npm ls`, `npm audit`) were run instead and both are clean.
+### Working tree note
 
-**Concurrency note.** The working tree was being edited by another session while this review ran
-(`tests/Feature/ResourceActivationTest.php` changed at 21:32 and 21:34; the changes were committed as
-`5cd03c9` mid-review). Early failures involving `ResourceActivationTest` were an artefact of that
-concurrent edit and were **not** reported as findings; the final result above is from the committed
-state. Likewise, `laravel_test` was found emptied (`migrations` table only, 0 rows) partway through
-the review — the signature of a concurrent `DatabaseMigrations` Dusk run, not of any command issued
-here.
+Between 22:05 and 22:19 the repository gained 14 modified tracked files implementing a lazy-loaded epic-comments
+JSON endpoint (`epics.comments.index`). All results above are labelled with which state they describe. `git show
+HEAD:<path>` was used to confirm that `BUG-001` exists in the **committed** code, not only in the WIP:
+
+```
+$ git show HEAD:app/Http/Controllers/CustomerController.php | grep -n fragmentIf
+29:        ])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
+```
+
+and that the WIP fix (`Controller::listView()`) is the correct remedy. **Re-run the checks before acting** — the
+tree is in flux.
 
 ## Critical Findings
 
@@ -113,277 +108,269 @@ None.
 
 ## High Findings
 
-### BUG-001 — The test suite is red: list controllers never return a View
+### BUG-001 — All nine list actions return a rendered string instead of a `View`, breaking four tests
 
 Severity: HIGH
 Category: Bugs / Correctness
-File: app/Http/Controllers/EpicController.php
-Line: 30 (and the `index()` method of `CustomerController`, `ProjectController` and all six
-`*InactiveController` / `*TrashController` classes)
+File: app/Http/Controllers/CustomerController.php
+Line: 29
 Confidence: HIGH
 
-Problem: every list `index()` declares `: View|string` but returns
-`view(...)->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results')`, and
-`View::fragmentIf()` returns a **string in both branches**. The `View` half of the union type is
-unreachable, so `TestResponse::viewData()` and `assertViewHas()` can never succeed on a list route.
+Problem:
+
+Every list `index()` action ends with `->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results')` and
+declares its return type as `View|string`. `Illuminate\View\View::fragmentIf()` **always returns a rendered string**,
+so the `View` arm of the union is unreachable and the response never carries view data.
 
 Evidence:
 
 ```php
-// app/Http/Controllers/EpicController.php:26-30
-return view('epics.list', [
-    'epics' => $epics,
-    'availableProjects' => Project::query()->with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']),
-    'list' => $transformer->active($epics, $search),
-])->fragmentIf($request->hasHeader('X-List-Fragment'), 'list-results');
-```
-
-```php
-// vendor/laravel/framework/src/Illuminate/View/View.php:114-121
+// vendor/laravel/framework/src/Illuminate/View/View.php:114-121  (framework source, immutable)
 public function fragmentIf($boolean, $fragment)
 {
     if (value($boolean)) {
         return $this->fragment($fragment);   // string
     }
-
-    return $this->render();                   // string
+    return $this->render();                  // string
 }
 ```
 
-```console
-$ php artisan test --compact --filter=EpicCommentTest
-FAILED  Tests\Feature\Epics\EpicCommentTest > list embeds only the most recent comments…
-  The response is not a view.
+Present in committed HEAD across all nine list actions — `git show HEAD:app/Http/Controllers/CustomerController.php`
+line 29, and the same line in `CustomerInactiveController`, `CustomerTrashController`, `ProjectController`,
+`ProjectInactiveController`, `ProjectTrashController`, `EpicController`, `EpicInactiveController`,
+`EpicTrashController`.
+
+Reproduced failure:
+
+```
+FAILED Tests\Feature\Epics\EpicCommentTest > ... : AssertionFailedError The response is not a view.
   at tests/Feature/Epics/EpicCommentTest.php:77
+FAILED Tests\Feature\ResourceActivationTest > inac... : AssertionFailedError The response is not a view.
+  at tests/Feature/ResourceActivationTest.php:372     (x3 data sets)
+
+Tests: 4 failed, 233 passed (1168 assertions)
 ```
 
-Impact: `composer ci:check` fails, so the pipeline is red on every code change. The failing test also
-never reaches `assertCount($limit, $comments)` (line 119), leaving the comment-limit behaviour
-unverified by the suite — it is in fact correct (see PERF "verified clean" in `performance.md`), but
-nothing asserts it. The misleading return type also invites the next contributor to write another
-view-data assertion that cannot work.
+Both call sites use standard helpers that require a view: `TestResponse::viewData()` and
+`TestResponse::assertViewHas()` → `assertView()`, which throws when the original content is not a view.
 
-Recommendation (smallest change that keeps the fragment feature and restores testability):
+Impact:
+
+- CI is red (and currently masked by `BUG-002`).
+- `ResourceActivationTest.php:372-378` is the **only** place the inactive-list pagination invariant is asserted, so
+  losing it removes real coverage.
+- Blast radius exceeds the four tests: any future `assertViewHas`/`assertViewHasErrors` on a list route fails with a
+  message that does not point at the controller.
+- Rendering inside the controller means a view exception is thrown from the action rather than during response
+  preparation, bypassing the framework's view-exception path.
+
+Recommendation:
+
+Return the `View` and only render the fragment when the header is present:
 
 ```php
-$view = view('epics.list', [/* … */]);
+$view = view('customers.list', $data);
 
 return $request->hasHeader('X-List-Fragment')
     ? $view->fragment('list-results')
     : $view;
 ```
 
-Apply to the nine `index()` methods; the declared `View|string` type then becomes accurate. Do **not**
-rewrite `EpicCommentTest` to scrape HTML — the assertion is legitimate.
-
-### TEST-002 — `phpunit.xml` and CI disagree on the test database, and nothing creates `laravel_test`
-
-Severity: HIGH
-Category: Testing / Production
-File: phpunit.xml
-Line: 19 (also `.github/workflows/tests.yml:39-51`)
-Confidence: HIGH
-
-Problem: `phpunit.xml` declares `<env name="DB_DATABASE" value="laravel_test"/>` without
-`force="true"`, and PHPUnit **ignores** a `<env>` value that is already present in the environment:
-
-```php
-// vendor/phpunit/phpunit/src/TextUI/Configuration/PhpHandler.php:140
-if ($force || getenv($name) === false) {
-    putenv("{$name}={$value}");
-}
-```
-
-The CI `ci` job exports `DB_DATABASE: laravel` at job level and its MariaDB service only creates
-`laravel` (`MARIADB_DATABASE: laravel`). No step in that job creates `laravel_test`; only the `dusk`
-job provisions it. So the suite runs against `laravel` in CI and against `laravel_test` locally,
-purely through environment-variable precedence.
-
-Impact:
-- Local/CI parity is accidental. The moment `phpunit.xml` becomes authoritative — adding
-  `force="true"`, switching to `vendor/bin/phpunit` with a different bootstrap order, or pinning a
-  CI env var less specifically — CI breaks immediately with `Unknown database 'laravel_test'`.
-- A fresh clone following `AGENTS.md` (`docker compose exec … php artisan test`) fails unless
-  somebody manually creates `laravel_test`. `composer setup` migrates only `DB_DATABASE=laravel`.
-- Nothing documents the requirement, so the first person to hit it will "fix" it by editing
-  `phpunit.xml`, which then silently changes what CI tests.
-
-Recommendation: pick one source of truth. Cheapest: remove `DB_DATABASE` (and the other `DB_*`
-entries) from `phpunit.xml` and let `.env` / the CI job environment decide, then add an explicit
-"create the test database" step to **both** CI jobs and one line to `AGENTS.md`. If you prefer the
-file to stay authoritative, add `force="true"` **and** provision `laravel_test` in the `ci` job.
+The WIP already introduces `Controller::listView()` doing exactly this — keep that shape, and pair it with `BUG-002`.
+Do **not** "fix" the tests by asserting on response bodies; the view-data assertions are the correct contract.
 
 ## Medium Findings
 
-### BIZ-001 — Inactive customers and projects are selectable, contradicting the on-screen warning
+### BUG-002 — PHPStan level 9 fails, halting CI before the test suite runs
 
 Severity: MEDIUM
-Category: Business logic / Correctness
-File: app/Http/Controllers/ProjectController.php, app/Http/Controllers/EpicController.php
-Line: 28 (both); copy at `resources/views/projects/list.blade.php:92` and
-`resources/views/epics/list.blade.php:106`
+Category: Bugs / Correctness
+File: app/Http/Controllers/Controller.php
+Line: 20
 Confidence: HIGH
 
-Problem: both list pages warn "No **active** … are available", but the option lists that decide
-whether to show the warning are not filtered on `active`.
+Problem:
+
+The new `Controller::listView(Request $request, string $view, array $data): View|string` types `$view` as plain
+`string`, but `view()` expects `view-string|null`.
+
+Evidence:
+
+```
+$ docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/phpstan analyse --no-progress
+  Line   app/Http/Controllers/Controller.php
+  20     Parameter #1 $view of function view expects view-string|null, string given.
+         🪪  argument.type
+ [ERROR] Found 1 error
+```
+
+`composer.json:63-66` chains `ci:check` → `test:prepare` (which includes `@types:check`) → `@test`, so the pipeline
+stops here.
+
+Impact:
+
+CI red, and it masks `BUG-001` and `BUG-003`.
+
+Recommendation:
+
+PHPDoc-only change, no runtime effect:
+
+```php
+/**
+ * @param  view-string  $view
+ * @param  array<string, mixed>  $data
+ */
+```
+
+### BUG-003 — `EpicCommentController::index` violates the project's own architecture rule
+
+Severity: MEDIUM
+Category: Architecture conformance
+File: app/Http/Controllers/EpicCommentController.php
+Line: 14
+Confidence: HIGH
+
+Problem:
+
+`tests/Unit/ArchitectureTest.php:27` lists `'index'` in `FORM_REQUEST_ENDPOINTS` and requires every controller
+`index()` to declare a `FormRequest`. The new `EpicCommentController::index(Epic $epic): JsonResponse` reads **no**
+user input — no query string, no body — so it declares none.
+
+Evidence:
+
+```
+FAILED Tests\Unit\ArchitectureTest > input endpoints declare a form request
+  App\Http\Controllers\EpicCommentController::index must declare a FormRequest
+  at tests/Unit/ArchitectureTest.php:115
+Tests: 1 failed, 238 passed (1208 assertions)
+```
+
+`ARCHITECTURE.md:145` (`http.instructions.md`) states the rule's purpose: "every input endpoint needs a FormRequest".
+This endpoint is not an input endpoint, so the rule is over-broad rather than the code being wrong.
+
+Impact:
+
+CI red. And the architecture rule — a genuinely valuable guard — is now encoding an incorrect invariant.
+
+Recommendation:
+
+Rename the action to `show` and keep the route name, so the URL and every template reference stay stable:
+
+```php
+Route::get('epics/{epic}/comments', [EpicCommentController::class, 'show'])
+    ->whereNumber('epic')
+    ->name('epics.comments.index');
+```
+
+Do **not** add an empty Form Request to satisfy the test.
+
+### BUS-001 — Inactive parents are offered in create/edit selects, contradicting the on-screen copy
+
+Severity: MEDIUM
+Category: Business Logic
+File: app/Http/Controllers/ProjectController.php
+Line: 28
+Confidence: HIGH
+
+Problem:
+
+`ProjectController::index()` offers **every** non-deleted customer, `EpicController::index()` every non-deleted
+project. Neither applies `where('active', true)`. The list views simultaneously display a callout promising the
+opposite.
 
 Evidence:
 
 ```php
-// app/Http/Controllers/ProjectController.php:28  — no active filter
+// ProjectController.php:28
 'availableCustomers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-
-// app/Http/Controllers/EpicController.php:28     — no active filter
-'availableProjects' => Project::query()->with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']),
+// EpicController.php:28
+'availableProjects' => Project::query()->with('customer')->orderBy('name')->get(['id','name','customer_id']),
 ```
 
-```php
-// app/Http/Requests/ProjectRequest.php:47-51, EpicRequest.php:48-52 — validated against deleted only
-'customer_id' => ['required', 'integer', Rule::exists(Customer::class, 'id')->whereNull('deleted_at')],
-'project_id'  => ['required', 'integer', Rule::exists(Project::class, 'id')->whereNull('deleted_at')],
+```blade
+{{-- resources/views/projects/list.blade.php:90-94 --}}
+@if ($list['create'] && $availableCustomers->isEmpty())
+    {{ __('No active customers are available. Create one from the project form.') }}
+@endif
 ```
 
-Impact: a project can be created under a deactivated customer and an epic under a deactivated
-project. Because deactivation does not cascade, the result is a child that its parent's active list
-hides — and the user is reading a warning about "active" records while the form offers inactive
-ones.
+Proven live: `SELECT id, name, active FROM customers` returns `id=2, name='Bezero 2', active=0`, and
+`projects.id=1` has `customer_id=2` — that inactive customer is selectable right now.
 
-Note: **already tracked.** `todo.md` carries this exact requirement
-(`en los select … solo se mostrarán los que tengan active=1`, with an exception for the currently
-selected record in edit mode). Do not re-plan it; implement that entry and align the two callout
-strings with whatever it decides.
+The list queries *do* filter (`ProjectListQuery.php:29` `where('projects.active', true)`), so lists and selects
+disagree. Server-side validation does not close the gap either: `ProjectRequest.php:50` and `EpicRequest.php:51` use
+`Rule::exists(...)->whereNull('deleted_at')`, which excludes trashed parents but says nothing about `active`.
 
-### CONC-001 — Check-then-act deletion guards can soft-delete a parent that just gained children
+Impact:
+
+A user can attach a project to a customer they just deactivated, or an epic to an inactive project. Already recorded
+as an accepted TODO in `todo.md`, which is why this is MEDIUM rather than HIGH.
+
+Recommendation:
+
+1. Filter the selects: `->where('active', true)`. Two lines; this alone fixes the copy/data mismatch.
+2. For the edit case, merge the currently-selected parent back in so an inactive parent already attached stays
+   visible — that is step 2 of the existing `todo.md` item.
+
+Do not add pagination to these selects; at 5 rows that is pure cost.
+
+### DB-001 — The MariaDB and SQLite uniqueness strategies are not semantically equivalent
 
 Severity: MEDIUM
-Category: Concurrency / Data integrity
-File: app/Http/Controllers/CustomerController.php, app/Http/Controllers/ProjectController.php,
-      app/Http/Controllers/CustomerTrashController.php, app/Http/Controllers/ProjectTrashController.php
-Line: 86-91 / 74-79 / 61-66 / 62-67
-Confidence: MEDIUM
-
-Problem: the guard is a `SELECT EXISTS` followed by a `DELETE`, with no transaction and no row lock.
-The foreign keys are `restrictOnDelete`, which only protects *hard* deletes — a soft delete never
-touches the FK.
-
-Evidence:
-
-```php
-// app/Http/Controllers/CustomerController.php:86-91
-if ($customer->projects()->withTrashed()->exists()) {
-    return to_route('customers.index')
-        ->with('error', __('Customer cannot be deleted while it has projects.'));
-}
-
-$customer->delete();
-```
-
-Reachable interleaving:
-
-1. Request A (delete customer) — `exists()` returns `false`.
-2. Request B (create project) — `Rule::exists(Customer::class, 'id')->whereNull('deleted_at')` still
-   passes (not yet deleted) and the row is inserted.
-3. Request A — `delete()` soft-deletes the customer.
-
-Result: a project whose customer is in the trash, contradicting
-`.github/docs/architecture/ARCHITECTURE.md:65` ("Customers with projects cannot be moved to the
-trash or permanently deleted").
-
-Impact: narrow window (two requests interleaving within milliseconds), no data loss, and the UI
-tolerates the state (`withTrashed()` on the relations and joins). But a documented business rule is
-not actually enforced, and recovery is manual.
-
-Recommendation (minimal, no new layers): perform the guard and the write inside `DB::transaction()`
-with the parent row locked, and add one test per resource that creates the child between the check
-and the write — `tests/Feature/Projects/ProjectTrashTest.php:139-171` already demonstrates the exact
-technique for the restore path.
-
-### PERF-001 — Every list render loads unbounded option lists, including on every search keystroke
-
-Severity: MEDIUM
-Category: Performance
-File: app/Http/Controllers/ProjectController.php, app/Http/Controllers/EpicController.php
-Line: 28 (both)
+Category: Database
+File: database/migrations/2026_09_25_000000_create_customers_table.php
+Line: 27-40
 Confidence: HIGH
 
-Problem: the forms are rendered inline inside the list view, so the option lists are re-queried on
-every request, including each debounced search fragment refresh.
+Problem:
+
+Each create-table migration implements "unique among non-deleted rows" twice, and the two mechanisms disagree on
+collation:
+
+```php
+// MariaDB / MySQL branch
+$table->string('active_name')->nullable()->storedAs('IF(deleted_at IS NULL, name, NULL)');
+$table->unique('active_name');
+
+// SQLite / PostgreSQL branch
+DB::statement('CREATE UNIQUE INDEX customers_active_name_unique ON customers (name) WHERE deleted_at IS NULL');
+```
+
+The MariaDB index inherits the column collation — `utf8mb4_unicode_ci`, **case-insensitive**. The SQLite partial
+index uses BINARY comparison.
 
 Evidence:
 
-```php
-// app/Http/Controllers/ProjectController.php:28
-'availableCustomers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-
-// app/Http/Controllers/EpicController.php:28
-'availableProjects' => Project::query()->with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']),
+```
+SHOW CREATE TABLE customers;
+-> `active_name` varchar(255) GENERATED ALWAYS AS (if(`deleted_at` is null,`name`,NULL)) STORED,
+   UNIQUE KEY `customers_active_name_unique` (`active_name`)   ... COLLATE=utf8mb4_unicode_ci
 ```
 
-Neither is paginated, searchable, nor filtered on `active`. The epic query additionally eager-loads
-every customer of every project.
+Identical dual-branch structure in `2026_09_28_173607_create_projects_table.php:26-40` and
+`2026_09_30_175706_create_epics_table.php:24-38`. The Form Request layer inherits the same asymmetry via
+`Rule::unique` (`CustomerRequest.php:40-43`).
 
-Trigger frequency: `resources/js/app.js:384-401` fires a request on every search input after 400 ms
-of inactivity, plus every pagination link (`app.js:415-431`) and every `popstate` (`app.js:375`).
+The two sibling models agree on the DB-enforcement half of the rule and differ only here. Note also
+`ARCHITECTURE.md:50-51` claims SQLite is used for isolated tests, which is why this divergence is invisible —
+`phpunit.xml:22` pins MySQL, so **the SQLite branch is never executed by any test**.
 
-Likely bottleneck: two full-table scans plus one `customers` scan per list request, with O(n) rows
-serialised into every response payload.
+Impact:
 
-Expected impact: negligible at 5 customers / 67 projects; linear degradation. At a few thousand
-projects the epic list response would carry thousands of `<option>` elements and search-as-you-type
-would visibly stall.
+`'Acme'` and `'acme'` collide on MariaDB and do not on SQLite. Since the suite runs only against MariaDB, a change to
+the SQLite branch produces no test signal at all.
 
-Solution and cost: make the selects remotely searchable. The project form already integrates select2
-(`resources/views/projects/form.blade.php:34-47`), so the epic select can reuse that pattern with a
-small `GET epics/project-options?search=` endpoint — medium cost (endpoint + Form Request +
-authorization + tests). **Do not build it now**; the trigger is "more than a few hundred
-customers/projects".
+Recommendation:
 
-### TEST-003 — The documented SQLite test path does not work
+Make both branches implement the same rule by adding `COLLATE NOCASE` to the SQLite partial index:
 
-Severity: MEDIUM
-Category: Testing / Portability
-File: app/Queries/ListQueryBase.php
-Line: 27 (claim at `.github/docs/architecture/ARCHITECTURE.md:50-51`)
-Confidence: HIGH
-
-Problem: `ARCHITECTURE.md` states "SQLite is used for isolated in-memory tests". It is not, and it
-does not work.
-
-Evidence:
-
-```console
-$ env DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --compact
-  → Tests: 7 failed, 230 passed (1196 assertions)
-
-FAILED CustomerListQueryTest > search treats percent as a literal character
-FAILED CustomerListQueryTest > search treats underscore as a literal character
-FAILED CustomerListQueryTest > search treats backslash as a literal character
-FAILED ProjectCrudTest > authenticated users can …
-FAILED ProjectInputValidationTest > project can b… (×2)
+```sql
+CREATE UNIQUE INDEX customers_active_name_unique ON customers (name COLLATE NOCASE) WHERE deleted_at IS NULL;
 ```
 
-Root cause of the three search failures:
+and correct `ARCHITECTURE.md:50-51` (see `ARCH-001`).
 
-```php
-// app/Queries/ListQueryBase.php:27
-$escapedSearch = addcslashes($search, '%_\\');
-```
-
-MySQL honours `\` as the implicit `LIKE` escape character; **SQLite does not** — it requires an
-explicit `ESCAPE '\'` clause. The three tests that assert exactly this behaviour
-(`tests/Feature/Customers/CustomerListQueryTest.php:71-99`) pass on MariaDB and fail on SQLite. The
-four `Project*` failures are a test-side artefact, not an application bug: `assertDatabaseHas`
-compares `'start_date' => '2026-10-15'` against SQLite's `'2026-10-15 00:00:00'`.
-
-Impact: the `sqlite`/`pgsql` branch of all three domain migrations
-(`CREATE UNIQUE INDEX … WHERE deleted_at IS NULL`) is unverified code, and the architecture document
-misleads every agent that reads it — including this one.
-
-Recommendation: make the code and the document agree. Cheapest: correct the `ARCHITECTURE.md`
-sentence to name MariaDB as the only supported engine. If SQLite support is actually wanted, add the
-explicit `ESCAPE` clause and normalise the date assertions, then add SQLite to the CI matrix.
-
-### ARCH-001 — `ARCHITECTURE.md` claims a test setup that does not exist
+### ARCH-001 — `ARCHITECTURE.md` contradicts `phpunit.xml` about the test database
 
 Severity: MEDIUM
 Category: Architecture / Documentation drift
@@ -391,491 +378,939 @@ File: .github/docs/architecture/ARCHITECTURE.md
 Line: 50-51
 Confidence: HIGH
 
-Problem: the same claim as TEST-003, viewed from the documentation side. This file is the first thing
-`AGENTS.md`, `.github/docs/review-rules.md:304-310` and every reviewer agent tells you to read, so a
-false statement here propagates.
+Problem:
 
-Impact: a reader who trusts it assumes the non-MySQL migration branch is covered and will not notice
-that `LIKE` escaping is MySQL-only. The "Known Technical Debt" section (`:137-140`) does not mention
-this.
+```
+Engine: MySQL-compatible MariaDB in Docker; SQLite is used for isolated in-memory tests.
+```
 
-Recommendation: one-line correction, folded into the TEST-003 fix. Reported separately because the
-owner of the fix is different (docs vs code).
+The suite uses MySQL. `phpunit.xml:22-25` pins `DB_CONNECTION=mysql`, `DB_HOST=db`,
+`DB_DATABASE=laravel_test`, and `docker/mysql/init/01-create-test-database.sql` creates that MariaDB database.
 
-### SEC-001 — The development application is published on all interfaces
+Evidence: quoted above; `SELECT VERSION()` on the live connection returns `11.7.2-MariaDB-ubu2404`.
+
+Impact:
+
+This is the documentation that makes `DB-001` invisible: a reader believes the SQLite branch is covered. It is the
+root cause of a whole class of "untested driver branch" mistakes.
+
+Recommendation:
+
+Replace the sentence with:
+
+> Engine: MySQL-compatible MariaDB in Docker, for development **and** tests (`laravel_test`). The migrations keep a
+> SQLite/PostgreSQL branch for the unique-name indexes, but the suite runs against MariaDB only.
+
+### OPS-002 — `phpunit.xml` env vars are not forced, so an ambient `DB_*` variable silently redirects the suite
 
 Severity: MEDIUM
-Category: Security / DevOps exposure
-File: docker-compose.yml
-Line: 18-20
+Category: Production / Test isolation
+File: phpunit.xml
+Line: 17-27
 Confidence: HIGH
 
-Problem: the `laravel13` service publishes `"80:80"` and `"${VITE_PORT:-5173}:${VITE_PORT:-5173}"`,
-which bind `0.0.0.0`. Every other service is explicitly loopback-bound.
+Problem:
+
+```xml
+<env name="DB_CONNECTION" value="mysql"/>
+<env name="DB_HOST" value="db"/>
+<env name="DB_DATABASE" value="laravel_test"/>
+```
+
+None carry `force="true"`. PHPUnit only sets an `<env>` when the variable is not already present.
+
+Evidence — I executed the framework's own resolution logic
+(`vendor/phpunit/phpunit/src/TextUI/Configuration/PhpHandler.php:134-149`) in-container:
+
+```php
+// CI sets DB_DATABASE=laravel at job level; phpunit.xml says laravel_test
+foreach ([["DB_DATABASE","laravel_test"],["DB_HOST","db"],["DB_PORT","3306"]] as [$name,$value]) {
+    $force = false;
+    if ($force || getenv($name) === false) { putenv("{$name}={$value}"); }
+    $value = getenv($name);
+    if ($force || !isset($_ENV[$name])) { $_ENV[$name] = $value; }
+}
+echo getenv("DB_DATABASE");
+// => laravel      (NOT laravel_test)
+```
+
+Impact:
+
+A developer who exports `DB_DATABASE` and runs `php artisan test` will have `RefreshDatabase` migrate **that**
+database. This is a data-loss footgun in the most destructive test path in the project. It also means local and CI
+databases can silently differ — which is precisely what the dedicated `laravel_test` database exists to prevent.
+
+Recommendation:
+
+Add `force="true"` to the `DB_*` entries. No CI change is needed (the values are identical), and the footgun closes.
+
+### DEP-005 — The compose helper services delete `composer.lock` and `package-lock.json`
+
+Severity: MEDIUM
+Category: Production / Developer safety
+File: docker-compose.yml
+Line: 70-76
+Confidence: HIGH
+
+Problem:
+
+```yaml
+laravel13-composer:
+  profiles: ["composer"]
+  command: bash -c "
+      rm -Rf vendor
+      && rm -f composer.lock
+      && composer install --no-progress
+      ..."
+```
+
+`./:/docker` is a bind mount of the repository, so `rm -f composer.lock` deletes the committed lockfile and
+`composer install` regenerates it from whatever resolves that day. The npm services do the same at lines 107-108 and
+129-130 (`rm -f package-lock.json && rm -Rf node_modules`).
+
+Evidence: quoted above.
+
+Impact:
+
+Running `docker compose --profile composer run laravel13-composer` silently produces a different lockfile, which
+surfaces as a huge unrelated diff and can move dependency versions unnoticed. This directly contradicts `AGENTS.md`:
+"Do not add base folders or change dependencies without approval."
+
+Recommendation:
+
+Delete the two `rm -f *.lock` commands. If a clean regeneration is wanted, make it an explicit separate command.
+Zero risk.
+
+### OPS-001 — The `ci` job runs the suite against the application database, not `laravel_test`
+
+Severity: MEDIUM
+Category: Production / CI
+File: .github/workflows/tests.yml
+Line: 118
+Confidence: HIGH
+
+Problem:
+
+The `ci` job runs `composer setup`, whose last step is `php artisan migrate --force`
+(`composer.json:50-56`), against job-level `DB_DATABASE: laravel` — the *application* database. The suite then runs
+`RefreshDatabase` against whatever it is pointed at. The MariaDB service only creates `laravel`
+(`MYSQL_DATABASE: laravel`, line 87); only the `dusk` job creates `laravel_test` (line 209).
+
+Evidence: `.github/workflows/tests.yml:118-120`, `composer.json:50-56`, `:65-70`, `:87`, `:209`.
+
+Impact:
+
+No production risk — ephemeral runner, throwaway service. But the non-Dusk job mutates the schema of the database it
+just migrated, and a test that escapes its transaction would corrupt the next test rather than being isolated. It
+also means `phpunit.xml`'s declared `laravel_test` is silently overridden (see `OPS-002`).
+
+Recommendation:
+
+Create `laravel_test` in the `ci` job's service (one `mysql -e` step, exactly as `dusk` does at lines 206-209) and set
+`DB_DATABASE: laravel_test` in the job env. If the current behaviour is deliberate instead, remove the
+`migrate --force` from that job and document why.
+
+### SEC-003 — `authenticateUsing()` re-implements credential lookup instead of using the provider
+
+Severity: MEDIUM
+Category: Security
+File: app/Providers/FortifyServiceProvider.php
+Line: 44
+Confidence: MEDIUM
+
+Problem:
+
+```php
+Fortify::authenticateUsing(function (Request $request): ?User {
+    $user = User::where(Fortify::username(), $request->input(Fortify::username()))
+        ->where('active', true)->first();
+    $provider = Auth::guard(config()->string('fortify.guard'))->getProvider();
+    $credentials = $request->only('password');
+
+    if (! $user || ! $provider->validateCredentials($user, $credentials)) {
+        return null;
+    }
+    ...
+```
+
+The intent — blocking inactive users at login — is legitimate and documented (`ARCHITECTURE.md:36-38`). The callback
+now owns *all* credential semantics and duplicates what the provider already provides.
 
 Evidence:
 
-```console
-$ docker compose ps
-demo13-db-1                 ... 127.0.0.1:13306->3306/tcp
-demo13-laravel13-1          ... 0.0.0.0:80->80/tcp, 0.0.0.0:5173->5173/tcp
-demo13-laravel13-myadmin-1  ... 127.0.0.1:4000->80/tcp
-demo13-mailhog-1            ... 127.0.0.1:8025->1025/tcp
+- `vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:73-89` — the pipeline still runs
+  `EnsureLoginIsNotThrottled` (because `fortify.limiters.login` is set), so **rate limiting is not bypassed**
+  (5/min per email+IP, `FortifyServiceProvider.php:126-132`).
+- Returning `null` for both "unknown user" and "wrong password" does **not** leak user existence.
+- The `Login` listener (`:62-81`) re-checks `active` and logs out + invalidates the session if the user was
+  deactivated between credential check and session write — correct belt-and-braces, covered by
+  `tests/Feature/Auth/InactiveUserTest.php:61,95`.
+- The bypass is not optional: removing the closure would let inactive users log in, since the middleware only runs on
+  *subsequent* web requests.
+
+Impact:
+
+No demonstrated bypass. This is maintenance risk: the closure silently bypasses `retrieveByCredentials()`, so a
+custom user provider override would stop working.
+
+Recommendation:
+
+Route through the provider so credential retrieval stays overridable — behaviour-preserving, no new abstraction:
+
+```php
+$provider = Auth::guard(config()->string('fortify.guard'))->getProvider();
+$user = $provider->retrieveByCredentials([Fortify::username() => $request->input(Fortify::username())]);
+
+if (! $user instanceof User || ! $user->active || ! $provider->validateCredentials($user, $request->only('password'))) {
+    return null;
+}
 ```
 
-The reachable service carries development credentials (`DB laravel/laravel` in `.env.example`), a
-seeded `test@example.com` user (`database/seeders/DatabaseSeeder.php:37-40`) and
-`MYSQL_ROOT_PASSWORD: tormenta` committed to the repository.
+Confidence is MEDIUM because I did not execute a modified provider (read-only review).
 
-Impact: anyone on the same network can reach the dev app and attempt authentication.
-`.github/docs/architecture/ARCHITECTURE.md:130-131` already states administrative ports and
-development credentials are local-only, so the config does not match the documented intent.
+### SEC-004 — Policies read as if they enforce ownership but enforce nothing, and no test would catch a role change
 
-Recommendation: bind the app to loopback like its siblings —
-`"127.0.0.1:80:80"` and `"127.0.0.1:${VITE_PORT:-5173}:${VITE_PORT:-5173}"` — and move the MariaDB
-root password into an env var with a local-only default.
+Severity: MEDIUM
+Category: Security
+File: app/Policies/CustomerPolicy.php
+Line: 10-59
+Confidence: HIGH
+
+Problem:
+
+Every ability in all three policies returns `true` unconditionally:
+
+```php
+// app/Policies/CustomerPolicy.php — identical shape in ProjectPolicy.php and EpicPolicy.php
+public function viewAny(User $user): bool { return true; }
+public function delete(User $user, Customer $customer): bool { return true; }
+public function forceDelete(User $user, Customer $customer): bool { return true; }
+```
+
+`routes/web.php:16` puts the whole resource surface behind `auth` + `verified`. So any verified user can read, edit,
+deactivate, trash and permanently delete every record, and read every epic comment.
+
+This is **documented intent**, not an oversight: `ARCHITECTURE.md:40-44` — "`CustomerPolicy` is the authorization
+boundary ... The current product scope permits every authenticated verified user to perform these actions" — and
+`http.instructions.md` says "do not add roles unasked".
+
+Impact:
+
+No vulnerability against the documented design. The risk is that `ARCHITECTURE.md` reads as though `CustomerPolicy`
+is a meaningful boundary. If the product ever gains a second class of user, every policy silently permits everything
+and **no test fails**.
+
+Recommendation:
+
+**Do not add roles** — explicitly out of scope. Make the risk visible instead: add a comment in each policy class
+pointing at the architecture document, e.g.
+
+```php
+// Every authenticated verified user may act on any record.
+// See ARCHITECTURE.md#authentication--authorization
+```
+
+Zero cost, and it prevents the assumption that ownership is enforced.
+
+### CLEAN-001 — The three list views are ~90% identical
+
+Severity: MEDIUM
+Category: Maintainability
+File: resources/views/epics/list.blade.php
+Line: 1 (whole file)
+Confidence: HIGH
+
+Problem:
+
+The Alpine state block is duplicated verbatim in three files, and ~80 lines of surrounding markup is copy-pasted per
+resource — the `@php $initialForm` block, the whole `x-data`, and the modal wiring.
+
+Evidence — the same block at `customers/list.blade.php:23-67`, `projects/list.blade.php:28-79`,
+`epics/list.blade.php:40-94`:
+
+```js
+x-data="{
+    form: @js($initialForm),
+    confirmation: { action: '', method: 'DELETE', title: '', text: '', label: '', danger: false },
+    storeUrl: @js(route('customers.store')),
+    updateUrl: @js(route('customers.update', '__CUSTOMER__')),
+    createCustomer() { ... }, editCustomer(customer) { ... }, confirmAction(action) { ... },
+}"
+```
+
+Impact:
+
+Every UX change to the drawer or dirty-tracking wiring must be made three times, and it has already drifted
+(the parent-payload shape differs per resource).
+
+Recommendation:
+
+Extract **only the byte-identical parts**, following the precedent already set by `.github/instructions/views.instructions.md`
+("Do not copy shared markup back into a view"). The shared pieces are already components
+(`x-list.header`, `x-list.flash`, `x-list.search`, `x-list.table`, `x-list.row-actions`, `x-list.confirm-modal`,
+`x-forms.tracked-resource`).
+
+Do **not** build a generic list-page component — the column sets genuinely differ (3 / 5 / 7 columns) and
+`ARCHITECTURE.md:122-123` rejects abstractions without a concrete problem.
+
+### MAINT-001 — The uniqueness invariant lives in five places and is prose in two of them
+
+Severity: MEDIUM
+Category: Maintainability
+File: .github/docs/architecture/ARCHITECTURE.md
+Line: 60-63
+Confidence: HIGH
+
+Problem:
+
+The app's most important invariant — "names unique among non-deleted records, including inactive ones; soft-deleted
+names may be reused" — is expressed in five artefacts:
+
+| Location | Form |
+|---|---|
+| `ARCHITECTURE.md:60-63` | prose |
+| `database/migrations/2026_*.php:33-40` | generated column + unique index |
+| `app/Http/Requests/*Request.php` | `Rule::unique(...)->whereNull('deleted_at')` — 3 copies |
+| `app/Support/Database/UniqueConstraintViolation.php` | race absorber |
+| `tests/Feature/**` | 9 race tests (3 resources × store/update/restore) |
+
+The same fan-out applies to the parent-delete guard (prose + 4 controllers + 2 tests) and the `active` flag
+(migration + 3 models + 2 queries + 6 controllers + 3 transformers + views + tests).
+
+Evidence: the race tests are at `CustomerCrudTest.php:159,176`, `CustomerTrashTest.php:108`,
+`ProjectCrudTest.php:114,136`, `ProjectTrashTest.php:145`, `EpicCrudTest.php:175,195`, `EpicTrashTest.php:159`.
+
+Impact:
+
+Not a defect — it is the honest cost of putting rules in the database, the requests and the tests, which is the right
+design. The risk is **drift**, and it has already happened once: in `BUS-001`, two of the five places (the two select
+queries) forgot the `active` flag.
+
+Recommendation:
+
+Convert the invariant from prose into an assertion. `tests/Unit/ArchitectureTest.php:29-59` already requires every
+resource to ship a complete class set, and `tests/Unit/ModelSchemaParityTest.php` ties model attributes to schema —
+add a sibling test asserting, for each domain model, that the Form Request's unique rule carries `whereNull('deleted_at')`
+and that the migration defines a generated column.
+
+### BUS-005 — Restore-conflict copy says "active" but the guard blocks on inactive records too
+
+Severity: LOW
+Category: Business Logic
+File: app/Http/Controllers/CustomerTrashController.php
+Line: 73-74
+Confidence: HIGH
+
+Problem:
+
+```php
+return to_route('customers.trash.index')
+    ->with('error', __('Customer cannot be restored while another active customer uses this name.'));
+```
+
+The guard above it (`CustomerTrashController.php:35`) is `Customer::query()->where('name', $customer->name)->exists()`,
+which excludes soft-deleted rows but **includes inactive** ones.
+
+Evidence: lines 35 vs 74. Same wording at `ProjectTrashController.php:75` and `EpicTrashController.php:74`.
+`ARCHITECTURE.md:61` confirms the code is right and the copy is wrong ("unique among non-deleted records, **including
+inactive records**").
+
+Impact:
+
+A real scenario: an inactive customer (which the app can create — see `BUS-001`) blocks a restore, and the user is
+told to look for an active one. All three resources share the wording, so all three mislead.
+
+Recommendation:
+
+Change to "another existing customer" in all three trash controllers and add the key to all four `lang/*.json`
+files — `tests/Unit/Translations/TranslationFilesTest.php` enforces locale parity and will fail if one is missed.
 
 ## Low Findings
 
-### DB-001 / PERF-002 — No index supports any list filter or sort column
+### CLEAN-005 — `EpicListQuery` repeats a nine-line ordering chain twice
 
 Severity: LOW
-Category: Database / Performance
-File: database/migrations/2026_09_25_000000_create_customers_table.php,
-      database/migrations/2026_09_28_173607_create_projects_table.php,
-      database/migrations/2026_09_30_175706_create_epics_table.php
-Line: 21-22 / 28-29 / 27-28
+Category: Maintainability
+File: app/Queries/Epics/EpicListQuery.php
+Line: 36-43
 Confidence: HIGH
 
-Problem: the only secondary indexes are the generated-column unique indexes and the implicit FK
-indexes. Every list query filters or orders on `active`, `deleted_at`, `name`, `start_date`,
-`end_date` or `updated_at` — none indexed.
+Problem:
 
-Evidence:
+`active()` (36-43) and `inactive()` (55-62) repeat the same nine `orderBy`/`orderByRaw` calls verbatim.
+`ProjectListQuery.php:31-35,48-52` has the same shape.
 
-```console
-$ EXPLAIN SELECT * FROM projects p JOIN customers c ON c.id=p.customer_id
-          WHERE p.deleted_at IS NULL AND p.active=1 ORDER BY p.start_date, p.end_date, c.name, p.name LIMIT 5;
-type: ALL   key: NULL   Extra: Using where; Using temporary; Using filesort
-```
+Impact: Low — ordering is a stable UI decision and the copies are adjacent in the same class.
 
-Plus `LIKE '%term%'` in `app/Queries/ListQueryBase.php:30-34`, which cannot use an index by
-construction, and `orderByRaw('epics.start_date IS NULL')` (`EpicListQuery:43,45`).
+Recommendation: if extracted, a single `private function orderByDatesThenNames(Builder $query): Builder` on the
+existing class. No new type.
 
-Impact: not measurable at current row counts (5 customers / 67 projects / 35 epics). Relevant past
-tens of thousands of rows.
-Recommendation: **do not add indexes now.** Record the trigger (domain tables past ~50k rows); at
-that point add one composite index per list query.
-
-### CONC-002 — `deactivate` / `reactivate` are unguarded read-modify-write
+### CONC-001 — `deactivate` / `reactivate` are read-modify-write with no guard
 
 Severity: LOW
 Category: Concurrency
-File: app/Http/Controllers/CustomerInactiveController.php, ProjectInactiveController.php, EpicInactiveController.php
-Line: 28-43 / 29-45 / 29-45
+File: app/Http/Controllers/CustomerInactiveController.php
+Line: 31-32
+Confidence: HIGH
+
+Problem:
+
+```php
+$customer->active = false;
+$customer->save();
+```
+
+`save()` issues `UPDATE ... SET active = ?, updated_at = ? WHERE id = ?` with no `active` predicate, so a concurrent
+`reactivate` is silently overwritten. Present in all six `deactivate`/`reactivate` methods
+(`CustomerInactiveController.php:31,40`, `ProjectInactiveController.php:32,41`, `EpicInactiveController.php:32,41`).
+
+Impact: bounded — `active` has two reachable states, so a lost update always lands on a valid state. No data
+corruption; only a possibly-surprising UI. No test covers it.
+
+Recommendation: `Customer::whereKey($customer->getKey())->update(['active' => false]);` — atomic, no locks, no new
+abstraction.
+
+### CONC-002 — "Cannot delete a parent that has children" is check-then-act
+
+Severity: LOW
+Category: Concurrency
+File: app/Http/Controllers/CustomerController.php
+Line: 86-91
+Confidence: HIGH
+
+Problem:
+
+```php
+if ($customer->projects()->withTrashed()->exists()) { ...return...; }
+$customer->delete();
+```
+
+A project created between the `EXISTS` and the `DELETE` breaks the invariant in `ARCHITECTURE.md:58,65`. The database
+cannot save it: `delete()` is an `UPDATE`, and `projects_customer_id_foreign` is `RESTRICT` on *delete*, which an
+`UPDATE` never triggers.
+
+Evidence: `CustomerController.php:86`, `ProjectController.php:74`, `CustomerTrashController.php:61`,
+`ProjectTrashController.php:62`. The force-delete path *is* FK-protected — the worst case there is an unhandled
+`QueryException` (HTTP 500), not corruption.
+
+Impact: requires two simultaneous requests on one record. Narrow.
+
+Recommendation: wrap guard and delete in one `DB::transaction()` in the four controllers. Note
+`tests/Unit/ArchitectureTest.php:67` currently forbids `DB::` in controllers — widen that rule to permit
+`DB::transaction(` when this lands, deliberately rather than by workaround.
+
+### BUS-006 — Comment redirect uses `back()`, leaving an untested fallback path
+
+Severity: LOW
+Category: Business Logic
+File: app/Http/Controllers/EpicCommentController.php
+Line: 17
 Confidence: MEDIUM
 
-Problem: `$model->active = false; $model->save();` never reads the current value, so two concurrent
-requests can both flash success while only the last write survives.
-Impact: cosmetic — no invariant depends on `active`, and the operation is idempotent.
-Recommendation: optional. A real fix needs `lockForUpdate()` or a version column, which is not worth
-it for a boolean display flag. Recorded so the choice is deliberate.
+Problem:
 
-### TEST-004 — Access coverage exists only for customers
+`return back(fallback: route('epics.index'))->with('commented_epic_id', $epic->id);` — the drawer only exists on the
+epics index, so `back()`'s flexibility buys nothing, and the fallback branch is never exercised
+(`test_comment_body_is_required` always supplies `->from(route('epics.index'))`).
 
-Severity: LOW
-Category: Testing / Coverage
-File: tests/Feature/Customers/CustomerAccessTest.php
-Line: 1-36
-Confidence: HIGH
+Impact: low. A comment submitted without a referrer still saves; only the drawer fails to re-open
+(`epics/list.blade.php:8-12,95`).
 
-Problem: guest redirect, unverified redirect and invalid-input coverage exist for customers only.
-Projects and epics rely on the shared `auth` + `verified` group in `routes/web.php:17`.
-Impact: a future route added outside that group ships without a failing test.
-Recommendation: data-providerise `CustomerAccessTest` across the three resources, exactly as
-`ResourceActivationTest` already does. Small and high value.
+Recommendation: `return to_route('epics.index')` with the same session keys. Coordinate with the in-flight refactor.
 
-### PERF-003 — `EnsureUserIsActive` adds one query per authenticated request
+### CLEAN-002 — `x-list.header` renders a raw Alpine expression from a prop
 
 Severity: LOW
-Category: Performance
-File: app/Http/Middleware/EnsureUserIsActive.php
-Line: 24
+Category: Maintainability
+File: resources/views/components/list/header.blade.php
+Line: 33
 Confidence: HIGH
 
-Problem: every authenticated web request runs an extra
-`select exists(select * from users where id = ? and active = 1)`.
-Impact: one primary-key lookup — negligible.
-Recommendation: **keep it.** This is the deliberate trade-off that revokes sessions on deactivation
-(`tests/Feature/Auth/InactiveUserTest.php:95-110`); caching it would weaken a documented security
-behaviour.
+Problem: `x-on:click="{{ $createClick }}"` — a prop that is an executable expression, unlike every other prop in the
+component (which carries data). All three call sites pass literals (`create-click="createCustomer()"` etc.) and
+Blade escapes the attribute, so there is no injection today.
 
-### PERF-004 — Page size is hardcoded to 5
+Impact: none now; the risk is that the next caller passes a variable without realising this prop differs in kind.
 
-Severity: LOW
-Category: Performance / UX
-File: app/Queries/ListQueryBase.php
-Line: 14
+Recommendation: document it in the PHPDoc (`@param string $createClick Alpine expression — must be a literal`) or
+rename it to `$createClickExpression`. No behaviour change.
+
+### DEP-001 — Linux-x64 native binaries pinned as direct `optionalDependencies`
+
+Severity: MEDIUM
+Category: Dependencies
+File: package.json
+Line: 21-25
 Confidence: HIGH
 
-Problem: `public const PER_PAGE = 5;` — not configurable, not overridable per request.
-Impact: 100 epics → 20 pages. Also amplifies PERF-001.
-Recommendation: promote to a config value when the UX asks for it. Not a correctness problem.
+Problem:
 
-### MAINT-001 — Orphan translation key in all four locales
+```json
+"optionalDependencies": {
+    "@laravel/multiplex": "^0.4.1",
+    "@rollup/rollup-linux-x64-gnu": "4.9.5",
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+    "lightningcss-linux-x64-gnu": "^1.29.1"
+}
+```
 
-Severity: LOW
-Category: Maintainability / i18n
-File: lang/en.json, lang/es.json, lang/eu.json, lang/fr.json
-Line: 47 in each file
-Confidence: HIGH
+Three platform-specific binaries for linux-x64 declared as direct dependencies, one pinned to an exact version.
+The lockfile already contains the full multi-platform matrix upstream publishes (`@tailwindcss/oxide` has
+linux-{x64,x64-musl,arm64,arm64-musl,arm,arm-gnueabihf} and win32-{x64,arm64}; `lightningcss` likewise), verified by
+enumerating `packages` keys.
 
-Problem: `"No active customers available."` exists in every locale but is referenced nowhere; the
-string actually used is `"No active customers are available. Create one from the project form."`
-(line 74).
-Impact: four dead lines, and `tests/Unit/Translations/TranslationFilesTest.php` structurally cannot
-detect orphans because it only compares keys *across* locales.
-Recommendation: delete the four entries, then add a test asserting every key in `lang/en.json` is
-referenced by `resources/` or `app/`.
+Impact: `npm install` on macOS/Windows skips them harmlessly (they carry `os`/`cpu` constraints), but the exact pin on
+`@rollup/rollup-linux-x64-gnu` will fight Vite's own resolution when Vite bumps its Rollup requirement. The lockfile
+currently has **zero** occurrences of the string `rollup`, so this pin is the only source of that binary.
 
-### FE-001 — The three list views are near-identical copies
+Recommendation: drop the three binaries and let the toolchains pull their own. Keep `@laravel/multiplex` — it is
+genuinely optional and correctly declared.
 
-Severity: LOW
-Category: Frontend / Maintainability
-File: resources/views/customers/list.blade.php, resources/views/projects/list.blade.php, resources/views/epics/list.blade.php
-Line: whole files (~150 / ~180 / ~197 lines)
-Confidence: HIGH
-
-Problem: the Alpine `x-data` object, the `@fragment('list-results')` wrapper, the
-`x-list.search` + `x-list.table` composition, the error/conflict-modal bootstrap and the trailing
-`<x-list.confirm-modal>` are duplicated three times with only the prefix and columns changing. The
-two "no records available" callouts and the `commented_epic_id` rehydration are the only real
-divergences — and the callouts have already drifted (BIZ-001).
-Impact: any UX or accessibility change to the search/confirm/row-action flow must be applied and
-re-verified three times.
-Recommendation: extract only the duplicated Alpine component and fragment wrapper as one anonymous
-Blade component with a `prefix` prop, following the existing `x-list.*` precedent. Do **not** build
-a generic list-view component — the columns and search forms genuinely differ, and
-`.github/docs/review-rules.md:27-42` forbids that. Schedule it if a fourth resource ever arrives.
-
-### DEP-001 — `laravel13-composer` deletes and regenerates `composer.lock`
-
-Severity: LOW
-Category: Dependencies / Reproducibility
-File: docker-compose.yml
-Line: 60-74
-Confidence: HIGH
-
-Problem: the documented "install dependencies" profile runs
-`rm -Rf vendor && rm -f composer.lock && composer install --no-progress`.
-Impact: a routine-looking command silently rewrites a committed lockfile and can upgrade every
-package to its newest allowed version, so dependency drift enters without appearing in a diff.
-Recommendation: make it `composer install` only; use `composer update` explicitly. Rename the
-service if the destructive behaviour is intentional.
-
-### DEP-002 — `laravel13-npm` installs `npm@latest` on every invocation
-
-Severity: LOW
-Category: Dependencies / Reproducibility
-File: docker-compose.yml
-Line: 88-90, 111-113
-Confidence: HIGH
-
-Problem: both npm services run `npm install -g npm@latest && … && npm install && npm run build`, so
-the toolchain floats with wall-clock time and `package-lock.json` can be rewritten.
-Impact: a build that worked yesterday can fail today with no repository change. CI uses `npm ci` and
-is unaffected, so the flakiness is local-only — exactly where it costs the most debugging time.
-Recommendation: drop the `npm@latest` step (the image already pins Node via `${DC_NODE:-24-bullseye}`)
-and use `npm ci` locally.
-
-### DEP-003 — `.env.example` commits a machine-specific UID/GID
-
-Severity: LOW
-Category: Dependencies / Repo hygiene
-File: .env.example
-Line: 44-45
-Confidence: HIGH
-
-Problem: `DC_UID=1002` / `DC_GID=1002` are committed and consumed by `docker-compose.yml`
-(`user: "${DC_UID:-1000}:${DC_GID:-1000}"` on three services). Any other machine runs as the wrong
-uid unless overridden.
-Impact: silent `storage/` and `public/build` permission errors for new contributors.
-Recommendation: comment the lines out or document the override in `AGENTS.md`.
-
-### DEV-002 — PHP version drifts between CI (8.3) and local Docker (8.4)
-
-Severity: LOW
-Category: DevOps / Consistency
-File: .github/workflows/tests.yml, docker-compose.yml
-Line: 78 / 6 and 20 (multiple services)
-Confidence: HIGH
-
-Problem: `composer.json` requires `^8.3`, CI pins `8.3`, every Docker service uses
-`webdevops/php-apache-dev:${DC_PHP:-8.4}`. Recorded in `ARCHITECTURE.md:129`, so it is a known gap.
-Impact: 8.4-only syntax would pass Pint and PHPStan locally and fail CI. Nothing in `app/` uses it
-today.
-Recommendation: pin the local image to 8.3, or echo `PHP_VERSION` as a CI step so the difference is
-visible in the log.
-
-### DEV-003 — The CI `ci` job does not cache npm
-
-Severity: LOW
-Category: DevOps / CI cost
-File: .github/workflows/tests.yml
-Line: 88-91
-Confidence: HIGH
-
-Problem: `Setup Node` in the `ci` job has no `cache: 'npm'`; the `dusk` job does.
-Impact: negligible — the `ci` job never installs or builds assets. Reported for consistency only.
-
-### CLEAN-001 — Two idioms for the same uniqueness-violation check
-
-Severity: LOW
-Category: Clean code / Consistency
-File: app/Http/Controllers/CustomerTrashController.php, ProjectTrashController.php, EpicTrashController.php
-Line: 41-47 / 42-48 / 47-53
-Confidence: HIGH
-
-Problem: all six `store()`/`update()` methods use
-`UniqueConstraintViolation::rethrowAsValidationError()`, while the three `restore()` methods inline
-a byte-identical `catch (QueryException)` block because they return a redirect instead of throwing.
-Impact: two idioms for one decision; a change to the detection logic must be reviewed in four
-places.
-Recommendation: acceptable as is (explicit > implicit, and a base trash controller is forbidden).
-If you want one place, the inline form reduces to a single `causedBy()` call, which already exists
-on the support class.
-
-### OBS-001 — No application-level telemetry
+### OBS-001 — List-refresh failures become unhandled promise rejections
 
 Severity: LOW
 Category: Observability
-File: phpunit.xml, .env.example
-Line: 17-19 / 20-21
+File: resources/js/app.js
+Line: 478-481
 Confidence: HIGH
 
-Problem: no error tracker, no APM, no metrics. The only signal is `LOG_CHANNEL=daily`.
-`phpunit.xml:17-19` disables Pulse, Telescope and Nightwatch, and `boost.json` sets
-`"nightwatch": false`.
-Impact: proportionate for the current scope; a production deployment would have no visibility into
-its own failures.
-Recommendation: **no change now.** Add to `ARCHITECTURE.md:127-134`'s production list when a
-production environment is actually provisioned.
+Problem: `refreshList` re-throws a real failure from an `async` method whose four call sites (`:393,412,420,429`) never
+`await` or `.catch()`. The user sees the list silently stop updating — no message, no retry.
+
+Contrast the same file, which *does* surface errors: `initializeProjectCustomerSelect` sets
+`form.customerCreateError` (`:344`), and the epic form has `data-test="epic-comments-error"`
+(`epics/form.blade.php:89-90`). The list refresh is the outlier.
+
+Impact: a failing refresh is undiagnosable for a non-developer. The happy path has a Dusk test
+(`test_customer_list_can_be_searched_and_cleared`); the failure path has none.
+
+Recommendation: dispatch a `list-error` event and render it in the existing `x-list.flash` region. ~5 lines.
+
+### OPS-003 — MariaDB runs with an empty `sql_mode` while the app declares `'strict' => true`
+
+Severity: LOW
+Category: Production
+File: docker-compose.yml
+Line: 201
+Confidence: HIGH
+
+Problem: `command: --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --sql-mode=""`
+disables `STRICT_TRANS_TABLES`, while `config/database.php:60,80` set `'strict' => true`. Effective behaviour is the
+lenient one: over-length strings truncate silently, invalid dates become zero-dates.
+
+Impact: dev and production can disagree on data integrity. Realistic risk here is low — `name` is `varchar(255)`
+capped at 255 by every Form Request, `body` is `text` capped at 5000.
+
+Recommendation: drop `--sql-mode=""`, or set it to
+`STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION`. One line.
+
+### OPS-004 — App container publishes port 80 on all interfaces with `APP_DEBUG=true`
+
+Severity: LOW
+Category: Production
+File: docker-compose.yml
+Line: 12
+Confidence: HIGH
+
+Problem: `- "80:80"` publishes to `0.0.0.0` while `.env:6` sets `APP_DEBUG=true`, exposing the debug error page
+(frames, paths, config values, app key) to anyone on the same network. The other services are correctly loopback-bound:
+`db` → `127.0.0.1:13306` (line 219), `myadmin` → `127.0.0.1:4000` (line 224), `mailhog` → `127.0.0.1` (line 235).
+
+Impact: local/shared-network exposure only. `.env` is gitignored, so this is not a committed-secret issue.
+
+Recommendation: `"127.0.0.1:80:80"` to match the rest of the file.
+
+### ARCH-002 — The `active` flag's meaning is stated only in query method names
+
+Severity: MEDIUM
+Category: Architecture / Cohesion
+File: app/Models/Customer.php
+Line: 26-40
+Confidence: MEDIUM
+
+Problem: `active` touches at least seven layers — migration, 3 models, 2 query objects, 6 controllers, 3 transformers,
+views — and there is no single statement of what it means. Crucially, it is absent from **every** Form Request's
+rules, because it is correctly non-mass-assignable (`#[Fillable]` excludes it everywhere; `ModelSchemaParityTest.php:28-42`
+lists it in `SYSTEM_COLUMNS`).
+
+Evidence: `2026_10_02_180040_add_active...php:16-28`; `Customer.php:26-40`, `Project.php:28-43`, `Epic.php:27-42`;
+`CustomerListQuery.php:22,36`, `ProjectListQuery.php:29,47`; and — the gap — `ProjectController.php:28`,
+`EpicController.php:28`, which handle the flag not at all.
+
+Impact: the design is **safe** (mass assignment cannot reach it) but **implicit**. That implicitness is exactly why
+`BUS-001` was possible.
+
+Recommendation: no abstraction — `ARCHITECTURE.md:122-123` forbids a `HasActive` trait for three models and one
+boolean. Add one sentence to the Database section stating that `active` is orthogonal to `deleted_at` and is never
+mass-assignable, then fix `BUS-001`.
+
+### FE-001 — Inline customer creation trusts a server error shape it never validates
+
+Severity: LOW
+Category: Frontend
+File: resources/js/app.js
+Line: 330-344
+Confidence: MEDIUM
+
+Problem: after the `fetch`, the code assumes the body is JSON and that failures carry a usable message. Both hold
+today (`CustomerController.php:41-48` returns `{message, errors:{name:[…]}}` with 409; a `ValidationException` under
+`Accept: application/json` does the same via `bootstrap/app.php:24-26`). The happy path has a Dusk test
+(`tests/Browser/Projects/ProjectCustomerSelectTest.php`).
+
+Impact: if the endpoint ever returned HTML (a 500 page, a redirect), `response.json()` rejects with a non-user-facing
+`SyntaxError` and the user sees the `"Unable to create customer."` fallback — graceful, not broken. No XSS: the
+message renders via `x-text` (`projects/form.blade.php:49-50`).
+
+Note the asymmetry that makes this worth flagging: only `CustomerController::store` has a JSON branch
+(`ProjectController.php:33` and `EpicController.php:33` return `RedirectResponse` only). Reusing this Select2 pattern
+for a project would break with a JSON parse error.
+
+Recommendation: keep the fallback; optionally distinguish transport from validation failure so the UI can say which.
+
+### MAINT-005 — No seed data, so a fresh clone shows an empty application
+
+Severity: LOW
+Category: Maintainability
+File: database/seeders/DatabaseSeeder.php
+Line: —
+Confidence: MEDIUM
+
+Problem: `DatabaseSeeder` is the stock skeleton seeder. The live database's rows (`Bezero1`, `Bezero 2`, `galvez`,
+`itarte`, `galvez itarte`, `project1`, `project2`, one deactivated, one project attached) were produced by clicking
+through the UI, not by a seeder — and `migrate:fresh` destroys that state.
+
+Impact: a new developer gets no example of a customer→project→epic chain, and no epic comments, which is the feature
+with the most moving parts.
+
+Recommendation: optionally extend the existing `CustomerSeeder` using the existing factories. Optional — `AGENTS.md`
+says not to add things unasked.
 
 ## Informational Findings
 
-- **API-001** — No write endpoint is rate limited. Only Fortify's `login`, `two-factor` and
-  `passkeys` limiters exist; no route uses `throttle`. Acceptable for a first-party authenticated
-  app; recorded so the omission is a decision.
-- **API-002** — `bootstrap/app.php:24-26`'s `shouldRenderJsonWhen` clause `$request->is('api/*')` is
-  unreachable; no `api/*` route exists. Harmless and future-proof.
-- **ARCH-002** — The `active` column on `users` means "login allowed", while on domain records it
-  means "shown in the active list". The two semantics are independent and deactivation deliberately
-  does not cascade (`ARCHITECTURE.md:57-58`). No change recommended; flagged so a future
-  "unassignable" rule knows the columns are not interchangeable.
-- **DEV-004** — CI is skipped entirely for `.md`-only changes. Intentional and correct. Recorded so
-  nobody "fixes" it.
-- **OBS-002** — `/up` (`bootstrap/app.php:14`) is unauthenticated and checks nothing but that PHP
-  is serving. Fine as a liveness probe; do not assume it verifies the database.
-- **MAINT-003** — `todo.md` mixes shipped work, ideas and review assignments with no state. When
-  BIZ-001 is scheduled, move that requirement into `ARCHITECTURE.md` next to the other business
-  rules.
+Recorded so they are not re-investigated. None require action.
+
+- **No security vulnerabilities.** `composer audit` and `npm audit` are clean (both executed).
+  No SQL injection (all values bound; the only `orderByRaw` calls are constant literals —
+  `EpicListQuery.php:40,42,53,54`), no XSS (no `v-html`, no `{!! !!}`, no `innerHTML` anywhere in `resources/views`;
+  all user data via `x-text` or escaped Blade), no CSRF gap (every mutating form has `@csrf`; the inline-create
+  `fetch` sends `X-CSRF-TOKEN`, `app.js:323`), no command injection (`chisel.php` uses
+  `Symfony\Component\Process\Process` with an **array** command, so no shell is invoked), no path traversal or file
+  upload (no file handling in `app/`), no SSRF (no outbound HTTP).
+- **`.env` is correctly gitignored.** `git ls-files | grep -i env` returns only `.env.example`;
+  `.gitignore:8-10` covers `.env`, `.env.backup`, `.env.production`. The `APP_KEY` at `.env:4` is a live local
+  development key and has not leaked.
+- **Session and cookie hardening is correct.** `config/session.php:172` `'secure' => env('SESSION_SECURE_COOKIE',
+  env('APP_ENV') === 'production')`, `:185` `http_only => true`, `:202` `same_site => 'lax'`.
+- **Mass assignment cannot reach `active`.** `#[Fillable]` excludes it on all five models; proven by
+  `tests/Feature/Auth/InactiveUserTest.php:16-32` and `ModelSchemaParityTest.php:28-42`.
+- **CI is hardened.** `permissions: contents: read`, `persist-credentials: false`, all four actions pinned to full
+  commit SHAs, no `pull_request_target`, no secret interpolation into `run:` blocks.
+- **Destructive DB commands blocked in production.** `AppServiceProvider.php:36-38`
+  `DB::prohibitDestructiveCommands(app()->isProduction())`, alongside `Date::use(CarbonImmutable::class)` (line 34)
+  and a production `Password::defaults()` policy (lines 40-48).
+- **Health endpoint used correctly.** `bootstrap/app.php:14` registers `/up`; `tests.yml:222-229` polls it in a
+  30-attempt readiness loop.
+- **Duplicate-name races are tested for all 9 combinations.** `CustomerCrudTest.php:159,176`,
+  `CustomerTrashTest.php:108`, `ProjectCrudTest.php:114,136`, `ProjectTrashTest.php:145`,
+  `EpicCrudTest.php:175,195`, `EpicTrashTest.php:159` — each injects a competing `INSERT` via `DB::listen`. Three
+  tests additionally assert a *non*-unique `QueryException` is rethrown untouched
+  (`CustomerCrudTest.php:198`, `ProjectCrudTest.php:94`, `EpicCrudTest.php:94`).
+- **Four meta-tests make the architecture rules mechanical.** `ModelSchemaParityTest.php:52-110` (fillable ↔ schema ↔
+  casts), `ArchitectureTest.php:62-86` (thin controllers), `:123-140` (view conventions),
+  `ValidationCoverageTest.php:33-87` (fillable ↔ rules, and controller input reads ↔ rules). This is why
+  `AGENTS.md`'s "a new column needs three things together" rule holds in practice.
+- **`AGENTS.md:43` says phpstan level 9 and `phpstan.neon:15` is level 9.** Verified in agreement — recorded because it
+  looked like a contradiction.
+- **Documentation drift, `active_name` storage.** The generated columns are `STORED`
+  (`SHOW CREATE TABLE customers`), duplicating up to 255 chars per row. This is not a free choice — a `VIRTUAL`
+  column cannot carry a UNIQUE index in MySQL 8/MariaDB without an explicit prefix length. No action.
+- **EXPLAIN evidence recorded, no action.** The epics list query is `type: ALL` with `filesort` (no index on
+  `deleted_at`/`active`; only `PRIMARY` and the unique index exist), and `epic_comments` has no `(epic_id,
+  created_at)` index. With `customers` = 5, `projects` = 2, `epics` = 1 rows this costs nothing. Recorded so the
+  evidence exists if the data grows; adding indexes now would be speculative.
+- **`cache`, `cache_locks`, `jobs`, `failed_jobs` tables are empty.** Zero `Cache::` calls and zero dispatched jobs
+  in `app/`. Do not build dashboards or alerts on these tables today.
+- **`.github/instructions/` is four short, specific, enforced files** (`http`, `models`, `tests`, `views`), each
+  naming concrete classes, and each rule is backed by a test. Correct size and shape.
+- **`ARCHITECTURE.md`'s "Deliberately Rejected Patterns" section is load-bearing.** It is why this review rejects
+  repositories, services, DTOs, traits, base models, optimistic locking, caching, and observability stacks instead of
+  recommending them.
 
 ## Security
 
-No exploitable vulnerability was found. The full OWASP checklist and the evidence for each "not
-exploitable" verdict are in `.github/reviews/2026-10-02/security.md`. Summary of what was checked
-and cleared:
+Summary of the security posture, with the two accepted items called out.
 
-| Vector | Verdict |
-|---|---|
-| XSS (Blade) | Only one `{!! !!}` in the tree: Fortify's server-generated `$qrCodeSvg`. All user values use `{{ }}` or `@js()`. |
-| XSS (search fragment `innerHTML`) | `app.js:462-477` injects a same-origin, server-rendered, fully escaped Blade fragment. No injection point. |
-| XSS (`data-payload` JSON) | `row-actions.blade.php:16,27` — `{{ json_encode(...) }}` is escaped by `e()`; the DOM decodes it back to valid JSON. |
-| Mass assignment | `#[Fillable(['name'])` on `Customer`; `active` written server-side only. `InactiveUserTest:16-32` proves `active => false` at registration is ignored. |
-| SQL injection | All Eloquent/Query Builder with bound parameters. Raw SQL is limited to two constants. |
-| CSRF | All routes in the `web` group; the one JSON client sends `X-CSRF-TOKEN`. |
-| IDOR / BOLA | Documented decision: every verified user manages every resource. No route escapes that boundary. |
-| Session hardening | `secure` defaults to `APP_ENV === 'production'`, `http_only => true`, `same_site => 'lax'`. |
-| Rate limiting | Fortify defines `login` (5/min per email+IP), `two-factor`, `passkeys`. CRUD writes unthrottled — see API-001. |
-| Inactive-user lockout | Password, 2FA (incl. mid-challenge), passkey and remember-me paths all covered by 9 tests. |
-| Secrets | `.env` gitignored; only `.env.example` tracked with an empty `APP_KEY`. The MariaDB root password is committed — see SEC-001. |
-| SSRF / command injection / path traversal / file upload | No such code paths exist. |
+**No critical or high vulnerability was found.** The full OWASP sweep produced no exploitable issue: the app has no
+SQL injection surface, no XSS surface, no CSRF gap, no file upload, no outbound HTTP, and no deserialisation of
+user input. Authorization is uniformly permissive, but that is documented product scope (`ARCHITECTURE.md:40-44`) and
+`http.instructions.md` explicitly instructs not to add roles.
 
-Accepted risk: **SEC-001** (dev app on `0.0.0.0`).
+The two MEDIUM items are both "this will surprise a future maintainer" rather than "this is exploitable":
+
+- `SEC-003` — the custom `authenticateUsing()` callback owns all credential semantics. Rate limiting is *not*
+  bypassed (the Fortify pipeline still runs `EnsureLoginIsNotThrottled`), and no login bypass exists — the closure is
+  in fact **required**, because the `active` middleware only runs on subsequent web requests. The recommendation is a
+  behaviour-preserving change to route through the provider's `retrieveByCredentials()`.
+- `SEC-004` — the policies enforce nothing while reading as though they enforce ownership, and **no test would fail**
+  if the product later gained a second class of user. The recommendation is a comment, not a role system.
+
+Hardening items (LOW, all environment-specific): bind the app port to loopback (`OPS-004`), align local `sql_mode`
+with production (`OPS-003`), and remove the lockfile deletions (`DEP-005`).
 
 ## Bugs / Correctness
 
-- **BUG-001 (HIGH)** — `View::fragmentIf()` returns a string in both branches, so no list route
-  ever returns a View. This is the cause of the single failing test.
-- Nothing else confirmed. Hypotheses about eager-load limits, search focus, the
-  `reuse_deleted_name` / `resolve_name_conflict` flags, comment-drawer rehydration, case-insensitive
-  uniqueness, middleware ordering on login, and SQL strict mode were all raised and **refuted with
-  evidence** — see `.github/reviews/2026-10-02/devils-advocate.md`.
+Three defects, all reproducible, all currently breaking CI.
+
+| ID | Defect | Symptom | State |
+|---|---|---|---|
+| `BUG-001` | 9 list actions return a string, not a `View` | 4 failing tests; `assertViewHas`/`viewData` unusable on list routes | confirmed at HEAD `781ccbb` |
+| `BUG-002` | `phpstan analyse` level 9 error | CI stops before running the suite, masking `BUG-001`/`BUG-003` | reproduced twice |
+| `BUG-003` | `EpicCommentController::index` trips the architecture rule | 1 failing test | reproduced |
+
+Plus two business-logic corrections (`BUS-001` inactive parents selectable, `BUS-005` misleading restore copy), both
+provable against live data and against `ARCHITECTURE.md` itself.
+
+Not bugs, verified and rejected: the two date rules differ between `ProjectRequest.php:46` (`after_or_equal`) and
+`EpicRequest.php:47` (`after`) — `ARCHITECTURE.md:64` vs `:66-67` require exactly that. The three list views' identical
+Form Requests are correct, because each must reference its own policy.
 
 ## Database
 
-- Schema, foreign keys and `onDelete` semantics are correct and match `ARCHITECTURE.md`.
-  `epic_comments.epic_id ON DELETE CASCADE` and `epic_comments.user_id ON DELETE SET NULL` deliver
-  the two documented comment rules; `restrictOnDelete` correctly blocks hard deletes of referenced
-  parents.
-- The generated-column uniqueness trick works and is the final arbiter for every name race.
-  `UniqueConstraintViolation::causedBy()` correctly recognises `23505`, `23000`+`1062` and
-  `23000`+`19`.
-- `paginate()` totals are not inflated by the joins (many-to-one only).
-- Gaps: **DB-001** (no list indexes) and **TEST-003** (the `sqlite`/`pgsql` branch is unexercised).
-- **CONC-001** is a database-adjacent integrity gap the FKs structurally cannot cover, because it
-  involves soft deletes.
+The schema is in good shape and the central decision — enforcing name uniqueness in the database via a stored
+generated column — is the right one. It makes correctness independent of application code and is what allows
+`UniqueConstraintViolation` to be a complete answer to a validation race rather than a best-effort patch.
+
+Confirmed issues:
+
+- `DB-001` (MEDIUM) — the MariaDB and SQLite branches of the uniqueness index disagree on collation
+  (case-insensitive vs. binary), and the SQLite branch is never executed by the suite, so changes to it produce no
+  test signal.
+- `ARCH-001` (MEDIUM) — the documentation asserting SQLite is the test database is what makes `DB-001` invisible.
+
+Verified-correct, recorded to prevent "improvement":
+
+- `RESTRICT` on `projects.customer_id` and `epics.project_id`, `CASCADE` on `epic_comments.epic_id`, `SET NULL` on
+  `epic_comments.user_id` — together these give exactly the documented behaviour
+  (`ARCHITECTURE.md:69-70`), verified by `SHOW CREATE TABLE`.
+- `EpicListQuery`'s `INNER` joins are safe **only** because the parent FKs are `RESTRICT`; the joins do not apply the
+  SoftDeletes scope, which is intentional and consistent with `Epic::project()->withTrashed()`. Worth one line of
+  documentation so nobody relaxes the FK later.
+- No destructive migrations; the only `down()` that loses data is the `active` column rollback, which is inherent to
+  the feature.
 
 ## Performance
 
-- No N+1 in the list queries. In particular, the per-epic comment limit is resolved by a **single**
-  window-function query — verified at 3 epics × 30 comments → 20 each, sum 60, one statement.
-- **PERF-001** (unbounded option lists re-fetched on every search keystroke) is the only finding
-  with a realistic trigger today.
-- **DB-001 / PERF-002** (unindexed filters and sorts, leading-wildcard `LIKE`) is honest
-  non-optimisation: irrelevant at current row counts, documented with a trigger instead.
-- **PERF-003** and **PERF-004** are recorded for completeness; neither should be changed yet.
+**No performance finding rises above LOW, and none is worth acting on now.** That is a deliberate conclusion, not an
+omission.
+
+Measured scale: `customers` = 5 rows, `projects` = 2, `epics` = 1, `PER_PAGE` = 5. The one query with a genuine
+scaling cliff is `ProjectController.php:28` / `EpicController.php:28` loading whole tables for dropdowns — but its
+actual defect is the missing `active` filter, which is `BUS-001`, not the row count.
+
+Verified-clean, recorded so they are not "optimised":
+
+- **No N+1** on any list page. `EpicListQuery::withProjectAndCustomer()` eager-loads `project.customer`;
+  `ProjectListQuery::withCustomer()` eager-loads `customer`; the transformers touch only those.
+  `CustomerListQuery.php:23` and `ProjectListQuery.php:30` use `withExists([... withoutGlobalScope(SoftDeletingScope)])`
+  — one correlated subquery, not a lazy collection.
+- **The eager-loaded comment limit is per-epic, not global.** `HasOneOrMany::limit()` (vendor, line 557) branches on
+  `$this->parent->exists`; during eager loading `Builder::getRelation()` uses `newInstance()` (line 1004), so the
+  `groupLimit` windowed path is taken. Correct, and tested.
+- **Search escaping is correct** — `ListQueryBase.php:31` `addcslashes($search, '%_\\')` neutralises user-supplied
+  wildcards, and all values are bound.
+- **No caching is warranted.** Zero `Cache::` calls in `app/`; the `cache` table is empty. Adding cache for a
+  5-row table is pure cost.
+- **The list-fragment refresh aborts in-flight requests** (`app.js:447,449`) so keystroke-driven fetches do not pile up.
+
+Recorded as evidence-only (no action): `EXPLAIN` shows the epics list as `type: ALL` with `filesort`, and
+`epic_comments` lacks a `(epic_id, created_at)` index.
 
 ## Architecture
 
-- Layering is correct and **enforced by the suite**: `tests/Unit/ArchitectureTest.php` fails the
-  build if a controller touches `DB::`/`Schema::`/`dd()`/`->paginate()`/raw input, if an input
-  endpoint lacks a Form Request, or if a resource is missing any of its eight classes. It passes.
-- No repository/service/DTO/CQRS/event-sourcing layer, matching
-  `ARCHITECTURE.md:118-124` and `.github/docs/review-rules.md:27-42`.
-- Business logic is findable: uniqueness scopes, deletion guards and the trash-name conflict flow
-  live in Form Requests, controllers and one small support class, and are named in
-  `.github/instructions/http.instructions.md`.
-- The only architecture problem is documentation drift (**ARCH-001**) plus the `active`-semantics
-  note (**ARCH-002**).
+Proportional and mostly correct. The `Controller → FormRequest → Policy → ListQuery → ListTransformer → View` shape is
+consistent across all three resources, and it is *machine-enforced* — `ArchitectureTest.php:29-59` fails if a new
+resource does not ship all nine classes.
+
+What is right, and should be defended:
+
+- `app/Queries` + `app/Transformers` separation from controllers (`ARCHITECTURE.md:102-103`), enforced by
+  `ArchitectureTest.php:62-86`, which forbids `DB::`, `Schema::`, `->paginate(`, raw `$request->input()` and base
+  `Request` type-hints in controllers.
+- The "Deliberately Rejected Patterns" section (`ARCHITECTURE.md:118-124`) actively shapes this review — it is the
+  documented reason to reject repositories, services, DTOs, traits and base models.
+- Minimal `config/` (11 files, no `view.php`/`hashing.php`/`broadcasting.php`) with the two files that matter —
+  `fortify.php` and `session.php` — published and customised. Correct.
+
+Where it leaks: `BUG-003` shows the architecture rule set is slightly over-broad (it guards a method name rather than
+the presence of input), and `ARCH-002` shows a cross-cutting flag with no single owner.
 
 ## Testing
 
-- 237 tests, 1 201 assertions, 22 s. Strong behaviour coverage of auth, deactivation, trash
-  conflicts, search escaping and fragment isolation.
-- Race conditions are tested with a real technique (`DB::listen` injecting the competing row), which
-  closes the gap flagged in the 2026-09-30 review.
-- Structural invariants are test-enforced, not convention-enforced — unusual and valuable.
-- Gaps: **BUG-001** (suite red), **TEST-002** (database divergence), **TEST-003** (SQLite claim),
-  **TEST-004** (project/epic access coverage).
-- Dusk was **not run** by this review (destructive `DatabaseMigrations` against the persistent
-  `laravel_test` database). Chromium and chromedriver are present, so CI remains the verification
-  path.
+Strong for the size of the application, and currently red.
+
+Coverage worth calling out: 9/9 duplicate-name race combinations (each injecting a real competing `INSERT` through
+`DB::listen`, which is harder to fake than most mocks), 3 tests asserting a *non*-unique `QueryException` propagates
+untouched, and four meta-tests that turn architecture rules into assertions. `InactiveUserTest` covers all five
+inactive-user paths including passkeys and remember-me.
+
+Gaps, in order of value:
+
+- `BUG-001` currently costs the inactive-list pagination assertions (`ResourceActivationTest.php:372-378`).
+- No test asserts that a *failing* list refresh surfaces anything to the user (`OBS-001`).
+- `EpicCommentController::index` has no test of its own until the WIP refactor lands.
+- `phpunit.xml` does not force its `DB_*` vars (`OPS-002`), so the suite can silently run against the wrong database.
+
+Deliberately not findings: Dusk is excluded from `phpunit.xml` and run in a separate job (documented at
+`ARCHITECTURE.md:113-114`) — I did **not** run Dusk, so it is recorded as NOT RUN rather than passing. There is no
+coverage threshold, which is appropriate when the behaviour, not the line count, is what is under test. Paratest is
+available but unused in CI because the database is shared — correct.
 
 ## Production
 
-- `APP_DEBUG=false` in `.env.example` — the safe default, opposite to Laravel's boilerplate.
-- `AppServiceProvider::configureDefaults()` raises `Password::min(12)…->uncompromised()` and enables
-  `DB::prohibitDestructiveCommands()` in production only. Both are correct.
-- Session cookies default to `secure` in production.
-- CI is SHA-pinned, least-privilege (`contents: read`), concurrency-cancelled, with
-  `persist-credentials: false`.
-- Gaps: **SEC-001** / **DEV-001** (dev exposure, only), **OBS-001** (no telemetry),
-  **TEST-002** (which database CI actually tests), **DEV-002** (PHP version drift).
-- `ARCHITECTURE.md:137-140` still lists "observe the Dusk CI job once" as unverified technical debt.
-  This review could not verify it (no CI access) and does not claim otherwise.
+Nothing is deployed: no Kubernetes/Helm/Fly/Railway/Forge config, no `Procfile`, no reverse-proxy config.
+`ARCHITECTURE.md:127-133` mentions only environment and credentials. Findings are therefore scoped to CI and the
+local Docker environment.
+
+CI: **red**, for three reasons (`BUG-001`, `BUG-002`, `BUG-003`), and the ordering hides two of them. The `ci` job also
+runs the suite against the application database rather than `laravel_test` (`OPS-001`), and `phpunit.xml` does not
+force its environment (`OPS-002`). On the positive side, the workflow is well hardened — read-only permissions,
+no persisted credentials, SHA-pinned actions.
+
+Local Docker: the app port is published on all interfaces with `APP_DEBUG=true` (`OPS-004`); MariaDB runs with an
+empty `sql_mode` that diverges from production defaults (`OPS-003`); and the `composer`/`npm` profile services delete
+the committed lockfiles (`DEP-005`) — the last one directly contradicts `AGENTS.md`.
 
 ## Maintainability
 
-- A new developer can understand this project quickly: `AGENTS.md` (stack, commands, project map),
-  `ARCHITECTURE.md` (business invariants), `.github/instructions/*.instructions.md` (auto-injected
-  per-zone rules). Above average for this size.
-- Adding a **fourth** resource is the highest-risk change, because the three existing ones are
-  independent copies rather than a shared base. The mitigation already in place
-  (`ArchitectureTest::test_every_resource_ships_the_complete_set` + the mirror rule in
-  `http.instructions.md`) is the right trade-off. **FE-001** is the cleanup to schedule if that
-  happens.
-- Hidden assumptions worth documenting: MySQL/MariaDB is the only supported engine; `PER_PAGE = 5`
-  is assumed small enough that loading all option rows is acceptable; `resolve_name_conflict` and
-  `reuse_deleted_name` only affect messages/branching despite their names.
-- Debt is explicitly tracked in `todo.md` and `ARCHITECTURE.md:137-140`, which is good practice.
-  **MAINT-003** notes the two lists should not overlap.
+The project's documentation and zone instructions are unusually good — four short `applyTo`-scoped instruction files
+whose every rule is backed by a test, and a `ARCHITECTURE.md` that records both rejected patterns and known technical
+debt.
+
+The main friction is duplication in the views (`CLEAN-001`) and the fact that the app's core invariant is expressed
+five times with two of those being prose (`MAINT-001`) — and drift has already occurred once, in `BUS-001`. The two
+documentation drifts (`ARCH-001`, and the epic-comments description in `ARCHITECTURE.md:26-27` once the WIP lands)
+are the cheapest items on the list.
+
+One process gap worth naming: there is **no frontend linter or typechecker**. `package.json` defines only `build` and
+`dev`, and `pint` is PHP-only. Nothing catches a JS or Blade mistake at commit time.
 
 ## Rejected Findings
 
-Full reasoning in `.github/reviews/2026-10-02/devils-advocate.md`.
+Every item below was raised by a specialist and dropped during the devil's advocate pass. Recorded so they are not
+re-investigated. Full reasoning in `.github/reviews/2026-10-02/devils-advocate.md`.
 
-| Rejected hypothesis | Why it was dropped |
-|---|---|
-| The `limit(20)` comment eager load is global across the page (candidate HIGH) | Laravel 13 uses one window-function query; measured 20 **per epic**. |
-| The search input loses focus/caret after the fragment morph | Alpine morph patches in place; `CustomerCrudTest:87` asserts state survives. |
-| Case-insensitive uniqueness is a defect | `Rule::unique()` uses the same collation, so validation and DB always agree. |
-| `resolve_name_conflict` / `reuse_deleted_name` are dead flags | They are the payload of the two-button conflict modal. |
-| The comment drawer cannot re-open after posting | `back()` restores the page, so the epic is always in the rows. |
-| Local Docker's `--sql-mode=""` weakens validation | `config/database.php` forces strict mode per connection. |
-| `EnsureUserIsActive` breaks `POST /login` | `$request->user()` is null pre-authentication; 9 tests cover it. |
-| Merge the three list views into one generic component | Forbidden by `review-rules.md:27-42`; downgraded to a scoped cleanup (FE-001). |
-| `data-payload="{{ json_encode(...) }}"` is XSS | `e()` escapes; the DOM decodes back to valid JSON. |
-| PHP 8.3 CI vs 8.4 local is a defect | Already documented; reported only as contributor friction. |
+**Falsified by experiment**
 
-Severity downgrades applied after challenge: `deactivate/reactivate` race MEDIUM→LOW, missing
-indexes MEDIUM→LOW, middleware query MEDIUM→LOW, duplicated views MEDIUM→LOW, orphan key
-MEDIUM→LOW, no telemetry MEDIUM→LOW. Six duplicate findings were merged into one each (LAR-001 +
-TEST-001, DB-001 + PERF-002, SEC-001 + DEV-001, TEST-003 + ARCH-001, FE-002 + MAINT-001).
+- *"`x-list.header`'s multi-line PHP concatenation embeds a newline in the Flux modal name, breaking the create
+  button."* I compiled the template, misread the output, and inferred a literal newline. **Wrong.** PHP's `.` ignores
+  whitespace between operands. Executed proof: `var_dump($name)` → `string(13) "customer-form"`, and
+  `$name === "customer-form"` → `bool(true)`. The formatting is ugly; the behaviour is correct.
+
+**Duplicates (merged)**
+
+- `LAR-002` / `TEST-001` → one finding (`BUG-002`).
+- `LAR-001` / `TEST-002` → one finding (`BUG-001`).
+- `PERF-002` / `BUS-001` → merged into `BUS-001`; the unbounded-load half was dropped as irrelevant at 5 rows.
+
+**Style / personal preference**
+
+- *Extract a generic list-page component.* The column sets genuinely differ (3/5/7); the shared parts are already
+  components; `ARCHITECTURE.md:122-123` forbids abstractions without a concrete problem. `CLEAN-001` was rewritten to
+  recommend extracting **only** the byte-identical Alpine block.
+- *Consolidate the 9 `UniqueConstraintViolation` call sites.* The two styles are not duplication — restore needs a
+  different response than store/update. A trait or abstract controller is explicitly forbidden. Demoted MEDIUM → LOW
+  and removed from the action plan.
+- *Missing `config/view.php`, `config/hashing.php`.* Optional in Laravel 11+ with framework defaults. Pure opinion.
+- *`LAR-004`: only `CustomerController::store` has a JSON branch.* Real asymmetry, but only Customers are created
+  inline from the UI, so it is harmless today. Kept as INFO, no action; the risk is recorded in `FE-001`.
+
+**Pattern-driven (rejected outright)**
+
+- *Add Sentry/Bugsnag/OpenTelemetry.* No deployment target is declared anywhere in the repository.
+- *Add structured JSON logging.* No log consumer to emit JSON for.
+- *Add uptime monitoring / alerting.* `failed_jobs` and `cache` are provably empty — nothing to alert on, and an
+  empty table is not a health signal.
+- *Add distributed caching / Redis.* Redis appears only as unused `.env` boilerplate; there is no `Cache::` call.
+- *Add optimistic locking on `updated_at`.* Would surface conflicts to users in an app where records are edited by
+  one person at a time — reducing usability without solving a real problem.
+- *Add a `HasActive` trait / base model.* Three models, one boolean; forbidden by `ARCHITECTURE.md:122-123`.
+- *Add trigram/full-text index for search.* Five rows.
+
+**Severity challenged and reduced**
+
+- `SEC-001` (`.env` APP_KEY), HIGH → **dropped to a hardening note**. `git ls-files` proves `.env` is untracked; a
+  developer's local dev key is not a HIGH finding, and the security agent's own rules forbid exaggerating severity.
+  The actionable half is `OPS-004`.
+- `DB-002` (`STORED` generated column wastes space) → INFO. Not even a free choice: a `VIRTUAL` column cannot carry a
+  UNIQUE index in MySQL 8/MariaDB without a prefix length.
+- `PERF-005` (leading-wildcard `LIKE`) → INFO, no action.
+- `FE-005` (jQuery/Select2 in the main bundle) → kept LOW with "do not do this now", and **excluded from the action
+  plan** because I did not measure bundle size.
+- `OBS-002` (no request correlation), `MAINT-005` (no seed data), `DEP-004` ("verify dependabot covers both
+  ecosystems" — I did not read the file) → removed as unsupported or non-defects.
 
 ## Action Plan
 
-Ordered by impact. Each item is independent.
+Ordered by impact. No aesthetic items.
 
-### P0 — the build is red
+### P0 — CI is red; nothing else can be verified until these land
 
-1. **BUG-001** — Return the `View` for non-fragment requests in the nine list `index()` methods
-   (`if ($request->hasHeader('X-List-Fragment')) return $view->fragment('list-results'); return
-   $view;`). Then re-run `php artisan test --compact`. Do not touch `EpicCommentTest`.
-   *Files:* `app/Http/Controllers/{Customer,Project,Epic}{,Inactive,Trash}Controller.php`.
-   *Verify:* `Tests: 237 passed`.
+1. **`BUG-001`** — return the `View`, not a rendered string, from the nine list `index()` actions. Keep the WIP's
+   `Controller::listView()` shape. *Restores 4 tests and restores the inactive-list pagination coverage.*
+2. **`BUG-002`** — add `@param view-string $view` to `Controller::listView()`. *One line; unblocks PHPStan, which
+   currently stops CI before the suite runs.*
+3. **`BUG-003`** — rename `EpicCommentController::index` to `show`, keeping the route name `epics.comments.index`.
+   *Keeps the architecture rule meaningful instead of weakening it.*
 
-### P1 — make the test environment trustworthy
+Order matters: 2 must land with 1 or CI stays red for a different reason.
 
-2. **TEST-002** — Give the test database one source of truth. Remove the `DB_*` entries from
-   `phpunit.xml` **or** add `force="true"` plus a "create the test database" step in the `ci` job.
-   Document the local bootstrap in `AGENTS.md`.
-   *Files:* `phpunit.xml`, `.github/workflows/tests.yml`, `AGENTS.md`.
+### P1 — correctness gaps a user can hit today
 
-3. **ARCH-001 + TEST-003** — Make the code and `ARCHITECTURE.md:50-51` agree. One-line doc fix if
-   MySQL-only is the intent; otherwise add `ESCAPE '\'` to `ListQueryBase:30-34` and normalise the
-   SQLite date assertions. Report as **one** task.
-   *Files:* `.github/docs/architecture/ARCHITECTURE.md`, `app/Queries/ListQueryBase.php`.
+4. **`BUS-001`** — filter the parent dropdowns by `active`; the empty-state copy already promises it. Live today:
+   customer `Bezero 2` (inactive) is selectable on the project form.
+5. **`OPS-002`** — add `force="true"` to the `DB_*` entries in `phpunit.xml`, so an ambient variable cannot redirect
+   `RefreshDatabase` at a database the developer cares about.
+6. **`BUS-005`** — correct the "another active X uses this name" copy in the three trash controllers, in all four
+   locales (the parity test will enforce that).
+7. **`OPS-001`** — create `laravel_test` in the `ci` job and point it there, so the non-Dusk suite is genuinely
+   isolated from the application database.
 
-### P2 — enforce a documented business invariant
+### P2 — keep it maintainable
 
-4. **CONC-001** — Wrap the four parent-deletion guards in `DB::transaction()` with
-   `lockForUpdate()` on the parent, and add the interleaving test per resource, reusing the
-   `DB::listen` pattern from `ProjectTrashTest:139-171`.
-   *Files:* `app/Http/Controllers/{Customer,Project}Controller.php`,
-   `app/Http/Controllers/{Customer,Project}TrashController.php`,
-   `tests/Feature/{Customers,Projects}/*TrashTest.php`.
+8. **`DEP-005`** — stop deleting `composer.lock` / `package-lock.json` in the compose helper services. Zero risk, and
+   it protects the lockfiles `AGENTS.md` says not to touch.
+9. **`CLEAN-001`** — extract the duplicated Alpine `x-data` block from the three list views. Narrow scope only; no
+   generic list-page component.
+10. **`MAINT-001`** — turn the uniqueness invariant into an assertion instead of prose.
+11. **`ARCH-001`** — fix the test-database sentence in `ARCHITECTURE.md` (this is what hides `DB-001`).
+    Then **`DB-001`** — add `COLLATE NOCASE` to the SQLite partial index so both branches implement the same rule.
+12. **`ARCH-002`** — one sentence in `ARCHITECTURE.md` stating that `active` is orthogonal to `deleted_at` and is
+    never mass-assignable.
+13. **`SEC-004`** — add the "enforces nothing by design" comment to the three policy classes, with a link to
+    `ARCHITECTURE.md`. Prevents a future role change from passing every test.
+14. **`OBS-001`** — surface list-refresh failures in the existing flash region instead of throwing into an unhandled
+    rejection.
+15. **`SEC-003`** — route the `authenticateUsing` lookup through `$provider->retrieveByCredentials()` so credential
+    retrieval stays overridable. Behaviour-preserving.
+16. **`BUS-006`** — make the comment redirect unconditional, removing an untested fallback. Coordinate with the
+    in-flight refactor.
 
-### P3 — close the dev-surface gap
+### P3 — when convenient
 
-5. **SEC-001** — Bind the app ports to `127.0.0.1` in `docker-compose.yml` and move
-   `MYSQL_ROOT_PASSWORD` to an env var with a local-only default.
-   *File:* `docker-compose.yml`.
+17. **`OPS-004`** — bind the app port to `127.0.0.1:80:80`, matching the other services.
+18. **`OPS-003`** — drop `--sql-mode=""` from the MariaDB service so local matches production defaults.
+19. **`DEP-001`** — remove the three pinned linux-x64 binaries from `optionalDependencies`.
+20. **`CONC-001`** — make `deactivate`/`reactivate` atomic single-query updates.
+21. **`CONC-002`** — wrap the parent-delete guard and the delete in one transaction; widen
+    `ArchitectureTest.php:67` to permit `DB::transaction(` deliberately.
+22. **`CLEAN-005`** — extract the duplicated ordering chain in `EpicListQuery`.
+23. **`FE-001`** — distinguish a transport failure from a validation failure in the inline-create error path.
+24. **`CLEAN-002`** — document that `$createClick` is an Alpine expression, not data.
+25. **`MAINT-005`** — optionally seed one customer → project → epic chain with a comment.
 
-6. **BIZ-001** — Implement the already-written `todo.md` select rule (create ⇒ only `active = 1`;
-   edit ⇒ keep the current selection even if inactive, plus the active ones) and align the two
-   callout strings with it. Plan it, do not improvise a narrower fix.
-   *Files:* `app/Http/Controllers/{Project,Epic}Controller.php`,
-   `resources/views/{projects,epics}/list.blade.php`, `todo.md` → `ARCHITECTURE.md`.
+### Explicitly not recommended
 
-### P4 — cheap hardening and consistency
-
-7. **TEST-004** — Data-providerise `CustomerAccessTest` across the three resources.
-8. **DEP-001 / DEP-002** — `composer install` (not `rm composer.lock`) in `laravel13-composer`;
-   drop `npm install -g npm@latest` and use `npm ci` in the npm services.
-9. **DEP-003** — Comment out `DC_UID`/`DC_GID` in `.env.example`.
-10. **MAINT-001** — Delete the orphan key from the four `lang/*.json` files and add a test that
-    every `lang/en.json` key is referenced.
-
-### Deferred — do not act without a trigger
-
-- **PERF-001** (remote-searchable selects) — trigger: more than a few hundred customers/projects.
-- **DB-001 / PERF-002** (indexes) — trigger: domain tables past ~50k rows.
-- **FE-001** (extract the duplicated Alpine block) — trigger: a fourth resource.
-- **OBS-001** (telemetry) — trigger: first production environment.
-- **CONC-002, PERF-003, PERF-004, CLEAN-001, API-001, API-002, ARCH-002, DEV-002, DEV-003, DEV-004,
-  OBS-002, MAINT-003** — recorded; no change justified today.
-
-### Suggested task file
-
-Written to `.github/tasks/07.full-code-review-2026-10-02.md`.
+Adding an error tracker, structured logging, monitoring/alerting, Redis or caching; introducing repositories,
+services, DTOs, traits or base models; a generic list-page component; optimistic locking; trigram or full-text search
+indexes; refactoring the three duplicate-name call sites. Each was raised, challenged and rejected — reasons in
+[Rejected Findings](#rejected-findings) and in `.github/reviews/2026-10-02/devils-advocate.md`.
