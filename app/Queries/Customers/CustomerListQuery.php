@@ -21,10 +21,8 @@ final class CustomerListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withActiveCounts(
-                Customer::query()->where('active', true)
-                    ->withExists(['projects' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)])
-                    ->orderBy('name'),
-            ),
+                Customer::query()->where('active', true)->orderBy('name'),
+            )->withExists(['projects' => fn(Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)]),
             $search,
             searchColumns: ['name'],
         );
@@ -66,8 +64,8 @@ final class CustomerListQuery extends ListQueryBase
         return $query
             ->select('customers.*')
             ->withCount([
-                'projects' => fn (Builder $projects) => $projects->where('projects.active', true),
-                'epics' => fn (Builder $epics) => $epics
+                'projects' => fn(Builder $projects) => $projects->where('projects.active', true),
+                'epics' => fn(Builder $epics) => $epics
                     ->where('epics.active', true)
                     ->where('projects.active', true),
             ])
