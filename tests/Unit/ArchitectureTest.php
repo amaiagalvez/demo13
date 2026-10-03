@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\File;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 
 class ArchitectureTest extends TestCase
@@ -57,6 +58,27 @@ class ArchitectureTest extends TestCase
             foreach (['list', 'form'] as $view) {
                 $this->assertFileExists(resource_path("views/{$plural}/{$view}.blade.php"));
             }
+        }
+    }
+
+    public function test_soft_deletable_models_declare_a_policy(): void
+    {
+        foreach (glob(app_path('Models/*.php')) ?: [] as $file) {
+            $class = 'App\\Models\\' . basename($file, '.php');
+
+            if (
+                ! class_exists($class)
+                || ! in_array(SoftDeletes::class, class_uses_recursive($class), true)
+            ) {
+                continue;
+            }
+
+            $model = new ReflectionClass($class);
+
+            $this->assertNotEmpty(
+                $model->getAttributes(UsePolicy::class),
+                "{$class} must declare #[UsePolicy] because it uses SoftDeletes",
+            );
         }
     }
 

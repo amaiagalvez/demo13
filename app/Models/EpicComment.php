@@ -4,10 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\EpicCommentFactory;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Comments are created through Epic's comment ability; they have no independent mutation policy.
+ *
+ * @property int $id
+ * @property int $epic_id
+ * @property int|null $user_id
+ * @property string $body
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 #[Fillable(['body'])]
 class EpicComment extends Model
 {

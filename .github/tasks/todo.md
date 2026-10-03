@@ -19,5 +19,5 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
 [ ] ahora busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github
 [] /full-review del proyecto
-[] /fix-review task 05 vete marcando con [x] al principio las que ya esten echas y antes de modicar, dime que es lo que vas a modificar y preguntame
+[] /fix-review 06.model-consistency-audit.md antes de modificar pide confirmación y al terminar marca la tarea como realizada
 [ ] repasa la configuración de los AGENTES y analiza si hay alguna manera de ahorrar tokens y de mejorar la forma de trabajar.
