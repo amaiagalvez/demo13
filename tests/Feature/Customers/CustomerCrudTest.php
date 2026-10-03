@@ -187,6 +187,17 @@ class CustomerCrudTest extends TestCase
             ->assertSeeInOrder([__('Dashboard'), __('Customers'), __('Trash')], false);
     }
 
+    public function test_customer_search_keeps_the_global_active_tab_count(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create(['name' => 'Matching customer']);
+        Customer::factory()->create(['name' => 'Other customer']);
+
+        $this->get(route('customers.index', ['search' => 'Matching']))
+            ->assertViewHas('customers', static fn (LengthAwarePaginator $customers): bool => $customers->total() === 1)
+            ->assertSeeInOrder(['data-test="customer-active-link"', '>2</span>'], false);
+    }
+
     public function test_customer_row_edits_from_the_name_and_links_the_project_count_to_its_projects(): void
     {
         $this->actingAs(User::factory()->create());

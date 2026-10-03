@@ -5,12 +5,66 @@ namespace Tests\Feature\Customers;
 use Tests\TestCase;
 use App\Models\Customer;
 use App\Queries\ListQueryBase;
+use Illuminate\Support\Facades\DB;
 use App\Queries\Customers\CustomerListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerListQueryTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_state_counts_reuse_the_unfiltered_active_total_without_a_duplicate_query(): void
+    {
+        Customer::factory()->count(2)->create();
+        Customer::factory()->inactive()->create();
+        Customer::factory()->trashed()->create();
+        $query = app(CustomerListQuery::class);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $customers = $query->active('');
+            $counts = $query->stateCounts(activeTotal: $customers->total());
+            $executedQueries = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $this->assertSame(['active' => 2, 'inactive' => 1, 'trashed' => 1], $counts);
+        $this->assertCount(4, $executedQueries);
+    }
+
+    public function test_state_counts_reuse_an_empty_active_total_without_a_duplicate_query(): void
+    {
+        $query = app(CustomerListQuery::class);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $counts = $query->stateCounts(activeTotal: 0);
+            $executedQueries = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $this->assertSame(['active' => 0, 'inactive' => 0, 'trashed' => 0], $counts);
+        $this->assertCount(2, $executedQueries);
+    }
+
+    public function test_state_counts_remain_unfiltered_when_the_active_list_is_searched(): void
+    {
+        Customer::factory()->create(['name' => 'Matching customer']);
+        Customer::factory()->create(['name' => 'Other customer']);
+        $query = app(CustomerListQuery::class);
+
+        $customers = $query->active('Matching');
+        $counts = $query->stateCounts();
+
+        $this->assertSame(1, $customers->total());
+        $this->assertSame(['active' => 2, 'inactive' => 0, 'trashed' => 0], $counts);
+    }
 
     public function test_active_list_filters_out_deleted_customers(): void
     {
