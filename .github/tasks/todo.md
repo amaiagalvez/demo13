@@ -15,6 +15,7 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
  [] si hubiera muchos datos en todoas lass atablas, analiza el compoartamiento de las tres listados (N+1, excesivo tiempo de carga)
  [] test sin db prioridad
  [] en vez de cada modelo tener su propio el cliente se ha guardado correctamente o el cliente se a borrado o nuevo cliente y todos los que hay del mismo estilo, utilizar terminología genérica siempre que el usuario entienda dónde esta. Utilizar se ha guardado correctamente o se ha creado correctamete o no se puede eliminar y similare. Con esto, reducimos las traducciones y tenemos más código que se podría pasar a las bases y reutilizar, lo mismo con los test.
+ 
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------
