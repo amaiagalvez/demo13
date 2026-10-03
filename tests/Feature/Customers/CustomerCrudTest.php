@@ -28,6 +28,10 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index'))
             ->assertOk()
             ->assertSee('customer-create')
+            ->assertSee('aria-labelledby="customer-form-heading"', false)
+            ->assertSee('id="customer-form-heading"', false)
+            ->assertSee('aria-labelledby="customer-confirm-heading"', false)
+            ->assertSee('id="customer-confirm-heading"', false)
             ->assertSee('customer-edit-'.$customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
@@ -216,6 +220,8 @@ class CustomerCrudTest extends TestCase
             ->assertOk()
             ->assertSee('customer-conflict-create-new')
             ->assertSee('customer-conflict-restore')
+            ->assertSee('aria-labelledby="customer-name-conflict-heading"', false)
+            ->assertSee('id="customer-name-conflict-heading"', false)
             ->assertSee(__('Customer name already in trash'));
 
         $this->assertDatabaseCount('customers', 1);

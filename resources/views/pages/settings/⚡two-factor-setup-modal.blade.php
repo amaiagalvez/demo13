@@ -154,7 +154,8 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
     }
 }; ?>
 
-<flux:modal name="two-factor-setup-modal" class="max-w-md md:min-w-md" @close="closeModal">
+<flux:modal name="two-factor-setup-modal" aria-labelledby="two-factor-setup-modal-heading"
+    class="max-w-md md:min-w-md" @close="closeModal">
     <div class="space-y-6">
         <div class="flex flex-col items-center space-y-4">
             <div
@@ -180,7 +181,9 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
             </div>
 
             <div class="space-y-2 text-center">
-                <flux:heading size="lg">{{ $this->modalConfig['title'] }}</flux:heading>
+                <flux:heading id="two-factor-setup-modal-heading" level="2" size="lg">
+                    {{ $this->modalConfig['title'] }}
+                </flux:heading>
                 <flux:text>{{ $this->modalConfig['description'] }}</flux:text>
             </div>
         </div>

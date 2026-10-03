@@ -185,6 +185,11 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHas('deleted_epic_conflict', ['id' => $deletedEpic->id, 'name' => 'Deleted epic']);
 
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertSee('aria-labelledby="epic-name-conflict-heading"', false)
+            ->assertSee('id="epic-name-conflict-heading"', false);
+
         $this->assertDatabaseCount('epics', 1);
 
         $this->post(route('epics.store'), [...$payload, 'reuse_deleted_name' => '1'])

@@ -11,10 +11,10 @@
     'restoreTest',
 ])
 
-<flux:modal :name="$name" class="max-w-md">
+<flux:modal :name="$name" :aria-labelledby="$name.'-heading'" class="max-w-md">
     <div class="flex flex-col gap-6">
         <div>
-            <flux:heading size="lg">{{ $title }}</flux:heading>
+            <flux:heading :id="$name.'-heading'" level="2" size="lg">{{ $title }}</flux:heading>
             <flux:text class="mt-2">{{ $message }}</flux:text>
         </div>
 

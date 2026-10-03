@@ -7,7 +7,7 @@
 
 <div {{ $attributes->merge(['class' => 'mx-auto flex w-full max-w-xl flex-col gap-6']) }}>
     <div>
-        <flux:heading size="xl" x-text="form.title"></flux:heading>
+        <flux:heading :id="$prefix.'-form-heading'" level="2" size="xl" x-text="form.title"></flux:heading>
         <flux:subheading x-text="form.subtitle"></flux:subheading>
     </div>
 

@@ -4,10 +4,11 @@
 --}}
 @props(['prefix'])
 
-<flux:modal :name="$prefix.'-confirm'" class="max-w-md">
+<flux:modal :name="$prefix.'-confirm'" :aria-labelledby="$prefix.'-confirm-heading'" class="max-w-md">
     <div class="flex flex-col gap-6">
         <div>
-            <flux:heading size="lg" x-text="confirmation.title"></flux:heading>
+            <flux:heading :id="$prefix.'-confirm-heading'" level="2" size="lg"
+                x-text="confirmation.title"></flux:heading>
             <flux:text class="mt-2" x-text="confirmation.text"></flux:text>
         </div>
 

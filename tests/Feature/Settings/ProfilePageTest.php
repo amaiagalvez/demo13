@@ -18,6 +18,8 @@ class ProfilePageTest extends TestCase
         $appName = config('app.name');
 
         self::assertIsString($appName);
-        $response->assertSeeText(__('Profile settings').' - '.$appName);
+        $response->assertSeeText(__('Profile settings').' - '.$appName)
+            ->assertSee('aria-labelledby="confirm-user-deletion-heading"', false)
+            ->assertSee('id="confirm-user-deletion-heading"', false);
     }
 }

@@ -25,10 +25,12 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
     }
 }; ?>
 
-<flux:modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
+<flux:modal name="confirm-user-deletion" aria-labelledby="confirm-user-deletion-heading"
+    :show="$errors->isNotEmpty()" focusable class="max-w-lg">
     <form method="POST" wire:submit="deleteUser" class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('Are you sure you want to delete your account?') }}
+            <flux:heading id="confirm-user-deletion-heading" level="2" size="lg">
+                {{ __('Are you sure you want to delete your account?') }}
             </flux:heading>
 
             <flux:subheading>

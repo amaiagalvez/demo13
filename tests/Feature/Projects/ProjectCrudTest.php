@@ -43,6 +43,10 @@ class ProjectCrudTest extends TestCase
         $this->get(route('projects.index'))
             ->assertOk()
             ->assertSee('project-create-button')
+            ->assertSee('aria-labelledby="project-form-heading"', false)
+            ->assertSee('id="project-form-heading"', false)
+            ->assertSee('aria-labelledby="project-confirm-heading"', false)
+            ->assertSee('id="project-confirm-heading"', false)
             ->assertSee('project-edit-'.$project->id)
             ->assertSee('Website renewal')
             ->assertSee($customer->name);

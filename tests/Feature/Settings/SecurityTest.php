@@ -45,11 +45,15 @@ class SecurityTest extends TestCase
         $response->assertOk();
 
         /* @chisel-passkeys */
-        $response->assertSee('Passkeys');
+        $response->assertSee('Passkeys')
+            ->assertSee('aria-labelledby="delete-passkey-modal-heading"', false)
+            ->assertSee('id="delete-passkey-modal-heading"', false);
         $response->assertSee('No passkeys yet');
         /* @end-chisel-passkeys */
         /* @chisel-2fa */
-        $response->assertSee('Two-factor authentication');
+        $response->assertSee('Two-factor authentication')
+            ->assertSee('aria-labelledby="two-factor-setup-modal-heading"', false)
+            ->assertSee('id="two-factor-setup-modal-heading"', false);
         $response->assertSee('Enable 2FA');
         /* @end-chisel-2fa */
     }
