@@ -26,6 +26,17 @@ class CustomerSelectOptionsTest extends TestCase
             ->assertDontSee('Option-only customer 21');
     }
 
+    public function test_project_list_offers_form_action_when_no_active_customers_exist(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertSee(__('No active customers are available. Open the project form to create one.'))
+            ->assertSee(__('Open project form'))
+            ->assertSee('project-no-customer-form-button');
+    }
+
     public function test_customer_options_are_searchable_and_limited_to_twenty(): void
     {
         $this->actingAs(User::factory()->create());

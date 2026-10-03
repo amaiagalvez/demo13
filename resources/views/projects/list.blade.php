@@ -91,7 +91,15 @@
 
         @if ($list['create'] && ! $hasCustomers)
             <flux:callout icon="exclamation-triangle" variant="warning">
-                {{ __('No active customers are available. Create one from the project form.') }}
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <span>{{ __('No active customers are available. Open the project form to create one.') }}</span>
+                    <flux:modal.trigger name="project-form">
+                        <flux:button size="sm" variant="primary" x-on:click="createProject()"
+                            data-test="project-no-customer-form-button">
+                            {{ __('Open project form') }}
+                        </flux:button>
+                    </flux:modal.trigger>
+                </div>
             </flux:callout>
         @endif
 
