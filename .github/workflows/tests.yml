@@ -104,6 +104,11 @@ jobs:
       - name: Setup Application
         run: composer setup
 
+      - name: Create test database
+        run: >-
+          php -r '$pdo = new PDO("mysql:host=127.0.0.1;dbname=laravel", "laravel", "laravel");
+          $pdo->exec("CREATE DATABASE IF NOT EXISTS laravel_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");'
+
       - name: Run CI Checks
         run: composer ci:check
 

@@ -30,6 +30,13 @@
         <env name="DB_USERNAME" value="laravel"/>
         <env name="DB_PASSWORD" value="laravel"/>
         <env name="DB_URL" value=""/>
+        <server name="DB_CONNECTION" value="mysql"/>
+        <server name="DB_HOST" value="db"/>
+        <server name="DB_PORT" value="3306"/>
+        <server name="DB_DATABASE" value="laravel_test"/>
+        <server name="DB_USERNAME" value="laravel"/>
+        <server name="DB_PASSWORD" value="laravel"/>
+        <server name="DB_URL" value=""/>
         <env name="DUSK_BASE_URL" value="http://laravel13-dusk"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
