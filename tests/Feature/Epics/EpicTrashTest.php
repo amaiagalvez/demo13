@@ -53,7 +53,7 @@ class EpicTrashTest extends TestCase
             '2026-08-04',
             '2026-10-02',
         ]);
-        $response->assertSee('data-test="epic-comments-count-' . $epic->id . '"', false);
+        $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"', false);
     }
 
     public function test_trash_orders_by_deletion_timestamp_descending_then_id_ascending(): void

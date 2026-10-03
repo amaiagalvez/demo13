@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Http\Middleware\EnsureUserIsActive;
 
 class LogViewerAccessTest extends TestCase
 {
@@ -27,14 +28,16 @@ class LogViewerAccessTest extends TestCase
 
     public function test_logged_in_users_outside_the_allowlist_are_forbidden(): void
     {
-        $this->actingAs(User::factory()->make()->forceFill(['id' => 1]))
+        $this->withoutMiddleware(EnsureUserIsActive::class)
+            ->actingAs(User::factory()->make()->forceFill(['id' => 1]))
             ->get(self::LOG_VIEWER_PATH)
             ->assertForbidden();
     }
 
     public function test_allowed_users_can_read_the_log_viewer(): void
     {
-        $this->actingAs(User::factory()->make(['email' => self::ALLOWED_EMAIL])->forceFill(['id' => 1]))
+        $this->withoutMiddleware(EnsureUserIsActive::class)
+            ->actingAs(User::factory()->make(['email' => self::ALLOWED_EMAIL])->forceFill(['id' => 1]))
             ->get(self::LOG_VIEWER_PATH)
             ->assertOk();
     }
@@ -44,7 +47,8 @@ class LogViewerAccessTest extends TestCase
      */
     public function test_allowed_users_can_read_the_log_viewer_api(): void
     {
-        $this->actingAs(User::factory()->make(['email' => self::ALLOWED_EMAIL])->forceFill(['id' => 1]))
+        $this->withoutMiddleware(EnsureUserIsActive::class)
+            ->actingAs(User::factory()->make(['email' => self::ALLOWED_EMAIL])->forceFill(['id' => 1]))
             ->getJson(self::LOG_VIEWER_API_PATH)
             ->assertOk();
     }
@@ -56,7 +60,8 @@ class LogViewerAccessTest extends TestCase
 
     public function test_the_log_viewer_api_rejects_users_outside_the_allowlist(): void
     {
-        $this->actingAs(User::factory()->make()->forceFill(['id' => 1]))
+        $this->withoutMiddleware(EnsureUserIsActive::class)
+            ->actingAs(User::factory()->make()->forceFill(['id' => 1]))
             ->getJson(self::LOG_VIEWER_API_PATH)
             ->assertForbidden();
     }

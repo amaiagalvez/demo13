@@ -35,15 +35,15 @@ class EpicFormTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $epic = Epic::factory()->create([
-            'name' => 'Dusk dates ' . Str::uuid()->toString(),
+            'name' => 'Dusk dates '.Str::uuid()->toString(),
             'start_date' => '2026-12-31',
             'end_date' => '2027-01-15',
         ]);
 
         $this->browse(function (Browser $browser) use ($user, $epic): void {
             $browser->loginAs($user)
-                ->visit('/epics?search=' . urlencode($epic->name))
-                ->click('[data-test="epic-edit-' . $epic->id . '"]')
+                ->visit('/epics?search='.urlencode($epic->name))
+                ->click('[data-test="epic-edit-'.$epic->id.'"]')
                 ->waitFor('dialog[open] [data-test="epic-end-date"]')
                 ->assertAttribute('dialog[open] [data-test="epic-end-date"]', 'min', '2027-01-01');
         });
@@ -53,9 +53,9 @@ class EpicFormTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $project = Project::factory()->create([
-            'name' => 'Remote project ' . Str::uuid()->toString(),
+            'name' => 'Remote project '.Str::uuid()->toString(),
         ]);
-        $epicName = 'Remote epic ' . Str::uuid()->toString();
+        $epicName = 'Remote epic '.Str::uuid()->toString();
 
         $this->browse(function (Browser $browser) use ($user, $project, $epicName): void {
             $browser->loginAs($user)
@@ -64,7 +64,7 @@ class EpicFormTest extends DuskTestCase
                 ->waitFor('dialog[open] [data-test="epic-project"]')
                 ->click('dialog[open] [data-test="epic-project"]')
                 ->waitUntil(
-                    'document.querySelector(\'[data-test="epic-project"] option[value="' . (string) $project->id . '"]\') !== null',
+                    'document.querySelector(\'[data-test="epic-project"] option[value="'.(string) $project->id.'"]\') !== null',
                     10,
                 )
                 ->select('[data-test="epic-project"]', (string) $project->id)
@@ -84,24 +84,24 @@ class EpicFormTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $inactiveProject = Project::factory()->inactive()->create([
-            'name' => 'Inactive selected project ' . Str::uuid()->toString(),
+            'name' => 'Inactive selected project '.Str::uuid()->toString(),
         ]);
         $epic = Epic::factory()->for($inactiveProject)->create();
         $otherProject = Project::factory()->create([
-            'name' => 'Other project ' . Str::uuid()->toString(),
+            'name' => 'Other project '.Str::uuid()->toString(),
         ]);
         $otherInactiveProject = Project::factory()->inactive()->create([
-            'name' => 'Other inactive project ' . Str::uuid()->toString(),
+            'name' => 'Other inactive project '.Str::uuid()->toString(),
         ]);
 
         $this->browse(function (Browser $browser) use ($user, $epic, $inactiveProject, $otherProject, $otherInactiveProject): void {
             $browser->loginAs($user)
-                ->visit('/epics?search=' . urlencode($epic->name))
-                ->click('[data-test="epic-edit-' . $epic->id . '"]')
+                ->visit('/epics?search='.urlencode($epic->name))
+                ->click('[data-test="epic-edit-'.$epic->id.'"]')
                 ->waitFor('dialog[open] [data-test="epic-project"]')
                 ->click('dialog[open] [data-test="epic-project"]')
                 ->waitUntil(
-                    'document.querySelector(\'dialog[open] [data-test="epic-project"] option[value="' . $otherProject->id . '"]\') !== null',
+                    'document.querySelector(\'dialog[open] [data-test="epic-project"] option[value="'.$otherProject->id.'"]\') !== null',
                     10,
                 )
                 ->assertSelected('dialog[open] [data-test="epic-project"]', (string) $epic->project_id)

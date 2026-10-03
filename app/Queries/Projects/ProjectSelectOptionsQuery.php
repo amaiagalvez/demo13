@@ -27,10 +27,10 @@ final class ProjectSelectOptionsQuery extends ListQueryBase
             ->when($search !== '', function (Builder $query) use ($pattern): void {
                 $query->where(function (Builder $query) use ($pattern): void {
                     $query->whereRaw(
-                        'projects.name LIKE ? ESCAPE \'' . self::LIKE_ESCAPE . '\'',
+                        'projects.name LIKE ? ESCAPE \''.self::LIKE_ESCAPE.'\'',
                         [$pattern],
-                    )->orWhereHas('customer', fn(Builder $customerQuery) => $customerQuery->whereRaw(
-                        'customers.name LIKE ? ESCAPE \'' . self::LIKE_ESCAPE . '\'',
+                    )->orWhereHas('customer', fn (Builder $customerQuery) => $customerQuery->whereRaw(
+                        'customers.name LIKE ? ESCAPE \''.self::LIKE_ESCAPE.'\'',
                         [$pattern],
                     ));
                 });
@@ -39,9 +39,9 @@ final class ProjectSelectOptionsQuery extends ListQueryBase
             ->orderBy('projects.id')
             ->limit(self::RESULTS_LIMIT)
             ->get(['id', 'name', 'customer_id'])
-            ->map(fn(Project $project): array => [
+            ->map(fn (Project $project): array => [
                 'id' => $project->id,
-                'text' => $project->name . ' (' . ($project->customer->name ?? '—') . ')',
+                'text' => $project->name.' ('.($project->customer->name ?? '—').')',
             ]);
     }
 }

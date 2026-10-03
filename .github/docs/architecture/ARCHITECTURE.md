@@ -61,6 +61,9 @@ Parent selectors show only active customers when creating or changing a project 
 only active projects when creating or changing an epic. In edit mode, the current
 parent remains selected even if it has since become inactive; other inactive parents
 are not offered.
+The `active` flag is never mass assignable on users or resources. Resource activation
+changes only through the dedicated deactivate/reactivate actions, not through create,
+update, or other request payloads.
 
 Important constraints: customer and project names are unique among non-deleted records,
 including inactive records.

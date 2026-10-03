@@ -2,10 +2,21 @@
 
 namespace Tests\Unit\Translations;
 
+use SplFileInfo;
+use FilesystemIterator;
+use RecursiveIteratorIterator;
 use PHPUnit\Framework\TestCase;
+use RecursiveDirectoryIterator;
 
 class TranslationFilesTest extends TestCase
 {
+    /**
+     * Laravel resolves these keys through validation rules without application string literals.
+     *
+     * @var list<string>
+     */
+    private const FRAMEWORK_KEYS = ['validation.required', 'validation.string'];
+
     public function test_all_locales_define_the_same_keys(): void
     {
         $locales = $this->locales();
@@ -35,6 +46,73 @@ class TranslationFilesTest extends TestCase
                 }
             }
         }
+    }
+
+    public function test_every_english_json_key_is_used_by_application_sources(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $sources = [];
+
+        $sources = $this->applicationSources();
+        $unusedKeys = [];
+
+        foreach (array_keys($this->translations('en')) as $key) {
+            if (
+                ! in_array($key, self::FRAMEWORK_KEYS, true)
+                && ! $this->translationIsReferenced($key, $sources)
+            ) {
+                $unusedKeys[] = $key;
+            }
+        }
+
+        $this->assertSame([], $unusedKeys, 'Unused lang/en.json keys: '.implode(', ', $unusedKeys));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function applicationSources(): array
+    {
+        $sources = [];
+        $root = dirname(__DIR__, 3);
+
+        foreach (['app', 'resources'] as $directory) {
+            $files = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator("{$root}/{$directory}", FilesystemIterator::SKIP_DOTS),
+            );
+
+            foreach ($files as $file) {
+                if (! $file instanceof SplFileInfo || ! $file->isFile()) {
+                    continue;
+                }
+
+                if (! in_array($file->getExtension(), ['php', 'js', 'css'], true)) {
+                    continue;
+                }
+
+                $source = file_get_contents($file->getPathname());
+
+                if (is_string($source)) {
+                    $sources[] = $source;
+                }
+            }
+        }
+
+        return $sources;
+    }
+
+    /**
+     * @param  list<string>  $sources
+     */
+    private function translationIsReferenced(string $key, array $sources): bool
+    {
+        foreach ($sources as $source) {
+            if (str_contains($source, $key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

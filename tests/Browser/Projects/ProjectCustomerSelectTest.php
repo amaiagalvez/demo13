@@ -38,9 +38,9 @@ class ProjectCustomerSelectTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $executionId = Str::uuid()->toString();
-        $existingCustomerName = 'Northwind ' . $executionId;
-        $newCustomerName = 'Dusk Select2 ' . $executionId;
-        $projectName = 'Select2 project ' . $executionId;
+        $existingCustomerName = 'Northwind '.$executionId;
+        $newCustomerName = 'Dusk Select2 '.$executionId;
+        $projectName = 'Select2 project '.$executionId;
         Customer::factory()->create(['name' => $existingCustomerName]);
 
         $this->browse(function (Browser $browser) use (
@@ -62,7 +62,7 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 ->click('#select2-project-customer-id-container')
                 ->type('dialog[open] .select2-container--open .select2-search__field', 'Northwind')
                 ->waitUntil(
-                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes(' . json_encode($existingCustomerName) . ')',
+                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode($existingCustomerName).')',
                     10,
                 )
                 ->assertSeeIn('dialog[open] .select2-results', $existingCustomerName)
@@ -75,16 +75,16 @@ class ProjectCustomerSelectTest extends DuskTestCase
                     $newCustomerName,
                 )
                 ->waitUntil(
-                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes(' . json_encode(__('Create customer') . ': ' . $newCustomerName) . ')',
+                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode(__('Create customer').': '.$newCustomerName).')',
                     10,
                 )
                 ->assertSeeIn(
                     'dialog[open] .select2-results',
-                    __('Create customer') . ': ' . $newCustomerName,
+                    __('Create customer').': '.$newCustomerName,
                 )
                 ->click('dialog[open] .select2-results__option--selectable')
                 ->waitUntil(
-                    'document.querySelector("#project-customer-id option:checked")?.text === ' . json_encode($newCustomerName),
+                    'document.querySelector("#project-customer-id option:checked")?.text === '.json_encode($newCustomerName),
                     10,
                 )
                 ->type('dialog[open] [data-test="project-name"]', $projectName);
@@ -94,7 +94,7 @@ class ProjectCustomerSelectTest extends DuskTestCase
             $browser
                 ->click('dialog[open] [data-test="project-submit"]')
                 ->waitFor('[data-test="project-status"]')
-                ->visit('/projects?search=' . urlencode($projectName))
+                ->visit('/projects?search='.urlencode($projectName))
                 ->waitUntil(
                     '(() => { const element = document.querySelector(\'tbody time[data-local-datetime="date"]\'); return element && element.textContent.trim() === window.formatLocalDateTime(element.dateTime, "date"); })()',
                     10,
@@ -133,20 +133,20 @@ class ProjectCustomerSelectTest extends DuskTestCase
             $project,
         ): void {
             $browser->loginAs($user)
-                ->visit('/projects?search=' . urlencode($project->name))
-                ->click('[data-test="project-edit-' . $project->id . '"]')
-                ->waitFor(self::OPEN_DIALOG . ' [data-test="project-name"]')
-                ->assertSelected(self::OPEN_DIALOG . ' #project-customer-id', (string) $inactiveCustomer->id)
+                ->visit('/projects?search='.urlencode($project->name))
+                ->click('[data-test="project-edit-'.$project->id.'"]')
+                ->waitFor(self::OPEN_DIALOG.' [data-test="project-name"]')
+                ->assertSelected(self::OPEN_DIALOG.' #project-customer-id', (string) $inactiveCustomer->id)
                 ->click('#select2-project-customer-id-container')
-                ->type(self::OPEN_DIALOG . ' .select2-container--open .select2-search__field', 'option customer')
+                ->type(self::OPEN_DIALOG.' .select2-container--open .select2-search__field', 'option customer')
                 ->waitUntil(
-                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes(' . json_encode($activeCustomer->name) . ')',
+                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode($activeCustomer->name).')',
                     10,
                 )
-                ->assertSeeIn(self::OPEN_DIALOG . ' .select2-results', $activeCustomer->name)
-                ->assertDontSeeIn(self::OPEN_DIALOG . ' .select2-results', $inactiveCustomer->name)
-                ->assertDontSeeIn(self::OPEN_DIALOG . ' .select2-results', $otherInactiveCustomer->name)
-                ->assertSelected(self::OPEN_DIALOG . ' #project-customer-id', (string) $inactiveCustomer->id);
+                ->assertSeeIn(self::OPEN_DIALOG.' .select2-results', $activeCustomer->name)
+                ->assertDontSeeIn(self::OPEN_DIALOG.' .select2-results', $inactiveCustomer->name)
+                ->assertDontSeeIn(self::OPEN_DIALOG.' .select2-results', $otherInactiveCustomer->name)
+                ->assertSelected(self::OPEN_DIALOG.' #project-customer-id', (string) $inactiveCustomer->id);
         });
     }
 }
