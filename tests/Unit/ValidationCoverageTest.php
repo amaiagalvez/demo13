@@ -48,7 +48,10 @@ class ValidationCoverageTest extends TestCase
         }
     }
 
-    public function test_input_read_by_controllers_is_validated(): void
+    /**
+     * Covers direct string()/boolean() reads with literal keys, not other input APIs or helpers.
+     */
+    public function test_direct_literal_string_and_boolean_inputs_have_form_request_rules(): void
     {
         foreach (glob(app_path('Http/Controllers/*.php')) ?: [] as $file) {
             if (basename($file) === 'Controller.php') {
