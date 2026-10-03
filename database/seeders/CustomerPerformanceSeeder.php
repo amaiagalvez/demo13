@@ -63,7 +63,7 @@ class CustomerPerformanceSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->seed(UserSeeder::class);
+        $this->call(UserSeeder::class);
 
         $authors = User::factory()->count(self::AUTHORS)->create();
         $projects = $epics = $comments = 0;

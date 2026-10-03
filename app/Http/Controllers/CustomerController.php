@@ -64,13 +64,13 @@ class CustomerController extends Controller
             return response()->json($customer->only(['id', 'name']), 201);
         }
 
-        return to_route('customers.index')->with('status', __('Customer created successfully.'));
+        return to_route('customers.index')->with('status', __('Record created successfully.'));
     }
 
     private function deletedNameConflict(CustomerRequest $request, Customer $deletedCustomer): RedirectResponse|JsonResponse
     {
         if ($request->expectsJson()) {
-            $message = __('A deleted customer already uses the name :name.', ['name' => $deletedCustomer->name]);
+            $message = __('A deleted record already uses the name :name.', ['name' => $deletedCustomer->name]);
 
             return response()->json([
                 'message' => $message,
@@ -94,7 +94,7 @@ class CustomerController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('customers.index')->with('status', __('Customer updated successfully.'));
+        return to_route('customers.index')->with('status', __('Record updated successfully.'));
     }
 
     public function destroy(Customer $customer): RedirectResponse
@@ -112,9 +112,9 @@ class CustomerController extends Controller
 
         if (! $deleted) {
             return to_route('customers.index')
-                ->with('error', __('Customer cannot be deleted while it has projects.'));
+                ->with('error', __('Cannot be deleted while it has related records.'));
         }
 
-        return to_route('customers.index')->with('status', __('Customer moved to trash.'));
+        return to_route('customers.index')->with('status', __('Record moved to trash.'));
     }
 }

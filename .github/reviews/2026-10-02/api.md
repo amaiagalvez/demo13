@@ -16,7 +16,7 @@ Consumer: `resources/js/app.js:318-339`.
 |---|---|---|---|
 | Created | 201 | `{"id": 1, "name": "..."}` | Yes — the JS only reads `result.id` / `result.name`. |
 | Validation failure | 422 (Laravel default) | `{"message": "...", "errors": {"name": ["..."]}}` | Yes — `app.js:331` reads `result.errors?.name?.[0]`. |
-| Name already in the trash | 409 | `{"message": "...", "errors": {"name": ["..."]}}` | Yes — `app.js:330-332` treats any non-2xx as an error. |
+| Record Name already in the trash | 409 | `{"message": "...", "errors": {"name": ["..."]}}` | Yes — `app.js:330-332` treats any non-2xx as an error. |
 | Unauthorized | 403 | Laravel default | Acceptable — the JS surfaces the message. |
 | Trashed-name collision race | 422 (`name`) | via `UniqueConstraintViolation::rethrowAsValidationError` | Yes — consistent with the 409/422 mix above. |
 

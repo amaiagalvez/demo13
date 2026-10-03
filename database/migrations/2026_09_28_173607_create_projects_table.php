@@ -24,7 +24,7 @@ return new class extends Migration
             $table->index(['deleted_at', 'id']);
         });
 
-        if (in_array(DB::connection()->getDriverName(), ['sqlite', 'pgsql'], true)) {
+        if (isSqliteOrPgsql()) {
             DB::statement(
                 'CREATE UNIQUE INDEX projects_active_name_unique ON projects (name) WHERE deleted_at IS NULL',
             );

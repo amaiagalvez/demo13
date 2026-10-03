@@ -40,7 +40,11 @@ class EpicController extends Controller
                 'id' => $selectedProject->id,
                 'text' => $selectedProject->name.' ('.($selectedProject->customer->name ?? '—').')',
             ],
-            'list' => $transformer->active($epics, $search, $query->stateCounts()),
+            'list' => $transformer->active(
+                $epics,
+                $search,
+                $query->stateCounts(activeTotal: $search === '' ? $epics->total() : null),
+            ),
         ]);
     }
 
@@ -78,7 +82,7 @@ class EpicController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('epics.index')->with('status', __('Epic created successfully.'));
+        return to_route('epics.index')->with('status', __('Record created successfully.'));
     }
 
     public function update(EpicRequest $request, Epic $epic): RedirectResponse
@@ -92,7 +96,7 @@ class EpicController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('epics.index')->with('status', __('Epic updated successfully.'));
+        return to_route('epics.index')->with('status', __('Record updated successfully.'));
     }
 
     public function destroy(Epic $epic): RedirectResponse
@@ -100,6 +104,6 @@ class EpicController extends Controller
         $this->authorize('delete', $epic);
         $epic->delete();
 
-        return to_route('epics.index')->with('status', __('Epic moved to trash.'));
+        return to_route('epics.index')->with('status', __('Record moved to trash.'));
     }
 }

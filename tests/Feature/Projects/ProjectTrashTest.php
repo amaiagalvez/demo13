@@ -65,7 +65,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Project restored successfully.'),
+                __('Record restored successfully.'),
             );
         $this->assertNotSoftDeleted($deletedProject);
 
@@ -79,7 +79,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.index'));
         $this->delete(route('projects.trash.destroy', $deletedProject->id))
             ->assertRedirect(route('projects.trash.index'))
-            ->assertSessionHas('status', __('Project permanently deleted.'));
+            ->assertSessionHas('status', __('Record permanently deleted.'));
         $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
     }
 
@@ -105,7 +105,7 @@ class ProjectTrashTest extends TestCase
 
         $this->delete(route('projects.trash.destroy', $project->id))
             ->assertRedirect(route('projects.trash.index'))
-            ->assertSessionHas('error', __('Project cannot be permanently deleted while it has epics.'));
+            ->assertSessionHas('error', __('Cannot be permanently deleted while it has related records.'));
 
         $this->assertSoftDeleted($project);
     }
@@ -132,7 +132,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Project restored successfully. No new project was created with the repeated name.'),
+                __('Record restored successfully. No new record was created with the repeated name.'),
             );
 
         $this->assertDatabaseCount('projects', 1);
@@ -181,11 +181,11 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Project cannot be restored because another project outside the trash uses this name.'),
+                __('Cannot be restored because another record outside the trash uses this name.'),
             );
 
         $this->get(route('projects.trash.index'))
-            ->assertSee(__('Project cannot be restored because another project outside the trash uses this name.'));
+            ->assertSee(__('Cannot be restored because another record outside the trash uses this name.'));
 
         $this->assertModelExists($activeProject);
         $this->assertSoftDeleted($deletedProject);
@@ -206,7 +206,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Project cannot be restored because another project outside the trash uses this name.'),
+                __('Cannot be restored because another record outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedProject);
@@ -230,7 +230,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Project cannot be restored because another project outside the trash uses this name.'),
+                __('Cannot be restored because another record outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedProject);

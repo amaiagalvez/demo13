@@ -48,7 +48,7 @@ class EpicListTransformer extends ListTransformer
                         'danger' => true,
                         'action' => route('epics.destroy', $epic),
                         'method' => 'DELETE',
-                        'confirmTitle' => __('Delete epic?'),
+                        'confirmTitle' => __('Delete record?'),
                         'confirmText' => __('You can restore it from the trash.'),
                         'confirmLabel' => __('Delete'),
                     ],
@@ -132,9 +132,9 @@ class EpicListTransformer extends ListTransformer
                         'danger' => false,
                         'action' => route('epics.trash.restore', $epic->id),
                         'method' => 'PATCH',
-                        'confirmTitle' => __('Restore epic?'),
+                        'confirmTitle' => __('Restore record?'),
                         'confirmText' => $epic->active
-                            ? __('The epic will return to the active list.')
+                            ? __('The record will return to the active list.')
                             : __('The record will return to the inactive list.'),
                         'confirmLabel' => __('Restore'),
                     ],
@@ -146,7 +146,7 @@ class EpicListTransformer extends ListTransformer
                         'danger' => true,
                         'action' => route('epics.trash.destroy', $epic->id),
                         'method' => 'DELETE',
-                        'confirmTitle' => __('Permanently delete epic?'),
+                        'confirmTitle' => __('Permanently delete record?'),
                         'confirmText' => __('This action cannot be undone.'),
                         'confirmLabel' => __('Delete permanently'),
                     ],

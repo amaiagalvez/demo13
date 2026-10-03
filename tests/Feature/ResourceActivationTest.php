@@ -8,8 +8,10 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Queries\ListQueryBase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ResourceActivationTest extends TestCase
@@ -17,7 +19,7 @@ class ResourceActivationTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @return array<string, array{class-string<Model>, string}>
+     * @return array<string, array{class-string<Customer|Project|Epic>, string}>
      */
     public static function resources(): array
     {
@@ -38,6 +40,75 @@ class ResourceActivationTest extends TestCase
             'projects' => [Project::class, 'projects', 'project'],
             'epics' => [Epic::class, 'epics', 'epic'],
         ];
+    }
+
+    /**
+     * @return array<string, array{class-string<Customer|Project|Epic>, string, string, int, string, int, int}>
+     */
+    public static function listCountCases(): array
+    {
+        $cases = [];
+
+        foreach (self::resources() as $resource => [$model]) {
+            foreach (['active' => '.index', 'inactive' => '.inactive.index', 'trash' => '.trash.index'] as $state => $suffix) {
+                foreach ([
+                    'unfiltered' => [2, '', 2, 3],
+                    'empty' => [0, '', 0, 3],
+                    'matching search' => [2, 'Matching', 1, 4],
+                    'unmatched search' => [2, 'Missing', 0, 4],
+                ] as $scenario => [$count, $search, $total, $countQueries]) {
+                    $cases[$resource.' '.$state.' '.$scenario] = [
+                        $model, $resource, $resource.$suffix, $count, $search, $total, $countQueries,
+                    ];
+                }
+            }
+        }
+
+        return $cases;
+    }
+
+    /**
+     * @param  class-string<Customer|Project|Epic>  $model
+     */
+    #[DataProvider('listCountCases')]
+    public function test_lists_avoid_redundant_counts_and_keep_global_tab_totals(
+        string $model,
+        string $resource,
+        string $route,
+        int $count,
+        string $search,
+        int $total,
+        int $expectedCountQueries,
+    ): void {
+        $this->actingAs(User::factory()->create());
+        $model::factory()->count($count)->sequence(['name' => 'Matching active'], ['name' => 'Other active'])->create();
+        $model::factory()->count($count)->inactive()->sequence(['name' => 'Matching inactive'], ['name' => 'Other inactive'])->create();
+        $model::factory()->count($count)->trashed()->sequence(['name' => 'Matching trashed'], ['name' => 'Other trashed'])->create();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $response = $this->get(route($route, ['search' => $search]));
+            $countQueries = collect(DB::getQueryLog())->filter(
+                static fn (array $query): bool => str_starts_with(
+                    str_replace(['`', '"'], '', $query['query']),
+                    'select count(*) as aggregate from '.$resource.' ',
+                ),
+            );
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertOk();
+        $records = $response->viewData($resource);
+        $this->assertInstanceOf(LengthAwarePaginator::class, $records);
+        $this->assertSame($total, $records->total());
+        $list = $response->viewData('list');
+        $this->assertIsArray($list);
+        $this->assertIsArray($list['tabs']);
+        $this->assertSame([$count, $count, $count], array_column($list['tabs'], 'count'));
+        $this->assertCount($expectedCountQueries, $countQueries);
     }
 
     /**

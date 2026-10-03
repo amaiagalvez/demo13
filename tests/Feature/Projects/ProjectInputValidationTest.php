@@ -190,7 +190,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertSee('project-conflict-restore')
             ->assertSee('aria-labelledby="project-name-conflict-heading"', false)
             ->assertSee('id="project-name-conflict-heading"', false)
-            ->assertSee(__('A deleted project already uses the name :name.', ['name' => $deletedProject->name]));
+            ->assertSee(__('A deleted record already uses the name :name.', ['name' => $deletedProject->name]));
 
         $this->post(route('projects.store'), [
             'name' => $deletedProject->name,

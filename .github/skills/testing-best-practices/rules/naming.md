@@ -16,7 +16,7 @@
 
 The name of a test method is a specification. Separate the words with underscores. State the user-visible result and the condition that causes it.
 
-- Name the behavior, and not the method under test. The file name already gives the class.
+- Name the behavior, and not the method under test. The file Record Name already gives the class.
 - Give the exact status code in the name of a test for an API error.
 - Do not write `given`, `when`, or `then` in the name.
 

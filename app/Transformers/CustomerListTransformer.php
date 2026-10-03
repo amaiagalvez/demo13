@@ -32,7 +32,7 @@ class CustomerListTransformer extends ListTransformer
                 ...$this->columns($customer),
                 'extraDate' => $customer->created_at?->toIso8601String(),
                 'actionHint' => $customer->projects_exists
-                    ? __('Customer cannot be deleted while it has projects.')
+                    ? __('Cannot be deleted while it has related records.')
                     : null,
                 'actions' => [
                     [
@@ -61,7 +61,7 @@ class CustomerListTransformer extends ListTransformer
                         'danger' => true,
                         'action' => route('customers.destroy', $customer),
                         'method' => 'DELETE',
-                        'confirmTitle' => __('Delete customer?'),
+                        'confirmTitle' => __('Delete record?'),
                         'confirmText' => __('You can restore it from the trash.'),
                         'confirmLabel' => __('Delete'),
                     ],
@@ -145,9 +145,9 @@ class CustomerListTransformer extends ListTransformer
                         'danger' => false,
                         'action' => route('customers.trash.restore', $customer->id),
                         'method' => 'PATCH',
-                        'confirmTitle' => __('Restore customer?'),
+                        'confirmTitle' => __('Restore record?'),
                         'confirmText' => $customer->active
-                            ? __('The customer will return to the active list.')
+                            ? __('The record will return to the active list.')
                             : __('The record will return to the inactive list.'),
                         'confirmLabel' => __('Restore'),
                     ],
@@ -159,7 +159,7 @@ class CustomerListTransformer extends ListTransformer
                         'danger' => true,
                         'action' => route('customers.trash.destroy', $customer->id),
                         'method' => 'DELETE',
-                        'confirmTitle' => __('Permanently delete customer?'),
+                        'confirmTitle' => __('Permanently delete record?'),
                         'confirmText' => __('This action cannot be undone.'),
                         'confirmLabel' => __('Delete permanently'),
                     ],

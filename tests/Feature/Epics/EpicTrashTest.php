@@ -104,13 +104,13 @@ class EpicTrashTest extends TestCase
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
             ->assertRedirect(route('epics.trash.index'))
-            ->assertSessionHas('status', __('Epic restored successfully.'));
+            ->assertSessionHas('status', __('Record restored successfully.'));
         $this->assertNotSoftDeleted($deletedEpic);
 
         $this->delete(route('epics.destroy', $activeEpic))->assertRedirect(route('epics.index'));
         $this->delete(route('epics.trash.destroy', $activeEpic->id))
             ->assertRedirect(route('epics.trash.index'))
-            ->assertSessionHas('status', __('Epic permanently deleted.'));
+            ->assertSessionHas('status', __('Record permanently deleted.'));
         $this->assertDatabaseMissing('epics', ['id' => $activeEpic->id]);
     }
 
@@ -152,7 +152,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'),
+                __('Cannot be restored because another record outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedEpic);
@@ -169,7 +169,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'),
+                __('Cannot be restored because another record outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedEpic);
@@ -184,7 +184,7 @@ class EpicTrashTest extends TestCase
         Epic::factory()->create(['name' => 'Repeated epic']);
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
-            ->assertSessionHas('status', __('Epic restored successfully.'));
+            ->assertSessionHas('status', __('Record restored successfully.'));
 
         $this->assertNotSoftDeleted($deletedEpic);
     }
@@ -200,7 +200,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Epic restored successfully. No new epic was created with the repeated name.'),
+                __('Record restored successfully. No new record was created with the repeated name.'),
             );
 
         $this->assertDatabaseCount('epics', 1);
@@ -229,7 +229,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'),
+                __('Cannot be restored because another record outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedEpic);

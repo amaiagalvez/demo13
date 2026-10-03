@@ -192,11 +192,11 @@
             </flux:modal>
 
             @if ($deletedCustomerConflict)
-                <x-name-conflict-modal name="customer-name-conflict" :title="__('Customer name already in trash')"
-                    :message="__('A deleted customer already uses the name :name.', [
+                <x-name-conflict-modal name="customer-name-conflict" :title="__('Record Name already in trash')"
+                    :message="__('A deleted record already uses the name :name.', [
                         'name' => $deletedCustomerConflict['name'],
                     ])" :create-action="route('customers.store')" :restore-action="route('customers.trash.restore', $deletedCustomerConflict['id'])" :create-fields="['name' => old('name', $deletedCustomerConflict['name'])]"
-                    :create-label="__('Create a new customer')" :restore-label="__('Restore the deleted customer instead')" create-test="customer-conflict-create-new"
+                    :create-label="__('Create a new customer')" :restore-label="__('Restore the deleted record instead')" create-test="customer-conflict-create-new"
                     restore-test="customer-conflict-restore" />
             @endif
         @endif

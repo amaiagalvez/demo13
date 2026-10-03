@@ -211,8 +211,7 @@
         <x-list.page-header :list="$list" prefix="epic">
             <x-slot:actions>
                 @if ($list['create'])
-                    <x-list.create-action prefix="epic" :label="__('New epic')"
-                        click="createEpic()" />
+                    <x-list.create-action prefix="epic" :label="__('New epic')" click="createEpic()" />
                 @endif
             </x-slot:actions>
         </x-list.page-header>
@@ -319,8 +318,8 @@
             </flux:modal>
 
             @if ($deletedEpicConflict)
-                <x-name-conflict-modal name="epic-name-conflict" :title="__('Epic name already in trash')"
-                    :message="__('A deleted epic in this project already uses the name :name.', [
+                <x-name-conflict-modal name="epic-name-conflict" :title="__('Record Name already in trash')"
+                    :message="__('A deleted record already uses the name :name.', [
                         'name' => $deletedEpicConflict['name'],
                     ])" :create-action="route('epics.store')" :restore-action="route('epics.trash.restore', $deletedEpicConflict['id'])" :create-fields="[
                         'name' => old('name', $deletedEpicConflict['name']),
@@ -328,7 +327,7 @@
                         'end_date' => old('end_date'),
                         'project_id' => old('project_id'),
                     ]"
-                    :create-label="__('Create a new epic')" :restore-label="__('Restore the deleted epic instead')" create-test="epic-conflict-create-new"
+                    :create-label="__('Create a new epic')" :restore-label="__('Restore the deleted record instead')" create-test="epic-conflict-create-new"
                     restore-test="epic-conflict-restore" />
             @endif
         @endif

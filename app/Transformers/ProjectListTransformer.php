@@ -32,7 +32,7 @@ class ProjectListTransformer extends ListTransformer
                 ...$this->columns($project),
                 'extraDate' => $project->created_at?->toIso8601String(),
                 'actionHint' => $project->epics_exists
-                    ? __('Project cannot be deleted while it has epics.')
+                    ? __('Cannot be deleted while it has related records.')
                     : null,
                 'actions' => [
                     [
@@ -61,7 +61,7 @@ class ProjectListTransformer extends ListTransformer
                         'danger' => true,
                         'action' => route('projects.destroy', $project),
                         'method' => 'DELETE',
-                        'confirmTitle' => __('Delete project?'),
+                        'confirmTitle' => __('Delete record?'),
                         'confirmText' => __('You can restore it from the trash.'),
                         'confirmLabel' => __('Delete'),
                     ],
@@ -145,9 +145,9 @@ class ProjectListTransformer extends ListTransformer
                         'danger' => false,
                         'action' => route('projects.trash.restore', $project->id),
                         'method' => 'PATCH',
-                        'confirmTitle' => __('Restore project?'),
+                        'confirmTitle' => __('Restore record?'),
                         'confirmText' => $project->active
-                            ? __('The project will return to the active list.')
+                            ? __('The record will return to the active list.')
                             : __('The record will return to the inactive list.'),
                         'confirmLabel' => __('Restore'),
                     ],
@@ -159,7 +159,7 @@ class ProjectListTransformer extends ListTransformer
                         'danger' => true,
                         'action' => route('projects.trash.destroy', $project->id),
                         'method' => 'DELETE',
-                        'confirmTitle' => __('Permanently delete project?'),
+                        'confirmTitle' => __('Permanently delete record?'),
                         'confirmText' => __('This action cannot be undone.'),
                         'confirmLabel' => __('Delete permanently'),
                     ],

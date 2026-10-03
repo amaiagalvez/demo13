@@ -515,10 +515,10 @@ class CustomerCrudTest extends DuskTestCase
                 ->type('dialog[open] [data-test="customer-name"]', $customer->name)
                 ->click('dialog[open] [data-test="customer-submit"]')
                 ->waitFor('dialog[open] [data-test="customer-conflict-restore"]')
-                ->assertSeeIn('dialog[open]', __('Customer name already in trash'))
+                ->assertSeeIn('dialog[open]', __('Record Name already in trash'))
                 ->click('dialog[open] [data-test="customer-conflict-restore"]')
                 ->waitForLocation('/customers/trash')
-                ->assertSee(__('Customer restored successfully.'))
+                ->assertSee(__('Record restored successfully.'))
                 ->assertDontSee($customer->name);
         });
 
@@ -541,7 +541,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->visit('/customers/trash')
                 ->click("[data-test='customer-restore-{$restorableCustomer->id}']")
                 ->waitFor('dialog[open]')
-                ->assertSeeIn('dialog[open]', __('Restore customer?'))
+                ->assertSeeIn('dialog[open]', __('Restore record?'))
                 ->click('dialog[open] [data-flux-modal-close] button')
                 ->waitUntilMissing('dialog[open]')
                 ->assertSee('Restorable Customer')

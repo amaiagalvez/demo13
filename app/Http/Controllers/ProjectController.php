@@ -35,7 +35,11 @@ class ProjectController extends Controller
             'projects' => $projects,
             'hasCustomers' => Customer::query()->where('active', true)->exists(),
             'selectedCustomer' => $selectedCustomer,
-            'list' => $transformer->active($projects, $search, $query->stateCounts()),
+            'list' => $transformer->active(
+                $projects,
+                $search,
+                $query->stateCounts(activeTotal: $search === '' ? $projects->total() : null),
+            ),
         ]);
     }
 
@@ -71,7 +75,7 @@ class ProjectController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('projects.index')->with('status', __('Project created successfully.'));
+        return to_route('projects.index')->with('status', __('Record created successfully.'));
     }
 
     public function update(ProjectRequest $request, Project $project): RedirectResponse
@@ -85,7 +89,7 @@ class ProjectController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('projects.index')->with('status', __('Project updated successfully.'));
+        return to_route('projects.index')->with('status', __('Record updated successfully.'));
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -103,9 +107,9 @@ class ProjectController extends Controller
 
         if (! $deleted) {
             return to_route('projects.index')
-                ->with('error', __('Project cannot be deleted while it has epics.'));
+                ->with('error', __('Cannot be deleted while it has related records.'));
         }
 
-        return to_route('projects.index')->with('status', __('Project moved to trash.'));
+        return to_route('projects.index')->with('status', __('Record moved to trash.'));
     }
 }

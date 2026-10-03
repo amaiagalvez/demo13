@@ -53,6 +53,46 @@ class CustomerListQueryTest extends TestCase
         $this->assertCount(2, $executedQueries);
     }
 
+    public function test_state_counts_reuse_the_unfiltered_inactive_total_without_a_duplicate_query(): void
+    {
+        Customer::factory()->create();
+        Customer::factory()->count(2)->inactive()->create();
+        Customer::factory()->trashed()->create();
+        $query = app(CustomerListQuery::class);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $customers = $query->inactive('');
+            $counts = $query->stateCounts(inactiveTotal: $customers->total());
+            $executedQueries = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $this->assertSame(['active' => 1, 'inactive' => 2, 'trashed' => 1], $counts);
+        $this->assertCount(4, $executedQueries);
+    }
+
+    public function test_state_counts_reuse_an_empty_inactive_total_without_a_duplicate_query(): void
+    {
+        $query = app(CustomerListQuery::class);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $counts = $query->stateCounts(inactiveTotal: 0);
+            $executedQueries = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $this->assertSame(['active' => 0, 'inactive' => 0, 'trashed' => 0], $counts);
+        $this->assertCount(2, $executedQueries);
+    }
+
     public function test_state_counts_remain_unfiltered_when_the_active_list_is_searched(): void
     {
         Customer::factory()->create(['name' => 'Matching customer']);

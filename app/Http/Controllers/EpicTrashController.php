@@ -26,7 +26,11 @@ class EpicTrashController extends Controller
             'epics' => $epics,
             'hasProjects' => false,
             'selectedProjectOption' => null,
-            'list' => $transformer->trash($epics, $search, $query->stateCounts()),
+            'list' => $transformer->trash(
+                $epics,
+                $search,
+                $query->stateCounts(trashedTotal: $search === '' ? $epics->total() : null),
+            ),
         ]);
     }
 
@@ -54,8 +58,8 @@ class EpicTrashController extends Controller
         }
 
         $message = $request->boolean('resolve_name_conflict')
-            ? __('Epic restored successfully. No new epic was created with the repeated name.')
-            : __('Epic restored successfully.');
+            ? __('Record restored successfully. No new record was created with the repeated name.')
+            : __('Record restored successfully.');
 
         return to_route('epics.trash.index')->with('status', $message);
     }
@@ -66,12 +70,12 @@ class EpicTrashController extends Controller
         $this->authorize('forceDelete', $epic);
         $epic->forceDelete();
 
-        return to_route('epics.trash.index')->with('status', __('Epic permanently deleted.'));
+        return to_route('epics.trash.index')->with('status', __('Record permanently deleted.'));
     }
 
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route('epics.trash.index')
-            ->with('error', __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'));
+            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
     }
 }

@@ -26,7 +26,11 @@ class ProjectTrashController extends Controller
         return $this->listView($request, 'projects.list', [
             'projects' => $projects,
             'hasCustomers' => false,
-            'list' => $transformer->trash($projects, $search, $query->stateCounts()),
+            'list' => $transformer->trash(
+                $projects,
+                $search,
+                $query->stateCounts(trashedTotal: $search === '' ? $projects->total() : null),
+            ),
         ]);
     }
 
@@ -49,8 +53,8 @@ class ProjectTrashController extends Controller
         }
 
         $message = $request->boolean('resolve_name_conflict')
-            ? __('Project restored successfully. No new project was created with the repeated name.')
-            : __('Project restored successfully.');
+            ? __('Record restored successfully. No new record was created with the repeated name.')
+            : __('Record restored successfully.');
 
         return to_route('projects.trash.index')->with('status', $message);
     }
@@ -71,15 +75,15 @@ class ProjectTrashController extends Controller
 
         if (! $deleted) {
             return to_route('projects.trash.index')
-                ->with('error', __('Project cannot be permanently deleted while it has epics.'));
+                ->with('error', __('Cannot be permanently deleted while it has related records.'));
         }
 
-        return to_route('projects.trash.index')->with('status', __('Project permanently deleted.'));
+        return to_route('projects.trash.index')->with('status', __('Record permanently deleted.'));
     }
 
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route('projects.trash.index')
-            ->with('error', __('Project cannot be restored because another project outside the trash uses this name.'));
+            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
     }
 }

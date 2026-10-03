@@ -208,8 +208,8 @@
             </flux:modal>
 
             @if ($deletedProjectConflict)
-                <x-name-conflict-modal name="project-name-conflict" :title="__('Project name already in trash')"
-                    :message="__('A deleted project already uses the name :name.', [
+                <x-name-conflict-modal name="project-name-conflict" :title="__('Record Name already in trash')"
+                    :message="__('A deleted record already uses the name :name.', [
                         'name' => $deletedProjectConflict['name'],
                     ])" :create-action="route('projects.store')" :restore-action="route('projects.trash.restore', $deletedProjectConflict['id'])" :create-fields="[
                         'name' => old('name', $deletedProjectConflict['name']),
@@ -217,7 +217,7 @@
                         'end_date' => old('end_date'),
                         'customer_id' => old('customer_id'),
                     ]"
-                    :create-label="__('Create a new project')" :restore-label="__('Restore the deleted project instead')" create-test="project-conflict-create-new"
+                    :create-label="__('Create a new project')" :restore-label="__('Restore the deleted record instead')" create-test="project-conflict-create-new"
                     restore-test="project-conflict-restore" />
             @endif
         @endif

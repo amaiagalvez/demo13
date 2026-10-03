@@ -17,6 +17,17 @@ class TranslationFilesTest extends TestCase
      */
     private const FRAMEWORK_KEYS = ['validation.required', 'validation.string'];
 
+    /**
+     * Customers, projects and epics share the outcome wording of their lifecycle actions, so a
+     * resource name in one of these keys would mean translating the very same sentence again.
+     */
+    private const OUTCOME_PATTERN = '/\b(created|updated|restored|deleted|moved to trash)\b/';
+
+    /**
+     * @var list<string>
+     */
+    private const RESOURCES = ['Customer', 'Project', 'Epic'];
+
     public function test_all_locales_define_the_same_keys(): void
     {
         $locales = $this->locales();
@@ -65,6 +76,29 @@ class TranslationFilesTest extends TestCase
         }
 
         $this->assertSame([], $unusedKeys, 'Unused lang/en.json keys: '.implode(', ', $unusedKeys));
+    }
+
+    public function test_outcome_messages_do_not_name_the_resource_they_describe(): void
+    {
+        $resourceSpecificKeys = [];
+
+        foreach (array_keys($this->translations('en')) as $key) {
+            if (preg_match(self::OUTCOME_PATTERN, $key) !== 1) {
+                continue;
+            }
+
+            foreach (self::RESOURCES as $resource) {
+                if (str_starts_with($key, $resource.' ')) {
+                    $resourceSpecificKeys[] = $key;
+                }
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $resourceSpecificKeys,
+            'Outcome messages must stay generic so every resource can reuse them: '.implode(', ', $resourceSpecificKeys),
+        );
     }
 
     /**

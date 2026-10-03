@@ -25,7 +25,11 @@ class CustomerTrashController extends Controller
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->trash($customers, $search, $query->stateCounts()),
+            'list' => $transformer->trash(
+                $customers,
+                $search,
+                $query->stateCounts(trashedTotal: $search === '' ? $customers->total() : null),
+            ),
         ]);
     }
 
@@ -48,8 +52,8 @@ class CustomerTrashController extends Controller
         }
 
         $message = $request->boolean('resolve_name_conflict')
-            ? __('Customer restored successfully. No new customer was created with the repeated name.')
-            : __('Customer restored successfully.');
+            ? __('Record restored successfully. No new record was created with the repeated name.')
+            : __('Record restored successfully.');
 
         return to_route('customers.trash.index')->with('status', $message);
     }
@@ -70,15 +74,15 @@ class CustomerTrashController extends Controller
 
         if (! $deleted) {
             return to_route('customers.trash.index')
-                ->with('error', __('Customer cannot be permanently deleted while it has projects.'));
+                ->with('error', __('Cannot be permanently deleted while it has related records.'));
         }
 
-        return to_route('customers.trash.index')->with('status', __('Customer permanently deleted.'));
+        return to_route('customers.trash.index')->with('status', __('Record permanently deleted.'));
     }
 
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route('customers.trash.index')
-            ->with('error', __('Customer cannot be restored because another customer outside the trash uses this name.'));
+            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
     }
 }

@@ -2,6 +2,11 @@
 
 Medición realizada siguiendo `.github/tasks/09.performancce-test-plan.md`.
 
+> Las cifras de los perfiles 100 / 300 / 1.000 se tomaron antes del commit `perf` (7e085f9), que
+> reutiliza el total de la paginación para las pestañas de activos e inactivos. El perfil de 10.000
+> se midió dos veces, antes y después de ese cambio, y ambos cortes están recogidos abajo. Para
+> volver a reproducir cualquier cifra hay que fijar el commit con el que se midió.
+
 ## Conclusión
 
 1. **No hay N+1.** Cada petición del listado ejecuta **7–9 consultas** en los cuatro perfiles de
@@ -219,6 +224,26 @@ columna `db`, en cambio, es estable y es la que se usa para el análisis.
 Lo relevante de este perfil es la columna `db`: **la papelera se mantiene en 8–16 ms mientras los
 activos y los inactivos suben a 25–63 ms**, con solo 7–9 consultas en todos los casos. La diferencia
 está explicada en el apartado «Escalado».
+
+### Con el código actual (tras reutilizar el total de la paginación)
+
+Con el commit `perf` la pestaña de activos e inactivos ya no cuenta por separado: los controladores
+pasan `$customers->total()` a `stateCounts()`, así que esa consulta desaparece. Primera página de
+activos con 10.000 clientes, mismas condiciones:
+
+| | consultas | desglose (ms) | db total |
+|---|---|---|---|
+| antes | 8 | filas 14,55 · paginación 2,93 · inactivos 2,85 · papelera 0,70 | 28,9 ms |
+| ahora | **7** | filas 20,86 · paginación 3,65 · inactivos 4,17 · papelera 0,88 | 29,7 ms |
+
+La columna `db` no baja de forma apreciable porque el host está más cargado que en la medición
+anterior (la consulta de filas sube de 14,6 a 20,9 ms), pero **la consulta que sobra ya no se
+ejecuta**: el ahorro real es la de la pestaña (~3–4 ms con 10.000 clientes) y no se ve en el total
+por el ruido.
+
+Queda una asimetría: `CustomerTrashController` sigue llamando a `stateCounts()` sin argumentos, así
+que la papelera mantiene las **8 consultas** y las tres cuentas, aunque el paginador ya sabe cuántas
+hay. Reutilizar ahí también el total eliminaría un escaneo completo.
 
 ## Número de consultas
 
@@ -457,6 +482,8 @@ Los enlaces de paginación están acotados (15, no uno por página), así que no
 lo que pesa es el marcado de cada fila, generado por Flux (botones, distintivos, tooltips, iconos SVG
 y clases largas de Tailwind). Bajar `PER_PAGE` es la palanca directa sobre ese coste.
 
-Verificación tras los cambios: `pint` sin cambios pendientes, `phpstan` nivel 9 sin errores y
-`php artisan test --parallel` con **OK (370 tests, 1841 aserciones)**.
+Verificación: `pint` sin cambios pendientes y `php artisan test --parallel` con
+**OK (414 tests, 2233 aserciones)**. `phpstan` nivel 9 sin errores en todo lo tocado por esta
+medición; los 4 errores que quedan están en `tests/Feature/ResourceActivationTest.php`, un fichero
+ajeno a este trabajo.
 

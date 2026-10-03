@@ -64,7 +64,7 @@ class ProjectCrudTest extends TestCase
             'customer_id' => $customer->id,
         ])
             ->assertRedirect(route('projects.index'))
-            ->assertSessionHas('status', __('Project created successfully.'));
+            ->assertSessionHas('status', __('Record created successfully.'));
 
         $project = Project::query()->firstOrFail();
         $this->assertSame('Website renewal', $project->name);
@@ -96,7 +96,7 @@ class ProjectCrudTest extends TestCase
             'customer_id' => $otherCustomer->id,
         ])
             ->assertRedirect(route('projects.index'))
-            ->assertSessionHas('status', __('Project updated successfully.'));
+            ->assertSessionHas('status', __('Record updated successfully.'));
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
@@ -108,7 +108,7 @@ class ProjectCrudTest extends TestCase
 
         $this->delete(route('projects.destroy', $project))
             ->assertRedirect(route('projects.index'))
-            ->assertSessionHas('status', __('Project moved to trash.'));
+            ->assertSessionHas('status', __('Record moved to trash.'));
 
         $this->assertSoftDeleted($project);
     }
@@ -461,7 +461,7 @@ class ProjectCrudTest extends TestCase
             ->assertDontSee('href="'.route('epics.index', ['search' => 'Lonely project']).'"', false)
             ->assertSee('data-test="project-epics-count-'.$lonelyProject->id.'"></span>', false)
             ->assertSee('data-test="project-comments-count-'.$lonelyProject->id.'"></span>', false)
-            ->assertSee(__('Project cannot be deleted while it has epics.'))
+            ->assertSee(__('Cannot be deleted while it has related records.'))
             ->assertDontSee('data-test="project-delete-'.$project->id.'"', false)
             ->assertSee('data-test="project-deactivate-'.$project->id.'"', false)
             ->assertSee('data-test="project-delete-'.$lonelyProject->id.'"', false);
@@ -475,7 +475,7 @@ class ProjectCrudTest extends TestCase
 
         $this->delete(route('projects.destroy', $project))
             ->assertRedirect(route('projects.index'))
-            ->assertSessionHas('error', __('Project cannot be deleted while it has epics.'));
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
 
         $this->assertNotSoftDeleted($project);
     }
@@ -503,7 +503,7 @@ class ProjectCrudTest extends TestCase
 
         $this->delete(route('projects.destroy', $project))
             ->assertRedirect(route('projects.index'))
-            ->assertSessionHas('error', __('Project cannot be deleted while it has epics.'));
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
 
         $this->assertTrue($competitorCreated);
         $this->assertNotSoftDeleted($project);

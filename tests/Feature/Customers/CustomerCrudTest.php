@@ -35,7 +35,7 @@ class CustomerCrudTest extends TestCase
 
         $this->post(route('customers.store'), ['name' => 'Ane Bezeroa'])
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHas('status', __('Customer created successfully.'));
+            ->assertSessionHas('status', __('Record created successfully.'));
 
         $customer = Customer::query()->firstOrFail();
         $this->assertSame('Ane Bezeroa', $customer->name);
@@ -53,12 +53,12 @@ class CustomerCrudTest extends TestCase
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHas('status', __('Customer updated successfully.'));
+            ->assertSessionHas('status', __('Record updated successfully.'));
         $this->assertDatabaseHas('customers', ['id' => $customer->id, 'name' => 'Jon Bezeroa']);
 
         $this->delete(route('customers.destroy', $customer))
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHas('status', __('Customer moved to trash.'));
+            ->assertSessionHas('status', __('Record moved to trash.'));
         $this->assertSoftDeleted($customer);
     }
 
@@ -70,7 +70,7 @@ class CustomerCrudTest extends TestCase
 
         $this->delete(route('customers.destroy', $customer))
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHas('error', __('Customer cannot be deleted while it has projects.'));
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
 
         $this->assertNotSoftDeleted($customer);
         $this->assertModelExists($project);
@@ -99,7 +99,7 @@ class CustomerCrudTest extends TestCase
 
         $this->delete(route('customers.destroy', $customer))
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHas('error', __('Customer cannot be deleted while it has projects.'));
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
 
         $this->assertTrue($competitorCreated);
         $this->assertNotSoftDeleted($customer);
@@ -219,7 +219,7 @@ class CustomerCrudTest extends TestCase
             ->assertSee('data-test="customer-projects-count-'.$lonelyCustomer->id.'"></span>', false)
             ->assertSee('data-test="customer-epics-count-'.$lonelyCustomer->id.'"></span>', false)
             ->assertSee('data-test="customer-comments-count-'.$lonelyCustomer->id.'"></span>', false)
-            ->assertSee(__('Customer cannot be deleted while it has projects.'))
+            ->assertSee(__('Cannot be deleted while it has related records.'))
             ->assertDontSee('data-test="customer-delete-'.$customer->id.'"', false)
             ->assertSee('data-test="customer-delete-'.$lonelyCustomer->id.'"', false);
     }
@@ -232,7 +232,7 @@ class CustomerCrudTest extends TestCase
 
         $this->delete(route('customers.destroy', $customer))
             ->assertRedirect(route('customers.index'))
-            ->assertSessionHas('error', __('Customer cannot be deleted while it has projects.'));
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
 
         $this->assertNotSoftDeleted($customer);
         $this->assertSoftDeleted($project);
@@ -256,7 +256,7 @@ class CustomerCrudTest extends TestCase
 
         $this->postJson(route('customers.store'), ['name' => 'Deleted Select2 Customer'])
             ->assertStatus(409)
-            ->assertJsonPath('errors.name.0', __('A deleted customer already uses the name :name.', ['name' => 'Deleted Select2 Customer']));
+            ->assertJsonPath('errors.name.0', __('A deleted record already uses the name :name.', ['name' => 'Deleted Select2 Customer']));
 
         $this->assertDatabaseCount('customers', 1);
     }
@@ -430,7 +430,7 @@ class CustomerCrudTest extends TestCase
             ->assertSee('customer-conflict-restore')
             ->assertSee('aria-labelledby="customer-name-conflict-heading"', false)
             ->assertSee('id="customer-name-conflict-heading"', false)
-            ->assertSee(__('Customer name already in trash'));
+            ->assertSee(__('Record Name already in trash'));
 
         $this->assertDatabaseCount('customers', 1);
 

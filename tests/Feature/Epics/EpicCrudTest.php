@@ -31,7 +31,7 @@ class EpicCrudTest extends TestCase
             'end_date' => '2026-10-31',
             'project_id' => $project->id,
         ])->assertRedirect(route('epics.index'))
-            ->assertSessionHas('status', __('Epic created successfully.'));
+            ->assertSessionHas('status', __('Record created successfully.'));
 
         $epic = Epic::query()->firstOrFail();
         $this->assertSame('Checkout flow', $epic->name);
@@ -69,7 +69,7 @@ class EpicCrudTest extends TestCase
             'end_date' => '',
             'project_id' => $otherProject->id,
         ])->assertRedirect(route('epics.index'))
-            ->assertSessionHas('status', __('Epic updated successfully.'));
+            ->assertSessionHas('status', __('Record updated successfully.'));
 
         $this->assertDatabaseHas('epics', [
             'id' => $epic->id,
@@ -81,7 +81,7 @@ class EpicCrudTest extends TestCase
 
         $this->delete(route('epics.destroy', $epic))
             ->assertRedirect(route('epics.index'))
-            ->assertSessionHas('status', __('Epic moved to trash.'));
+            ->assertSessionHas('status', __('Record moved to trash.'));
 
         $this->assertSoftDeleted($epic);
     }

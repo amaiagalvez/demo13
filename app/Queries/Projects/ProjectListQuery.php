@@ -79,12 +79,15 @@ final class ProjectListQuery extends ListQueryBase
      *
      * @return array{active: int, inactive: int, trashed: int}
      */
-    public function stateCounts(): array
-    {
+    public function stateCounts(
+        ?int $activeTotal = null,
+        ?int $inactiveTotal = null,
+        ?int $trashedTotal = null,
+    ): array {
         return [
-            'active' => Project::query()->where('projects.active', true)->count(),
-            'inactive' => Project::query()->where('projects.active', false)->count(),
-            'trashed' => Project::onlyTrashed()->count(),
+            'active' => $activeTotal ?? Project::query()->where('projects.active', true)->count(),
+            'inactive' => $inactiveTotal ?? Project::query()->where('projects.active', false)->count(),
+            'trashed' => $trashedTotal ?? Project::onlyTrashed()->count(),
         ];
     }
 

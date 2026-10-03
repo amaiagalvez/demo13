@@ -93,12 +93,15 @@ final class EpicListQuery extends ListQueryBase
      *
      * @return array{active: int, inactive: int, trashed: int}
      */
-    public function stateCounts(): array
-    {
+    public function stateCounts(
+        ?int $activeTotal = null,
+        ?int $inactiveTotal = null,
+        ?int $trashedTotal = null,
+    ): array {
         return [
-            'active' => Epic::query()->where('epics.active', true)->count(),
-            'inactive' => Epic::query()->where('epics.active', false)->count(),
-            'trashed' => Epic::onlyTrashed()->count(),
+            'active' => $activeTotal ?? Epic::query()->where('epics.active', true)->count(),
+            'inactive' => $inactiveTotal ?? Epic::query()->where('epics.active', false)->count(),
+            'trashed' => $trashedTotal ?? Epic::onlyTrashed()->count(),
         ];
     }
 
