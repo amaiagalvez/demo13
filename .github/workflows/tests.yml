@@ -114,7 +114,7 @@ jobs:
 
   dusk:
     needs: [changes, ci]
-    if: needs.changes.outputs.code == 'true'
+    if: ${{ always() && !cancelled() && needs.changes.outputs.code == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -210,3 +210,15 @@ jobs:
 
       - name: Run Dusk
         run: php artisan dusk
+
+      - name: Upload Dusk failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dusk-failure-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            tests/Browser/screenshots/
+            tests/Browser/console/
+            /tmp/laravel.log
+          if-no-files-found: warn
+          retention-days: 7
