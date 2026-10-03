@@ -173,6 +173,30 @@ class CustomerCrudTest extends TestCase
         $this->assertDatabaseMissing('customers', ['name' => 'Abc']);
     }
 
+    public function test_customer_name_cannot_exceed_255_characters_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->from(route('customers.index'))
+            ->post(route('customers.store'), ['name' => str_repeat('a', 256)])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('customers', 0);
+    }
+
+    public function test_customer_name_must_be_a_string_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->from(route('customers.index'))
+            ->post(route('customers.store'), ['name' => ['Ane Bezeroa']])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('customers', 0);
+    }
+
     public function test_store_rejects_an_active_duplicate_name(): void
     {
         $this->actingAs(User::factory()->create());
@@ -314,6 +338,39 @@ class CustomerCrudTest extends TestCase
             ->assertSessionHasErrors(['name'])
             ->assertSessionHasInput('_customer_form', 'edit-' . $customer->id)
             ->assertSessionHasInput('_customer_id', (string) $customer->id);
+    }
+
+    public function test_update_rejects_a_duplicate_customer_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create(['name' => 'Existing Customer']);
+        $customerToUpdate = Customer::factory()->create(['name' => 'Customer to update']);
+
+        $this->from(route('customers.index'))
+            ->put(route('customers.update', $customerToUpdate), ['name' => 'Existing Customer'])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseHas('customers', [
+            'id' => $customerToUpdate->id,
+            'name' => 'Customer to update',
+        ]);
+    }
+
+    public function test_update_rejects_a_customer_name_shorter_than_four_characters(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Existing Customer']);
+
+        $this->from(route('customers.index'))
+            ->put(route('customers.update', $customer), ['name' => 'Abc'])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'name' => 'Existing Customer',
+        ]);
     }
 
     public function test_update_saves_name_without_surrounding_whitespace(): void

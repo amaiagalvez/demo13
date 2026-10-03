@@ -43,6 +43,40 @@ class ProjectInputValidationTest extends TestCase
         $this->assertDatabaseMissing('projects', ['name' => 'Abc']);
     }
 
+    public function test_project_name_cannot_exceed_255_characters_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+
+        $this->from(route('projects.index'))
+            ->post(route('projects.store'), [
+                'name' => str_repeat('a', 256),
+                'start_date' => self::START_DATE,
+                'customer_id' => $customer->id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('projects', 0);
+    }
+
+    public function test_project_name_must_be_a_string_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+
+        $this->from(route('projects.index'))
+            ->post(route('projects.store'), [
+                'name' => ['Ane Bezeroa'],
+                'start_date' => self::START_DATE,
+                'customer_id' => $customer->id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('projects', 0);
+    }
+
     public function test_project_name_must_be_unique(): void
     {
         $this->actingAs(User::factory()->create());
@@ -53,6 +87,23 @@ class ProjectInputValidationTest extends TestCase
                 'name' => $project->name,
                 'start_date' => self::START_DATE,
                 'customer_id' => $project->customer_id,
+            ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('projects', 1);
+    }
+
+    public function test_store_trims_project_name_before_unique_validation(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $existingProject = Project::factory()->create(['name' => 'Existing project']);
+
+        $this->from(route('projects.index'))
+            ->post(route('projects.store'), [
+                'name' => '  Existing project  ',
+                'start_date' => self::START_DATE,
+                'customer_id' => $existingProject->customer_id,
             ])
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
@@ -74,6 +125,23 @@ class ProjectInputValidationTest extends TestCase
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
             'name' => 'Existing project',
+        ]);
+    }
+
+    public function test_update_trims_project_name_before_persisting(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['name' => 'Original project']);
+
+        $this->put(route('projects.update', $project), [
+            'name' => '  Trimmed project  ',
+            'start_date' => self::START_DATE,
+            'customer_id' => $project->customer_id,
+        ])->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'name' => 'Trimmed project',
         ]);
     }
 

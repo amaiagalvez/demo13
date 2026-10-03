@@ -56,6 +56,38 @@ class EpicInputValidationTest extends TestCase
         $this->assertDatabaseCount('epics', 0);
     }
 
+    public function test_epic_name_cannot_exceed_255_characters_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), [
+                'name' => str_repeat('a', 256),
+                'project_id' => $project->id,
+            ])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('epics', 0);
+    }
+
+    public function test_epic_name_must_be_a_string_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), [
+                'name' => ['Ane Bezeroa'],
+                'project_id' => $project->id,
+            ])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('epics', 0);
+    }
+
     public function test_epic_name_must_be_unique_within_the_project(): void
     {
         $this->actingAs(User::factory()->create());
@@ -63,6 +95,22 @@ class EpicInputValidationTest extends TestCase
 
         $this->from(route('epics.index'))
             ->post(route('epics.store'), ['name' => 'Existing epic', 'project_id' => $epic->project_id])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseCount('epics', 1);
+    }
+
+    public function test_store_trims_epic_name_before_unique_validation(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $existingEpic = Epic::factory()->create(['name' => 'Existing epic']);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), [
+                'name' => '  Existing epic  ',
+                'project_id' => $existingEpic->project_id,
+            ])
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrors(['name']);
 
@@ -114,6 +162,23 @@ class EpicInputValidationTest extends TestCase
             'project_id' => $epic->project_id,
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
+    }
+
+    public function test_update_trims_epic_name_before_persisting(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create(['name' => 'Original epic']);
+
+        $this->put(route('epics.update', $epic), [
+            'name' => '  Trimmed epic  ',
+            'project_id' => $epic->project_id,
+        ])->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('epics', [
+            'id' => $epic->id,
+            'name' => 'Trimmed epic',
+        ]);
     }
 
     #[TestWith(['2026-10-01'])]
