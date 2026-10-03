@@ -29,21 +29,21 @@ class CustomerListTransformer extends ListTransformer
                 'test' => 'customer-trash-link',
             ],
             'create' => true,
-            'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
+            'rows' => collect($customers->items())->map(fn(Customer $customer): array => [
                 ...$this->columns($customer),
                 'actions' => [
                     [
                         'type' => 'form-modal',
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
-                        'test' => 'customer-edit-'.$customer->id,
+                        'test' => 'customer-edit-' . $customer->id,
                         'customer' => $customer->only(['id', 'name']),
                     ],
                     $customer->projects_exists ? [
                         'type' => 'confirm-modal',
                         'label' => __('Deactivate'),
                         'icon' => 'lock-closed',
-                        'test' => 'customer-deactivate-'.$customer->id,
+                        'test' => 'customer-deactivate-' . $customer->id,
                         'danger' => true,
                         'action' => route('customers.deactivate', $customer),
                         'method' => 'PATCH',
@@ -54,7 +54,7 @@ class CustomerListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
-                        'test' => 'customer-delete-'.$customer->id,
+                        'test' => 'customer-delete-' . $customer->id,
                         'danger' => true,
                         'action' => route('customers.destroy', $customer),
                         'method' => 'DELETE',
@@ -86,7 +86,7 @@ class CustomerListTransformer extends ListTransformer
                 'test' => null,
             ],
             'create' => false,
-            'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
+            'rows' => collect($customers->items())->map(fn(Customer $customer): array => [
                 ...$this->columns($customer),
                 'extraDate' => $customer->updated_at?->toIso8601String(),
                 'actions' => [
@@ -94,7 +94,7 @@ class CustomerListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Reactivate'),
                         'icon' => 'lock-open',
-                        'test' => 'customer-reactivate-'.$customer->id,
+                        'test' => 'customer-reactivate-' . $customer->id,
                         'danger' => false,
                         'action' => route('customers.inactive.reactivate', $customer),
                         'method' => 'PATCH',
@@ -128,7 +128,7 @@ class CustomerListTransformer extends ListTransformer
                 'test' => 'customer-list-link',
             ],
             'create' => false,
-            'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
+            'rows' => collect($customers->items())->map(fn(Customer $customer): array => [
                 ...$this->columns($customer),
                 'extraDate' => $customer->deleted_at?->toIso8601String(),
                 'actions' => [
@@ -136,7 +136,7 @@ class CustomerListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Restore'),
                         'icon' => 'arrow-path',
-                        'test' => 'customer-restore-'.$customer->id,
+                        'test' => 'customer-restore-' . $customer->id,
                         'danger' => false,
                         'action' => route('customers.trash.restore', $customer->id),
                         'method' => 'PATCH',
@@ -150,7 +150,7 @@ class CustomerListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete permanently'),
                         'icon' => 'trash',
-                        'test' => 'customer-force-delete-'.$customer->id,
+                        'test' => 'customer-force-delete-' . $customer->id,
                         'danger' => true,
                         'action' => route('customers.trash.destroy', $customer->id),
                         'method' => 'DELETE',

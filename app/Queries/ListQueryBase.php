@@ -32,11 +32,11 @@ abstract class ListQueryBase
     ): LengthAwarePaginator {
         if ($search !== '') {
             $pattern = $this->searchPattern($search);
-            $clause = ' like ? escape \''.self::LIKE_ESCAPE.'\'';
+            $clause = ' like ? escape \'' . self::LIKE_ESCAPE . '\'';
 
             $query->where(function (Builder $query) use ($pattern, $clause, $searchColumns): void {
                 foreach ($searchColumns as $column) {
-                    $query->orWhereRaw($column.$clause, [$pattern]);
+                    $query->orWhereRaw($column . $clause, [$pattern]);
                 }
             });
         }
@@ -64,10 +64,10 @@ abstract class ListQueryBase
      */
     protected function searchPattern(string $search): string
     {
-        return '%'.strtr($search, [
-            '%' => self::LIKE_ESCAPE.'%',
-            '_' => self::LIKE_ESCAPE.'_',
-            self::LIKE_ESCAPE => self::LIKE_ESCAPE.self::LIKE_ESCAPE,
-        ]).'%';
+        return '%' . strtr($search, [
+            '%' => self::LIKE_ESCAPE . '%',
+            '_' => self::LIKE_ESCAPE . '_',
+            self::LIKE_ESCAPE => self::LIKE_ESCAPE . self::LIKE_ESCAPE,
+        ]) . '%';
     }
 }

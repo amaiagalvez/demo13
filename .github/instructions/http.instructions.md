@@ -1,7 +1,9 @@
 ---
 applyTo: "app/Http/**,app/Policies/**,app/Queries/**,app/Transformers/**"
 ---
+
 # HTTP / domain rules
+
 - Canonical resource: `CustomerController` + `CustomerRequest` + `CustomerPolicy` + `Queries\Customers\CustomerListQuery` + `CustomerListTransformer`. Mirror it (never reinvent it) when adding a resource.
 - Store/update: catch `QueryException` and call `UniqueConstraintViolation::rethrowAsValidationError()`. Restore flows return their own conflict response instead.
 - `CustomerController::store` also returns JSON `201`/`409` responses for inline customer creation from the project selector; `CustomerCrudTest` fixes that contract.

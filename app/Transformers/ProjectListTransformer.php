@@ -29,14 +29,14 @@ class ProjectListTransformer extends ListTransformer
                 'test' => 'project-trash-link',
             ],
             'create' => true,
-            'rows' => collect($projects->items())->map(fn (Project $project): array => [
+            'rows' => collect($projects->items())->map(fn(Project $project): array => [
                 ...$this->columns($project),
                 'actions' => [
                     [
                         'type' => 'form-modal',
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
-                        'test' => 'project-edit-'.$project->id,
+                        'test' => 'project-edit-' . $project->id,
                         'project' => [
                             'id' => $project->id,
                             'name' => $project->name,
@@ -50,7 +50,7 @@ class ProjectListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Deactivate'),
                         'icon' => 'lock-closed',
-                        'test' => 'project-deactivate-'.$project->id,
+                        'test' => 'project-deactivate-' . $project->id,
                         'danger' => true,
                         'action' => route('projects.deactivate', $project),
                         'method' => 'PATCH',
@@ -61,7 +61,7 @@ class ProjectListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
-                        'test' => 'project-delete-'.$project->id,
+                        'test' => 'project-delete-' . $project->id,
                         'danger' => true,
                         'action' => route('projects.destroy', $project),
                         'method' => 'DELETE',
@@ -93,7 +93,7 @@ class ProjectListTransformer extends ListTransformer
                 'test' => null,
             ],
             'create' => false,
-            'rows' => collect($projects->items())->map(fn (Project $project): array => [
+            'rows' => collect($projects->items())->map(fn(Project $project): array => [
                 ...$this->columns($project),
                 'extraDate' => $project->updated_at?->toIso8601String(),
                 'actions' => [
@@ -101,7 +101,7 @@ class ProjectListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Reactivate'),
                         'icon' => 'lock-open',
-                        'test' => 'project-reactivate-'.$project->id,
+                        'test' => 'project-reactivate-' . $project->id,
                         'danger' => false,
                         'action' => route('projects.inactive.reactivate', $project),
                         'method' => 'PATCH',
@@ -135,7 +135,7 @@ class ProjectListTransformer extends ListTransformer
                 'test' => 'project-list-link',
             ],
             'create' => false,
-            'rows' => collect($projects->items())->map(fn (Project $project): array => [
+            'rows' => collect($projects->items())->map(fn(Project $project): array => [
                 ...$this->columns($project),
                 'extraDate' => $project->deleted_at?->toIso8601String(),
                 'actions' => [
@@ -143,7 +143,7 @@ class ProjectListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Restore'),
                         'icon' => 'arrow-path',
-                        'test' => 'project-restore-'.$project->id,
+                        'test' => 'project-restore-' . $project->id,
                         'danger' => false,
                         'action' => route('projects.trash.restore', $project->id),
                         'method' => 'PATCH',
@@ -157,7 +157,7 @@ class ProjectListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete permanently'),
                         'icon' => 'trash',
-                        'test' => 'project-force-delete-'.$project->id,
+                        'test' => 'project-force-delete-' . $project->id,
                         'danger' => true,
                         'action' => route('projects.trash.destroy', $project->id),
                         'method' => 'DELETE',

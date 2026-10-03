@@ -27,7 +27,7 @@ final class ProjectListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withActiveCounts($this->withCustomer(Project::query()->where('projects.active', true)))
-                ->withExists(['epics' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)])
+                ->withExists(['epics' => fn(Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)])
                 ->orderBy('projects.start_date')
                 ->orderBy('projects.end_date')
                 ->orderBy('project_customers.name')
@@ -84,8 +84,8 @@ final class ProjectListQuery extends ListQueryBase
     private function withActiveCounts(Builder $query): Builder
     {
         return $query->withCount([
-            'epics' => fn (Builder $epics) => $epics->where('epics.active', true),
-            'comments' => fn (Builder $comments) => $comments->where('epics.active', true),
+            'epics' => fn(Builder $epics) => $epics->where('epics.active', true),
+            'comments' => fn(Builder $comments) => $comments->where('epics.active', true),
         ]);
     }
 
