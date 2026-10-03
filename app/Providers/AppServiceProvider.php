@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Models\Project;
+use App\Models\User;
 use App\Models\Customer;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -33,6 +35,23 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->configureDefaults();
+        $this->authorizeLogViewer();
+    }
+
+    /**
+     * The log viewer is registered by its own package, so its gates are defined here. Deleting and
+     * downloading log files stay closed: only reading the entries is allowed.
+     */
+    protected function authorizeLogViewer(): void
+    {
+        Gate::define(
+            'viewLogViewer',
+            fn (User $user): bool => in_array($user->email, config('log-viewer.allowed_emails', []), true),
+        );
+        Gate::define('downloadLogFile', fn (): bool => true);
+        Gate::define('downloadLogFolder', fn (): bool => false);
+        Gate::define('deleteLogFile', fn (): bool => false);
+        Gate::define('deleteLogFolder', fn (): bool => false);
     }
 
     /**
