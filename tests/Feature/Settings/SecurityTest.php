@@ -8,6 +8,7 @@ use Livewire\Livewire;
 use Laravel\Fortify\Features;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 
 class SecurityTest extends TestCase
 {
@@ -100,6 +101,38 @@ class SecurityTest extends TestCase
         ]);
         /* @end-chisel-2fa */
     }
+
+    /* @chisel-2fa */
+    public function test_clients_cannot_change_two_factor_management_flag(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+
+        Livewire::test('pages::settings.security')
+            ->set('canManageTwoFactor', false);
+    }
+
+    public function test_clients_cannot_change_two_factor_enabled_flag(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+
+        Livewire::test('pages::settings.security')
+            ->set('twoFactorEnabled', true);
+    }
+
+    public function test_clients_cannot_change_two_factor_confirmation_flag(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+
+        Livewire::test('pages::settings.security')
+            ->set('requiresConfirmation', false);
+    }
+    /* @end-chisel-2fa */
 
     public function test_password_can_be_updated(): void
     {

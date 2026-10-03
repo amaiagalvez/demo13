@@ -133,10 +133,10 @@ return [
     */
 
     'api_middleware' => [
-        'web',
+        // Must come first: it is the one that starts the session for the UI's own requests.
+        EnsureFrontendRequestsAreStateful::class,
         'auth',
         'verified',
-        EnsureFrontendRequestsAreStateful::class,
         AuthorizeLogViewer::class,
     ],
 

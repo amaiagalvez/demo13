@@ -8,10 +8,10 @@ use Illuminate\View\View;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 /* @chisel-passkeys */
 use Laravel\Passkeys\Actions\DeletePasskey;
-use Livewire\Attributes\Locked;
 /* @end-chisel-passkeys */
 /* @chisel-2fa */
 use Livewire\Attributes\On;
@@ -25,10 +25,13 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
     public string $password_confirmation = '';
 
     /* @chisel-2fa */
+    #[Locked]
     public bool $canManageTwoFactor;
 
+    #[Locked]
     public bool $twoFactorEnabled;
 
+    #[Locked]
     public bool $requiresConfirmation;
     /* @end-chisel-2fa */
 
