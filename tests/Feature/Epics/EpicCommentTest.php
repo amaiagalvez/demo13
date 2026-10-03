@@ -63,6 +63,18 @@ class EpicCommentTest extends TestCase
             ->assertJsonPath('comments.0.dateTime', '2026-10-01T09:30:00+00:00');
     }
 
+    public function test_comment_endpoint_shows_deleted_user_for_comment_without_author(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create();
+        EpicComment::factory()->for($epic)->withoutAuthor()->create(['body' => 'Orphaned comment']);
+
+        $this->getJson(route('epics.comments.index', $epic))
+            ->assertOk()
+            ->assertJsonPath('comments.0.author', __('Deleted user'))
+            ->assertJsonPath('comments.0.body', 'Orphaned comment');
+    }
+
     public function test_comment_endpoint_returns_only_the_latest_comments_for_the_requested_epic(): void
     {
         $this->actingAs(User::factory()->create());
