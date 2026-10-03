@@ -40,4 +40,5 @@ State server-side; validate and authorize in actions. Alpine is already bundled.
 - Add/update tests for behavior changes (not for copy/styling). Cover the change and its key failures only. Read the `testing-best-practices` skill first.
 - Create: `DX php artisan make:test --phpunit Name` (feature; `--unit` for unit; no suite dir in name).
 - Run the narrowest: `DX php artisan test --compact <path|--filter=name>`; add `--parallel` for local speed (never in CI — shared DB) with flags before the path: `DX php artisan test --parallel --compact <path>`. Rerun after each fix.
+- CI enforces at least 80% total code coverage and uploads a Clover report; run `docker compose run --rm laravel13-phpunit` locally to check the same threshold.
 - Static analysis: run `DX ./vendor/bin/phpstan analyse` (level 9).
