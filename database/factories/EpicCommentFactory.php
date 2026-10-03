@@ -26,6 +26,7 @@ class EpicCommentFactory extends Factory
         ];
     }
 
+    /** Indicate that the comment has no author. */
     public function withoutAuthor(): static
     {
         return $this->state([

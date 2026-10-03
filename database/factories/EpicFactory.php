@@ -14,7 +14,7 @@ class EpicFactory extends Factory
     use HasTrashedState;
 
     /**
-     * Define the model's default state.
+     * Define the model's default state. The end date must be later than the start date per EpicRequest.
      *
      * @return array<string, mixed>
      */
@@ -25,11 +25,12 @@ class EpicFactory extends Factory
         return [
             'name' => fake()->unique()->sentence(3),
             'start_date' => $startDate,
-            'end_date' => fake()->dateTimeBetween($startDate . ' +1 day', '+1 year')->format('Y-m-d'),
+            'end_date' => fake()->dateTimeBetween($startDate.' +1 day', '+1 year')->format('Y-m-d'),
             'project_id' => Project::factory(),
         ];
     }
 
+    /** Indicate that the epic has no start or end date. */
     public function withoutDates(): static
     {
         return $this->state([
@@ -38,6 +39,7 @@ class EpicFactory extends Factory
         ]);
     }
 
+    /** Indicate that the epic is inactive. */
     public function inactive(): static
     {
         return $this->state([

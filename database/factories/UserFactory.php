@@ -49,6 +49,7 @@ class UserFactory extends Factory
         ]);
     }
 
+    /** Indicate that the model is inactive. */
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [

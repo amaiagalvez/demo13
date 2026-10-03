@@ -14,7 +14,7 @@ class ProjectFactory extends Factory
     use HasTrashedState;
 
     /**
-     * Define the model's default state.
+     * Define the model's default state. The end date may equal the start date per ProjectRequest.
      *
      * @return array<string, mixed>
      */
@@ -30,6 +30,7 @@ class ProjectFactory extends Factory
         ];
     }
 
+    /** Indicate that the project is inactive. */
     public function inactive(): static
     {
         return $this->state([

@@ -24,6 +24,7 @@ class CustomerFactory extends Factory
         ];
     }
 
+    /** Indicate that the customer is inactive. */
     public function inactive(): static
     {
         return $this->state([
