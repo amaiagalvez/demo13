@@ -136,7 +136,8 @@ class CustomerTrashTest extends TestCase
         $customer = Customer::factory()->trashed()->create();
 
         $this->delete(route('customers.trash.destroy', $customer->id))
-            ->assertRedirect(route('customers.trash.index'));
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionHas('status', __('Customer permanently deleted.'));
 
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }

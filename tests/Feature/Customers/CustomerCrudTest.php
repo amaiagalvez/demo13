@@ -24,7 +24,8 @@ class CustomerCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         $this->post(route('customers.store'), ['name' => 'Ane Bezeroa'])
-            ->assertRedirect(route('customers.index'));
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('status', __('Customer created successfully.'));
 
         $customer = Customer::query()->firstOrFail();
         $this->assertSame('Ane Bezeroa', $customer->name);
@@ -41,11 +42,13 @@ class CustomerCrudTest extends TestCase
             ->assertSee('customer-edit-' . $customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
-            ->assertRedirect(route('customers.index'));
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('status', __('Customer updated successfully.'));
         $this->assertDatabaseHas('customers', ['id' => $customer->id, 'name' => 'Jon Bezeroa']);
 
         $this->delete(route('customers.destroy', $customer))
-            ->assertRedirect(route('customers.index'));
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('status', __('Customer moved to trash.'));
         $this->assertSoftDeleted($customer);
     }
 

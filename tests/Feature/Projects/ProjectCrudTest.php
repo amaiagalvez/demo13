@@ -60,7 +60,9 @@ class ProjectCrudTest extends TestCase
             'start_date' => '2026-10-01',
             'end_date' => '2026-12-31',
             'customer_id' => $customer->id,
-        ])->assertRedirect(route('projects.index'));
+        ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('status', __('Project created successfully.'));
 
         $project = Project::query()->firstOrFail();
         $this->assertSame('Website renewal', $project->name);
@@ -90,7 +92,9 @@ class ProjectCrudTest extends TestCase
             'start_date' => '2026-10-15',
             'end_date' => '2027-01-15',
             'customer_id' => $otherCustomer->id,
-        ])->assertRedirect(route('projects.index'));
+        ])
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('status', __('Project updated successfully.'));
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
@@ -101,9 +105,37 @@ class ProjectCrudTest extends TestCase
         ]);
 
         $this->delete(route('projects.destroy', $project))
-            ->assertRedirect(route('projects.index'));
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('status', __('Project moved to trash.'));
 
         $this->assertSoftDeleted($project);
+    }
+
+    public function test_project_store_persists_only_validated_attributes(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+
+        $this->post(route('projects.store'), [
+            'name' => 'Validated project',
+            'start_date' => '2026-10-01',
+            'customer_id' => $customer->id,
+            'id' => 999999,
+            'created_at' => '2000-01-01 00:00:00',
+        ])->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseHas('projects', [
+            'name' => 'Validated project',
+            'customer_id' => $customer->id,
+        ]);
+        $this->assertDatabaseMissing('projects', [
+            'name' => 'Validated project',
+            'id' => 999999,
+        ]);
+        $this->assertDatabaseMissing('projects', [
+            'name' => 'Validated project',
+            'created_at' => '2000-01-01 00:00:00',
+        ]);
     }
 
     public function test_a_customer_can_have_multiple_projects(): void

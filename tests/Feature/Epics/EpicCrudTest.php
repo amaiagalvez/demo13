@@ -68,7 +68,8 @@ class EpicCrudTest extends TestCase
             'start_date' => '',
             'end_date' => '',
             'project_id' => $otherProject->id,
-        ])->assertRedirect(route('epics.index'));
+        ])->assertRedirect(route('epics.index'))
+            ->assertSessionHas('status', __('Epic updated successfully.'));
 
         $this->assertDatabaseHas('epics', [
             'id' => $epic->id,
@@ -79,9 +80,36 @@ class EpicCrudTest extends TestCase
         ]);
 
         $this->delete(route('epics.destroy', $epic))
-            ->assertRedirect(route('epics.index'));
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHas('status', __('Epic moved to trash.'));
 
         $this->assertSoftDeleted($epic);
+    }
+
+    public function test_epic_store_persists_only_validated_attributes(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+
+        $this->post(route('epics.store'), [
+            'name' => 'Validated epic',
+            'project_id' => $project->id,
+            'id' => 999999,
+            'created_at' => '2000-01-01 00:00:00',
+        ])->assertRedirect(route('epics.index'));
+
+        $this->assertDatabaseHas('epics', [
+            'name' => 'Validated epic',
+            'project_id' => $project->id,
+        ]);
+        $this->assertDatabaseMissing('epics', [
+            'name' => 'Validated epic',
+            'id' => 999999,
+        ]);
+        $this->assertDatabaseMissing('epics', [
+            'name' => 'Validated epic',
+            'created_at' => '2000-01-01 00:00:00',
+        ]);
     }
 
     public function test_a_project_can_have_multiple_epics(): void

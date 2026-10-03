@@ -62,7 +62,11 @@ class ProjectTrashTest extends TestCase
             ->assertDontSee('Active project');
 
         $this->patch(route('projects.trash.restore', $deletedProject->id))
-            ->assertRedirect(route('projects.trash.index'));
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas(
+                'status',
+                __('Project restored successfully.'),
+            );
         $this->assertNotSoftDeleted($deletedProject);
 
         $this->delete(route('projects.destroy', $activeProject))
@@ -74,7 +78,8 @@ class ProjectTrashTest extends TestCase
         $this->delete(route('projects.destroy', $deletedProject))
             ->assertRedirect(route('projects.index'));
         $this->delete(route('projects.trash.destroy', $deletedProject->id))
-            ->assertRedirect(route('projects.trash.index'));
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas('status', __('Project permanently deleted.'));
         $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
     }
 
@@ -173,7 +178,11 @@ class ProjectTrashTest extends TestCase
         $activeProject = Project::factory()->create(['name' => 'Repeated project name']);
 
         $this->patch(route('projects.trash.restore', $deletedProject->id))
-            ->assertRedirect(route('projects.trash.index'));
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Project cannot be restored while another active project uses this name.'),
+            );
 
         $this->get(route('projects.trash.index'))
             ->assertSee(__('Project cannot be restored while another active project uses this name.'));
