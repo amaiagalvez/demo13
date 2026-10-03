@@ -15,6 +15,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->boolean('active')->default(true);
+            $table->index(['deleted_at', 'id']);
         });
 
         if (in_array(DB::connection()->getDriverName(), ['sqlite', 'pgsql'], true)) {
@@ -30,9 +31,6 @@ return new class extends Migration
             $table->unique('active_name');
         });
 
-        Schema::table('customers', function (Blueprint $table): void {
-            $table->index(['deleted_at', 'id']);
-        });
     }
 
     public function down(): void
