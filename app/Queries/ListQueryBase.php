@@ -14,6 +14,13 @@ abstract class ListQueryBase
     public const PER_PAGE = 5;
 
     /**
+     * Escape character declared in every LIKE pattern, so a search for `%`, `_` or a
+     * backslash behaves the same on every engine and does not depend on the server's
+     * implicit escape character or on its sql_mode.
+     */
+    private const LIKE_ESCAPE = '!';
+
+    /**
      * @param  Builder<TModel>  $query
      * @param  non-empty-list<string>  $searchColumns
      * @return LengthAwarePaginator<int, TModel>
@@ -24,13 +31,14 @@ abstract class ListQueryBase
         array $searchColumns,
     ): LengthAwarePaginator {
         if ($search !== '') {
-            $escapedSearch = addcslashes($search, '%_\\');
+            $pattern = '%'.$this->escapeLike($search).'%';
 
-            $query->where(function (Builder $query) use ($escapedSearch, $searchColumns): void {
-                $query->where($searchColumns[0], 'like', "%{$escapedSearch}%");
-
-                foreach (array_slice($searchColumns, 1) as $column) {
-                    $query->orWhere($column, 'like', "%{$escapedSearch}%");
+            $query->where(function (Builder $query) use ($pattern, $searchColumns): void {
+                foreach ($searchColumns as $column) {
+                    $query->orWhereRaw(
+                        sprintf('%s like ? escape \'%s\'', $column, self::LIKE_ESCAPE),
+                        [$pattern],
+                    );
                 }
             });
         }
@@ -42,5 +50,17 @@ abstract class ListQueryBase
         }
 
         return $items;
+    }
+
+    /**
+     * Escape the LIKE wildcards and the escape character itself in a search term.
+     */
+    private function escapeLike(string $search): string
+    {
+        return strtr($search, [
+            '%' => self::LIKE_ESCAPE.'%',
+            '_' => self::LIKE_ESCAPE.'_',
+            self::LIKE_ESCAPE => self::LIKE_ESCAPE.self::LIKE_ESCAPE,
+        ]);
     }
 }
