@@ -16,12 +16,13 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
  [] test sin db prioridad
  [] en vez de cada modelo tener su propio el cliente se ha guardado correctamente o el cliente se a borrado o nuevo cliente y todos los que hay del mismo estilo, utilizar terminología genérica siempre que el usuario entienda dónde esta. Utilizar se ha guardado correctamente o se ha creado correctamete o no se puede eliminar y similare. Con esto, reducimos las traducciones y tenemos más código que se podría pasar a las bases y reutilizar, lo mismo con los test.
  [] al filtrar no se muestrra el numero total de resultado sencontrados
- 
+
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------
 [ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
 [ ] ahora busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github
-[] /full-review del proyecto
-[] /fix-review 06.model-consistency-audit.md antes de modificar pide confirmación y al terminar marca la tarea como realizada
+[ ] /full-review del proyecto
+[ ] /fix-review 06.model-consistency-audit.md antes de modificar pide confirmación y al terminar marca la tarea como realizada
 [ ] repasa la configuración de los AGENTES y analiza si hay alguna manera de ahorrar tokens y de mejorar la forma de trabajar.
+[ ] prepara un plan que cree seeders para llenar las tablas con cientos de registros y luego analice el rendimiento del listado
