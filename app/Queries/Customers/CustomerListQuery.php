@@ -58,6 +58,14 @@ final class CustomerListQuery extends ListQueryBase
     }
 
     /**
+     * Number of records waiting in the trash, shown as the badge of the trash tab.
+     */
+    public function trashedCount(): int
+    {
+        return Customer::onlyTrashed()->count();
+    }
+
+    /**
      * Only the live slice of the customer is counted: active projects, the active epics they own and
      * the comments written on those epics; deleted records are excluded by the joins below.
      *

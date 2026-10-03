@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\ProjectRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
@@ -62,7 +63,10 @@ class ProjectController extends Controller
         }
 
         try {
-            Project::create($request->validated());
+            DB::transaction(static function () use ($request): void {
+                Customer::query()->lockForUpdate()->findOrFail($request->integer('customer_id'));
+                Project::create($request->validated());
+            });
         } catch (QueryException $exception) {
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
@@ -73,7 +77,10 @@ class ProjectController extends Controller
     public function update(ProjectRequest $request, Project $project): RedirectResponse
     {
         try {
-            $project->update($request->validated());
+            DB::transaction(static function () use ($request, $project): void {
+                Customer::query()->lockForUpdate()->findOrFail($request->integer('customer_id'));
+                $project->update($request->validated());
+            });
         } catch (QueryException $exception) {
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
@@ -85,7 +92,16 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        if ($project->delete() === false) {
+        $deleted = DB::transaction(static function () use ($project): bool {
+            $lockedProject = Project::query()
+                ->whereKey($project->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            return $lockedProject->delete() !== false;
+        });
+
+        if (! $deleted) {
             return to_route('projects.index')
                 ->with('error', __('Project cannot be deleted while it has epics.'));
         }

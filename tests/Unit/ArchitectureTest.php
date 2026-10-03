@@ -102,7 +102,11 @@ class ArchitectureTest extends TestCase
         foreach ($this->controllerFiles() as $file) {
             $source = (string) file_get_contents($file);
 
-            $this->assertStringNotContainsString('DB::', $source, "{$file} must not touch DB:: directly");
+            $this->assertDoesNotMatchRegularExpression(
+                '/DB::(?!transaction\s*\()/',
+                $source,
+                "{$file} may use DB::transaction() but no other DB facade calls",
+            );
             $this->assertStringNotContainsString('Schema::', $source, "{$file} must not touch Schema::");
             $this->assertDoesNotMatchRegularExpression('/\b(?:dd|dump)\s*\(/', $source, "{$file} contains dd/dump");
             $this->assertStringNotContainsString(

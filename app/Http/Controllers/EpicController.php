@@ -7,6 +7,7 @@ use App\Models\Project;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\EpicRequest;
+use Illuminate\Support\Facades\DB;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
@@ -69,7 +70,10 @@ class EpicController extends Controller
         }
 
         try {
-            Epic::create($request->validated());
+            DB::transaction(static function () use ($request): void {
+                Project::query()->lockForUpdate()->findOrFail($request->integer('project_id'));
+                Epic::create($request->validated());
+            });
         } catch (QueryException $exception) {
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
@@ -80,7 +84,10 @@ class EpicController extends Controller
     public function update(EpicRequest $request, Epic $epic): RedirectResponse
     {
         try {
-            $epic->update($request->validated());
+            DB::transaction(static function () use ($request, $epic): void {
+                Project::query()->lockForUpdate()->findOrFail($request->integer('project_id'));
+                $epic->update($request->validated());
+            });
         } catch (QueryException $exception) {
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }

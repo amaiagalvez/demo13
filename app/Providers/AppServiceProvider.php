@@ -31,12 +31,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Customer::deleting(
-            static fn (Customer $customer): bool => ! $customer->projects()->withTrashed()->exists(),
-        );
-        Project::deleting(
-            static fn (Project $project): bool => ! $project->epics()->withTrashed()->exists(),
-        );
+        Customer::deleting(static function (Customer $customer): bool {
+            return DB::transaction(static function () use ($customer): bool {
+                $lockedCustomer = Customer::withTrashed()
+                    ->whereKey($customer->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                return ! $lockedCustomer->projects()->withTrashed()->exists();
+            });
+        });
+        Project::deleting(static function (Project $project): bool {
+            return DB::transaction(static function () use ($project): bool {
+                $lockedProject = Project::withTrashed()
+                    ->whereKey($project->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                return ! $lockedProject->epics()->withTrashed()->exists();
+            });
+        });
 
         $this->configureDefaults();
         $this->authorizeLogViewer();

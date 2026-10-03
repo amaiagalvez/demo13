@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\CustomerListRequest;
@@ -24,7 +25,7 @@ class CustomerTrashController extends Controller
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->trash($customers, $search),
+            'list' => $transformer->trash($customers, $search, $query->trashedCount()),
         ]);
     }
 
@@ -58,7 +59,16 @@ class CustomerTrashController extends Controller
         $customer = Customer::onlyTrashed()->findOrFail($customer);
         $this->authorize('forceDelete', $customer);
 
-        if ($customer->forceDelete() === false) {
+        $deleted = DB::transaction(static function () use ($customer): bool {
+            $lockedCustomer = Customer::onlyTrashed()
+                ->whereKey($customer->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            return $lockedCustomer->forceDelete() !== false;
+        });
+
+        if (! $deleted) {
             return to_route('customers.trash.index')
                 ->with('error', __('Customer cannot be permanently deleted while it has projects.'));
         }

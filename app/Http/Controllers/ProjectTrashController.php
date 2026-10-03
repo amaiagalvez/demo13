@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\ProjectListRequest;
@@ -59,7 +60,16 @@ class ProjectTrashController extends Controller
         $project = Project::onlyTrashed()->findOrFail($project);
         $this->authorize('forceDelete', $project);
 
-        if ($project->forceDelete() === false) {
+        $deleted = DB::transaction(static function () use ($project): bool {
+            $lockedProject = Project::onlyTrashed()
+                ->whereKey($project->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            return $lockedProject->forceDelete() !== false;
+        });
+
+        if (! $deleted) {
             return to_route('projects.trash.index')
                 ->with('error', __('Project cannot be permanently deleted while it has epics.'));
         }

@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -71,6 +73,39 @@ class CustomerCrudTest extends TestCase
 
         $this->assertNotSoftDeleted($customer);
         $this->assertModelExists($project);
+    }
+
+    public function test_customer_is_not_deleted_when_a_project_appears_during_the_delete_transaction(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use ($customer, &$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'customers')
+                || ! str_contains(strtolower($query->sql), 'for update')
+                || ! in_array($customer->id, $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Project::factory()->for($customer)->create(['name' => 'Concurrent project']);
+        });
+
+        $this->delete(route('customers.destroy', $customer))
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHas('error', __('Customer cannot be deleted while it has projects.'));
+
+        $this->assertTrue($competitorCreated);
+        $this->assertNotSoftDeleted($customer);
+        $this->assertDatabaseHas('projects', [
+            'customer_id' => $customer->id,
+            'deleted_at' => null,
+        ]);
     }
 
     public function test_customer_creation_is_forbidden_when_the_gate_denies_it(): void

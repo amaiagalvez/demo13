@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\CustomerRequest;
 use Illuminate\Database\QueryException;
@@ -27,7 +28,7 @@ class CustomerController extends Controller
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->active($customers, $search),
+            'list' => $transformer->active($customers, $search, $query->trashedCount()),
         ]);
     }
 
@@ -91,7 +92,16 @@ class CustomerController extends Controller
     {
         $this->authorize('delete', $customer);
 
-        if ($customer->delete() === false) {
+        $deleted = DB::transaction(static function () use ($customer): bool {
+            $lockedCustomer = Customer::query()
+                ->whereKey($customer->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            return $lockedCustomer->delete() !== false;
+        });
+
+        if (! $deleted) {
             return to_route('customers.index')
                 ->with('error', __('Customer cannot be deleted while it has projects.'));
         }

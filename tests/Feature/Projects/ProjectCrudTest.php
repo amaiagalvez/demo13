@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
 use App\Transformers\ProjectListTransformer;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -410,6 +412,39 @@ class ProjectCrudTest extends TestCase
             ->assertSessionHas('error', __('Project cannot be deleted while it has epics.'));
 
         $this->assertNotSoftDeleted($project);
+    }
+
+    public function test_project_is_not_deleted_when_an_epic_appears_during_the_delete_transaction(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        $competitorCreated = false;
+
+        DB::listen(static function (QueryExecuted $query) use ($project, &$competitorCreated): void {
+            if (
+                $competitorCreated
+                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
+                || ! str_contains(strtolower($query->sql), 'projects')
+                || ! str_contains(strtolower($query->sql), 'for update')
+                || ! in_array($project->id, $query->bindings, true)
+            ) {
+                return;
+            }
+
+            $competitorCreated = true;
+            Epic::factory()->for($project)->create(['name' => 'Concurrent epic']);
+        });
+
+        $this->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('error', __('Project cannot be deleted while it has epics.'));
+
+        $this->assertTrue($competitorCreated);
+        $this->assertNotSoftDeleted($project);
+        $this->assertDatabaseHas('epics', [
+            'project_id' => $project->id,
+            'deleted_at' => null,
+        ]);
     }
 
     public function test_project_model_cannot_be_deleted_while_it_has_epics(): void
