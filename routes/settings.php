@@ -1,5 +1,8 @@
 <?php
 
+/* @chisel-password-confirmation */
+use App\Http\Middleware\RequirePasswordForLivewire;
+/* @end-chisel-password-confirmation */
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -13,9 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::livewire('settings/security', 'pages::settings.security')
         /* @chisel-password-confirmation */
-        ->middleware([
-            'password.confirm',
-        ])
+        ->middleware(RequirePasswordForLivewire::class)
         /* @end-chisel-password-confirmation */
         ->name('security.edit');
 });

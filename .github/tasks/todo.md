@@ -1,5 +1,5 @@
 [] demasiado espacio a la izquierda en la pantalla del protatil
-[] avisos validaciones, en el ikono info mostrar todas las validaciones, que debe ser unico, que la fecha fin debe se maryor que la de incio, y asi con todas las validaciones
+[] avisos validaciones, en el ikono info mostrar todas las validaciones, que debe ser unico, que la fecha fin debe se maryor que la de incio, y asi con todas las validaciones que ser hagan sobre ese campo
 [] crear el CRUD de usuarios
 crear un nuevo archivo de configuracion y configurar la ruta register, por defecto sera false y entonces no se podran registrar nuevos usuarios desde fuera
 [] añadir created_by, updated_by, deleted_by en tdodas las tablas (modificar migrations, no crear nueva) Crear un Trait que modifique los valorres de esos campos cada vez que se hace una operacón sobre los dtos de la tabla
@@ -12,10 +12,12 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [] if (in_array(DB::connection()->getDriverName(), ['sqlite', 'pgsql'], true)) { se usa en varios sitiios, crea una funcion isSqlite como helper para poder reuitlzarla
  [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
  [] listado bezeroak, quitar sortze-data y añadir columnas con el número de proyectos y el número de epicas (formato, como el del número de comments en el listado epics)
- [] si hubiera muchos datos en todoas lass atablas, analiza el compoartamiento de las tres listados
+ [] si hubiera muchos datos en todoas lass atablas, analiza el compoartamiento de las tres listados (N+1, excesivo tiempo de carga)
+----------------------------------------------------------------------------------
+[] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------
 [ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
 [ ] ahora busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github
 [] /full-review del proyecto
-[] /fix-review task 05 vete marcando con [x] al principio las que ya esten echas y antes de modicar nada preguntame
-[ ] repasa la configuración de los AGENTES y analiza si hay alguna manera de ahorrar tokens y de mejorar la forma de trabajar. <===
+[] /fix-review task 05 vete marcando con [x] al principio las que ya esten echas y antes de modicar, dime que es lo que vas a modificar y preguntame
+[ ] repasa la configuración de los AGENTES y analiza si hay alguna manera de ahorrar tokens y de mejorar la forma de trabajar.

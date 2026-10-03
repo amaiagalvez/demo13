@@ -169,4 +169,67 @@ class SecurityTest extends TestCase
 
         $response->assertHasErrors(['current_password']);
     }
+
+    /* @chisel-passkeys */
+    public function test_user_cannot_confirm_deletion_of_another_users_passkey(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $passkey = $otherUser->passkeys()->create([
+            'name' => 'Another user passkey',
+            'credential_id' => 'aWQ',
+            'credential' => [],
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::settings.security')
+            ->call('confirmDelete', $passkey->id)
+            ->assertNotFound();
+
+        $this->assertModelExists($passkey);
+    }
+    /* @end-chisel-passkeys */
+
+    /* @chisel-password-confirmation */
+    public function test_expired_password_confirmation_blocks_livewire_security_updates(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => now()->timestamp])
+            ->get(route('security.edit'))
+            ->assertOk()
+            ->assertSee('wire:snapshot="', false);
+
+        $html = $response->getContent();
+        preg_match('/wire:snapshot="([^"]+)"/', $html, $matches);
+        $this->assertArrayHasKey(1, $matches);
+        $snapshot = html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5);
+        $snapshotData = json_decode($snapshot, true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('settings/security', $snapshotData['memo']['path']);
+
+        $expiredAt = now()->subSeconds(10801)->timestamp;
+        $this->withSession(['auth.password_confirmed_at' => $expiredAt]);
+        $this->assertSame($expiredAt, session('auth.password_confirmed_at'));
+        $this->getJson(route('security.edit'))->assertStatus(423);
+
+        $updateResponse = $this->postJson(route('default-livewire.update'), [
+            'components' => [[
+                'snapshot' => $snapshot,
+                'updates' => [],
+                'calls' => [[
+                    'method' => 'updatePassword',
+                    'params' => [],
+                    'path' => '',
+                ]],
+            ]],
+        ], [
+            'Accept' => 'application/json',
+            'X-Livewire' => 'true',
+        ]);
+
+        $updateResponse->assertStatus(423);
+    }
+    /* @end-chisel-password-confirmation */
 }

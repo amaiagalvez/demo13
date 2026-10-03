@@ -1,10 +1,9 @@
 <?php
 
-use Opcodes\LogViewer\Enums\SortingMethod;
-use Opcodes\LogViewer\Enums\SortingOrder;
 use Opcodes\LogViewer\Enums\Theme;
+use Opcodes\LogViewer\Enums\SortingOrder;
+use Opcodes\LogViewer\Enums\SortingMethod;
 use Opcodes\LogViewer\Http\Middleware\AuthorizeLogViewer;
-use Opcodes\LogViewer\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 return [
 
@@ -133,8 +132,8 @@ return [
     */
 
     'api_middleware' => [
-        // Must come first: it is the one that starts the session for the UI's own requests.
-        EnsureFrontendRequestsAreStateful::class,
+        // Use only `web` for sessions: the package's stateful middleware would decrypt cookies twice.
+        'web',
         'auth',
         'verified',
         AuthorizeLogViewer::class,

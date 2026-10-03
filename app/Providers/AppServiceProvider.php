@@ -5,6 +5,10 @@ namespace App\Providers;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Customer;
+/* @chisel-password-confirmation */
+use App\Http\Middleware\RequirePasswordForLivewire;
+use Livewire\Livewire;
+/* @end-chisel-password-confirmation */
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
@@ -36,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureDefaults();
         $this->authorizeLogViewer();
+        /* @chisel-password-confirmation */
+        Livewire::addPersistentMiddleware([RequirePasswordForLivewire::class]);
+        /* @end-chisel-password-confirmation */
     }
 
     /**

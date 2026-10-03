@@ -54,15 +54,32 @@ class LogViewerAccessTest extends TestCase
      */
     public function test_the_log_viewer_api_accepts_a_real_browser_session(): void
     {
+        config()->set('session.driver', 'database');
+        config()->set('log-viewer.api_stateful_domains', ['localhost']);
+        $this->app['session']->forgetDrivers();
+        $this->app->forgetInstance('session.store');
+
         $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
 
-        $this->post(route('login'), [
+        $response = $this->post(route('login'), [
             'email' => $user->email,
             'password' => 'password',
-        ])->assertRedirect();
+        ]);
 
-        $this->withHeader('referer', config('app.url').'/log-viewer')
-            ->get('/log-viewer/api/folders')
+        $cookieName = config('session.cookie');
+        $response->assertRedirect()->assertCookie($cookieName);
+        $cookie = $response->getCookie($cookieName, false);
+        $this->assertNotNull($cookie);
+
+        $this->app['auth']->forgetGuards();
+        $this->app->forgetInstance('auth.driver');
+        $this->app['session']->forgetDrivers();
+        $this->app->forgetInstance('session.store');
+
+        $this->withUnencryptedCookie($cookieName, $cookie->getValue())
+            ->withCredentials()
+            ->withHeader('referer', 'http://localhost/log-viewer')
+            ->getJson('/log-viewer/api/folders')
             ->assertOk();
     }
 

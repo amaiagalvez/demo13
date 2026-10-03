@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,6 +60,17 @@ class CustomerCrudTest extends TestCase
 
         $this->assertNotSoftDeleted($customer);
         $this->assertModelExists($project);
+    }
+
+    public function test_customer_creation_is_forbidden_when_the_gate_denies_it(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Gate::before(static fn (User $user, string $ability): bool => false);
+
+        $this->post(route('customers.store'), ['name' => 'Forbidden customer'])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('customers', ['name' => 'Forbidden customer']);
     }
 
     public function test_customer_model_cannot_be_deleted_while_it_has_projects(): void

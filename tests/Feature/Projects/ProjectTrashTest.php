@@ -70,6 +70,20 @@ class ProjectTrashTest extends TestCase
         $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
     }
 
+    public function test_active_project_is_not_found_through_trash_actions(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+
+        $this->patch(route('projects.trash.restore', $project->id))
+            ->assertNotFound();
+
+        $this->delete(route('projects.trash.destroy', $project->id))
+            ->assertNotFound();
+
+        $this->assertModelExists($project);
+    }
+
     public function test_deleted_project_with_epics_cannot_be_permanently_deleted(): void
     {
         $this->actingAs(User::factory()->create());
