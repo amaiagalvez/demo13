@@ -10,25 +10,68 @@ class ListSearchFragmentTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Route => the prefix of the resource it lists.
+     *
+     * @var array<string, string>
+     */
+    private const ROUTES = [
+        'customers.index' => 'customer',
+        'customers.trash.index' => 'customer',
+        'projects.index' => 'project',
+        'projects.trash.index' => 'project',
+        'epics.index' => 'epic',
+        'epics.trash.index' => 'epic',
+    ];
+
     public function test_all_list_routes_return_only_the_results_fragment_for_fragment_requests(): void
     {
         $this->actingAs(User::factory()->create());
 
-        foreach ([
-            'customers.index',
-            'customers.trash.index',
-            'projects.index',
-            'projects.trash.index',
-            'epics.index',
-            'epics.trash.index',
-        ] as $route) {
+        foreach (self::ROUTES as $route => $prefix) {
             $response = $this->get(route($route), ['X-List-Fragment' => 'true']);
 
             $response
                 ->assertOk()
                 ->assertSee('data-list-results')
-                ->assertDontSee('data-test="customer-create-button"')
+                ->assertSee('data-test="'.$prefix.'-search"', false)
                 ->assertDontSee('<!DOCTYPE html>');
+        }
+    }
+
+    /**
+     * The page header holds the breadcrumbs, the state tabs and the create action, and it stays
+     * outside the results fragment so the whole heading survives the morph triggered by searching.
+     */
+    public function test_page_header_stays_outside_the_results_fragment(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        foreach (['customer', 'project', 'epic'] as $prefix) {
+            $this->get(route($prefix.'s.index'), ['X-List-Fragment' => 'true'])
+                ->assertOk()
+                ->assertSee('data-test="'.$prefix.'-search"', false)
+                ->assertDontSee('data-test="'.$prefix.'-breadcrumbs"', false)
+                ->assertDontSee('data-test="'.$prefix.'-tabs"', false)
+                ->assertDontSee('data-test="'.$prefix.'-create-button"', false);
+        }
+    }
+
+    public function test_page_header_carries_the_create_action_on_full_page_responses(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        foreach (['customer', 'project', 'epic'] as $prefix) {
+            $this->get(route($prefix.'s.index'))
+                ->assertOk()
+                ->assertSee('data-test="'.$prefix.'-breadcrumbs"', false)
+                ->assertSee('data-test="'.$prefix.'-tabs"', false)
+                ->assertSee('data-test="'.$prefix.'-create-button"', false);
+
+            $this->get(route($prefix.'s.trash.index'))
+                ->assertOk()
+                ->assertSee('data-test="'.$prefix.'-tabs"', false)
+                ->assertDontSee('data-test="'.$prefix.'-create-button"', false);
         }
     }
 
@@ -36,14 +79,7 @@ class ListSearchFragmentTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        foreach ([
-            'customers.index',
-            'customers.trash.index',
-            'projects.index',
-            'projects.trash.index',
-            'epics.index',
-            'epics.trash.index',
-        ] as $route) {
+        foreach (array_keys(self::ROUTES) as $route) {
             $url = route($route, ['search' => 'reload-check']);
 
             $this->get($url)

@@ -308,6 +308,58 @@ class EpicCrudTest extends TestCase
             ->assertSeeInOrder(['epic-comments-count-'.$epic->id, '3']);
     }
 
+    public function test_epic_list_header_offers_the_state_tabs_with_the_record_count_of_each_one(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->count(2)->for($project)->create();
+        Epic::factory()->for($project)->inactive()->create();
+        Epic::factory()->count(3)->for($project)->trashed()->create();
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertSee('data-test="epic-breadcrumbs"', false)
+            ->assertSeeInOrder([
+                'href="'.route('dashboard').'"',
+                __('Dashboard'),
+                __('Epics'),
+            ], false)
+            ->assertSee('data-test="epic-heading"', false)
+            ->assertSeeInOrder([
+                'data-test="epic-active-link"',
+                'aria-current="page"',
+                'data-test="epic-inactive-link"',
+                'data-test="epic-trash-link"',
+            ], false)
+            ->assertSeeInOrder(['data-test="epic-active-link"', '>2</span>'], false)
+            ->assertSeeInOrder(['data-test="epic-inactive-link"', '>1</span>'], false)
+            ->assertSeeInOrder(['data-test="epic-trash-link"', '>3</span>'], false);
+
+        $this->get(route('epics.inactive.index'))
+            ->assertOk()
+            ->assertSeeInOrder([__('Dashboard'), __('Epics'), __('Inactive')], false);
+
+        $this->get(route('epics.trash.index'))
+            ->assertOk()
+            ->assertSeeInOrder([__('Dashboard'), __('Epics'), __('Trash')], false);
+    }
+
+    public function test_epic_row_edits_from_the_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        $epic = Epic::factory()->for($project)->create(['name' => 'Editable from the row']);
+
+        $this->get(route('epics.index'))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'data-test="epic-name-'.$epic->id.'"',
+                'editEpic(JSON.parse(',
+            ], false)
+            ->assertSee('data-test="epic-comments-count-'.$epic->id.'"></span>', false)
+            ->assertSee('data-test="epic-delete-'.$epic->id.'"', false);
+    }
+
     public function test_guests_are_redirected_to_login_from_the_epics_list(): void
     {
         $this->get(route('epics.index'))->assertRedirect(route('login'));

@@ -40,7 +40,7 @@ class EpicController extends Controller
                 'id' => $selectedProject->id,
                 'text' => $selectedProject->name.' ('.($selectedProject->customer->name ?? '—').')',
             ],
-            'list' => $transformer->active($epics, $search),
+            'list' => $transformer->active($epics, $search, $query->stateCounts()),
         ]);
     }
 

@@ -35,7 +35,7 @@ class ProjectController extends Controller
             'projects' => $projects,
             'hasCustomers' => Customer::query()->where('active', true)->exists(),
             'selectedCustomer' => $selectedCustomer,
-            'list' => $transformer->active($projects, $search),
+            'list' => $transformer->active($projects, $search, $query->stateCounts()),
         ]);
     }
 

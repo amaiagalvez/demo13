@@ -20,6 +20,51 @@ class EpicCrudTest extends DuskTestCase
 
     use DatabaseMigrations;
 
+    public function test_epic_row_name_opens_the_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create();
+        $epic = Epic::factory()->for($project)->create(['name' => 'Editable from the row']);
+
+        $this->browse(function (Browser $browser) use ($user, $epic): void {
+            $browser->loginAs($user)
+                ->visit('/epics')
+                ->click('[data-test="epic-name-'.$epic->id.'"]')
+                ->waitFor('dialog[open] [data-test="epic-comments"]')
+                ->assertSeeIn('dialog[open]', __('Edit epic'))
+                ->assertInputValue(self::EPIC_NAME_SELECTOR, $epic->name);
+        });
+    }
+
+    public function test_epic_table_keeps_the_actions_column_stuck_to_the_end(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create();
+        $longName = 'Very long epic name '.str_repeat('x', 120);
+        $epic = Epic::factory()->for($project)->create(['name' => $longName]);
+
+        $this->browse(function (Browser $browser) use ($user, $epic, $longName): void {
+            $browser->loginAs($user)
+                ->resize(1920, 1080)
+                ->visit('/epics?search='.urlencode($longName));
+
+            $browser->assertAttribute('[data-test="epic-name-'.$epic->id.'"]', 'title', $longName)
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).position',
+                    'sticky',
+                )
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).textAlign',
+                    'end',
+                )
+                ->resize(320, 420)
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'[data-test="epic-name-'.$epic->id.'"]\')).textOverflow',
+                    'ellipsis',
+                );
+        });
+    }
+
     public function test_epic_can_be_created_updated_and_deleted_from_the_drawer(): void
     {
         $user = User::factory()->create();

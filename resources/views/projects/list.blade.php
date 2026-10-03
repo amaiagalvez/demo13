@@ -86,8 +86,14 @@
         @elseif ($list['create'] && request()->boolean('create'))
             x-init="createProject(); $nextTick(() => $dispatch('modal-show', { name: 'project-form' }))" @endif
         class="flex flex-col gap-y-2 sm:gap-y-3">
-        <x-list.header :list="$list" prefix="project" :create-label="__('New project')"
-            create-click="createProject()" />
+        <x-list.page-header :list="$list" prefix="project">
+            <x-slot:actions>
+                @if ($list['create'])
+                    <x-list.create-action prefix="project" :label="__('New project')"
+                        click="createProject()" />
+                @endif
+            </x-slot:actions>
+        </x-list.page-header>
 
         @if ($list['create'] && !$hasCustomers)
             <flux:callout icon="exclamation-triangle" variant="warning">
@@ -110,9 +116,6 @@
 
                 <x-list.table prefix="project" :paginator="$projects">
                     <flux:table.columns>
-                        <flux:table.column class="resource-list-actions">
-                            <span class="sr-only">{{ __('Actions') }}</span>
-                        </flux:table.column>
                         <flux:table.column>{{ __('Name') }}</flux:table.column>
                         <flux:table.column>{{ __('Customer') }}</flux:table.column>
                         <flux:table.column>{{ __('Start date') }}</flux:table.column>
@@ -122,19 +125,22 @@
                         @if ($list['extraDateHeading'])
                             <flux:table.column>{{ $list['extraDateHeading'] }}</flux:table.column>
                         @endif
+                        <flux:table.column align="end" sticky class="text-end">
+                            <span class="sr-only">{{ __('Actions') }}</span>
+                        </flux:table.column>
                     </flux:table.columns>
 
                     <flux:table.rows>
                         @forelse ($list['rows'] as $row)
                             <flux:table.row :key="$row['id']"
                                 class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                                <flux:table.cell class="resource-list-actions">
-                                    <x-list.row-actions :actions="$row['actions']" prefix="project"
-                                        payload-key="project" edit-handler="editProject" />
-                                </flux:table.cell>
-                                <flux:table.cell class="max-w-[16rem] truncate font-medium"
-                                    :title="$row['name']">
-                                    {{ $row['name'] }}
+                                <flux:table.cell class="max-w-[16rem]">
+                                    <button type="button"
+                                        class="block max-w-full truncate rounded text-start font-medium text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 dark:text-zinc-100 dark:focus-visible:ring-brand-400"
+                                        title="{{ $row['name'] }}"
+                                        data-test="project-name-{{ $row['id'] }}"
+                                        x-on:click="editProject(JSON.parse($el.dataset.payload)); $dispatch('modal-show', { name: 'project-form' })"
+                                        data-payload="{{ json_encode($row['editPayload']) }}">{{ $row['name'] }}</button>
                                 </flux:table.cell>
                                 <flux:table.cell class="max-w-[16rem] truncate"
                                     :title="$row['customer']">
@@ -147,25 +153,45 @@
                                     <x-list.local-time :datetime="$row['endDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <flux:badge size="sm" icon="rectangle-stack"
-                                        :data-test="'project-epics-count-'.$row['id']">
-                                        {{ $row['epicsCount'] }}
-                                    </flux:badge>
+                                    @if ($row['epicsUrl'])
+                                        <flux:button :href="$row['epicsUrl']" wire:navigate
+                                            size="xs" variant="ghost" icon="flag"
+                                            :aria-label="__('View :count epics', ['count' => $row['epicsCount']])"
+                                            data-test="project-epics-count-{{ $row['id'] }}"
+                                            class="hover:bg-zinc-100 hover:text-brand-700 dark:hover:bg-zinc-800 dark:hover:text-brand-400">
+                                            {{ $row['epicsCount'] }}
+                                        </flux:button>
+                                    @else
+                                        <span
+                                            data-test="project-epics-count-{{ $row['id'] }}"></span>
+                                    @endif
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <flux:badge size="sm" icon="chat-bubble-left"
-                                        :data-test="'project-comments-count-'.$row['id']">
-                                        {{ $row['commentsCount'] }}
-                                    </flux:badge>
+                                    @if ($row['commentsCount'] > 0)
+                                        <flux:badge size="sm" icon="chat-bubble-left"
+                                            data-test="project-comments-count-{{ $row['id'] }}"
+                                            class="hover:text-brand-700 dark:hover:text-brand-400">
+                                            {{ $row['commentsCount'] }}
+                                        </flux:badge>
+                                    @else
+                                        <span
+                                            data-test="project-comments-count-{{ $row['id'] }}"></span>
+                                    @endif
                                 </flux:table.cell>
                                 @if ($list['extraDateHeading'])
                                     <flux:table.cell>
                                         <x-list.local-time :datetime="$row['extraDate']" format="datetime" />
                                     </flux:table.cell>
                                 @endif
+                                <flux:table.cell align="end" sticky
+                                    class="bg-white dark:bg-zinc-900">
+                                    <x-list.row-actions :actions="$row['actions']" prefix="project"
+                                        payload-key="project" edit-handler="editProject"
+                                        :blocked-hint="$row['actionHint'] ?? null" />
+                                </flux:table.cell>
                             </flux:table.row>
                         @empty
-                            <x-list.empty-state :colspan="$list['create'] ? 7 : 8" :message="$list['emptyMessage']" />
+                            <x-list.empty-state :colspan="$list['extraDateHeading'] ? 8 : 7" :message="$list['emptyMessage']" />
                         @endforelse
                     </flux:table.rows>
                 </x-list.table>

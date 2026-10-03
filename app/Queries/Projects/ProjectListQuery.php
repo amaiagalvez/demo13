@@ -75,6 +75,20 @@ final class ProjectListQuery extends ListQueryBase
     }
 
     /**
+     * Number of records in each list state, shown as the badge of the state tabs.
+     *
+     * @return array{active: int, inactive: int, trashed: int}
+     */
+    public function stateCounts(): array
+    {
+        return [
+            'active' => Project::query()->where('projects.active', true)->count(),
+            'inactive' => Project::query()->where('projects.active', false)->count(),
+            'trashed' => Project::onlyTrashed()->count(),
+        ];
+    }
+
+    /**
      * Only active epics and the comments written on them are counted; deleted ones are excluded by
      * the relations.
      *

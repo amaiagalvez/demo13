@@ -9,42 +9,38 @@ class ProjectListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function active(LengthAwarePaginator $projects, string $search): array
+    public function active(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
     {
         return [
             'resource' => __('Projects'),
             'state' => 'active',
-            'extraDateHeading' => null,
-            'inactiveUrl' => route('projects.inactive.index'),
+            'breadcrumbs' => [
+                ['label' => __('Dashboard'), 'url' => route('dashboard')],
+                ['label' => __('Projects'), 'url' => null],
+            ],
+            'extraDateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('No projects yet.')
                 : __('No projects match your search.'),
             'search' => $this->search(route('projects.index'), $search, __('Search projects...')),
-            'navigation' => [
-                'label' => __('Trash'),
-                'url' => route('projects.trash.index'),
-                'icon' => 'trash',
-                'test' => 'project-trash-link',
-            ],
+            'tabs' => $this->tabs('active', $counts),
             'create' => true,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
+                'extraDate' => $project->created_at?->toIso8601String(),
+                'actionHint' => $project->epics_exists
+                    ? __('Project cannot be deleted while it has epics.')
+                    : null,
                 'actions' => [
                     [
                         'type' => 'form-modal',
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
                         'test' => 'project-edit-'.$project->id,
-                        'project' => [
-                            'id' => $project->id,
-                            'name' => $project->name,
-                            'start_date' => $project->start_date->toDateString(),
-                            'end_date' => $project->end_date?->toDateString() ?? '',
-                            'customer_id' => $project->customer_id,
-                            'customer_name' => $project->customer->name ?? '—',
-                        ],
+                        'project' => $this->editPayload($project),
                     ],
                     $project->epics_exists ? [
                         'type' => 'confirm-modal',
@@ -76,22 +72,23 @@ class ProjectListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function inactive(LengthAwarePaginator $projects, string $search): array
+    public function inactive(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
     {
         return [
             'resource' => __('Projects'),
             'state' => 'inactive',
+            'breadcrumbs' => [
+                ['label' => __('Dashboard'), 'url' => route('dashboard')],
+                ['label' => __('Projects'), 'url' => route('projects.index')],
+                ['label' => __('Inactive'), 'url' => null],
+            ],
             'extraDateHeading' => __('Updated at'),
             'emptyMessage' => $search === '' ? __('No inactive records.') : __('No projects match your search.'),
             'search' => $this->search(route('projects.inactive.index'), $search, __('Search projects...')),
-            'navigation' => [
-                'label' => __('Projects'),
-                'url' => route('projects.index'),
-                'icon' => 'arrow-left',
-                'test' => null,
-            ],
+            'tabs' => $this->tabs('inactive', $counts),
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
@@ -116,24 +113,25 @@ class ProjectListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function trash(LengthAwarePaginator $projects, string $search): array
+    public function trash(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
     {
         return [
             'resource' => __('Projects'),
             'state' => 'trash',
+            'breadcrumbs' => [
+                ['label' => __('Dashboard'), 'url' => route('dashboard')],
+                ['label' => __('Projects'), 'url' => route('projects.index')],
+                ['label' => __('Trash'), 'url' => null],
+            ],
             'extraDateHeading' => __('Deleted at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No projects match your search.'),
             'search' => $this->search(route('projects.trash.index'), $search, __('Search projects...')),
-            'navigation' => [
-                'label' => __('Projects'),
-                'url' => route('projects.index'),
-                'icon' => 'arrow-left',
-                'test' => 'project-list-link',
-            ],
+            'tabs' => $this->tabs('trash', $counts),
             'create' => false,
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
@@ -171,18 +169,77 @@ class ProjectListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string, epicsCount: int, commentsCount: int}
+     * State tabs shown under the page heading: the resource itself plus its other states, each one
+     * with the number of records it holds.
+     *
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @return list<array{label: string, url: string, current: bool, count: int|null, test: string}>
+     */
+    private function tabs(string $state, ?array $counts): array
+    {
+        return [
+            [
+                'label' => __('Projects'),
+                'url' => route('projects.index'),
+                'current' => $state === 'active',
+                'count' => $counts['active'] ?? null,
+                'test' => 'project-active-link',
+            ],
+            [
+                'label' => __('Inactive'),
+                'url' => route('projects.inactive.index'),
+                'current' => $state === 'inactive',
+                'count' => $counts['inactive'] ?? null,
+                'test' => 'project-inactive-link',
+            ],
+            [
+                'label' => __('Trash'),
+                'url' => route('projects.trash.index'),
+                'current' => $state === 'trash',
+                'count' => $counts['trashed'] ?? null,
+                'test' => 'project-trash-link',
+            ],
+        ];
+    }
+
+    /**
+     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string, epicsCount: int, epicsUrl: string|null, commentsCount: int, editPayload: array{id: int, name: string, start_date: string, end_date: string, customer_id: int, customer_name: string}}
      */
     private function columns(Project $project): array
     {
+        $epicsCount = (int) $project->epics_count;
+
         return [
             'id' => $project->id,
             'name' => $project->name,
             'customer' => $project->customer->name ?? '—',
             'startDate' => $project->start_date->format('Y-m-d'),
             'endDate' => $project->end_date?->format('Y-m-d') ?? '',
-            'epicsCount' => (int) $project->epics_count,
+            'epicsCount' => $epicsCount,
+            // The epics list searches project names, so the row count can link to its own slice.
+            'epicsUrl' => $epicsCount > 0
+                ? route('epics.index', ['search' => $project->name])
+                : null,
             'commentsCount' => (int) $project->comments_count,
+            'editPayload' => $this->editPayload($project),
+        ];
+    }
+
+    /**
+     * Fields the form needs to open in edit mode. Shared by the row name button and the row edit
+     * action so both always open the drawer with the very same data.
+     *
+     * @return array{id: int, name: string, start_date: string, end_date: string, customer_id: int, customer_name: string}
+     */
+    private function editPayload(Project $project): array
+    {
+        return [
+            'id' => $project->id,
+            'name' => $project->name,
+            'start_date' => $project->start_date->toDateString(),
+            'end_date' => $project->end_date?->toDateString() ?? '',
+            'customer_id' => $project->customer_id,
+            'customer_name' => $project->customer->name ?? '—',
         ];
     }
 }

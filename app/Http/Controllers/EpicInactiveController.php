@@ -23,7 +23,7 @@ class EpicInactiveController extends Controller
             'epics' => $epics,
             'hasProjects' => false,
             'selectedProjectOption' => null,
-            'list' => $transformer->inactive($epics, $search),
+            'list' => $transformer->inactive($epics, $search, $query->stateCounts()),
         ]);
     }
 

@@ -401,6 +401,69 @@ class ProjectCrudTest extends TestCase
             ->assertSee('project-pagination', false);
     }
 
+    public function test_project_list_header_offers_the_state_tabs_with_the_record_count_of_each_one(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        Project::factory()->count(2)->for($customer)->create();
+        Project::factory()->for($customer)->inactive()->create();
+        Project::factory()->count(3)->for($customer)->trashed()->create();
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertSee('data-test="project-breadcrumbs"', false)
+            ->assertSeeInOrder([
+                'href="'.route('dashboard').'"',
+                __('Dashboard'),
+                __('Projects'),
+            ], false)
+            ->assertSee('data-test="project-heading"', false)
+            ->assertSeeInOrder([
+                'data-test="project-active-link"',
+                'aria-current="page"',
+                'data-test="project-inactive-link"',
+                'data-test="project-trash-link"',
+            ], false)
+            ->assertSeeInOrder(['data-test="project-active-link"', '>2</span>'], false)
+            ->assertSeeInOrder(['data-test="project-inactive-link"', '>1</span>'], false)
+            ->assertSeeInOrder(['data-test="project-trash-link"', '>3</span>'], false);
+
+        $this->get(route('projects.inactive.index'))
+            ->assertOk()
+            ->assertSeeInOrder([__('Dashboard'), __('Projects'), __('Inactive')], false);
+
+        $this->get(route('projects.trash.index'))
+            ->assertOk()
+            ->assertSeeInOrder([__('Dashboard'), __('Projects'), __('Trash')], false);
+    }
+
+    public function test_project_row_edits_from_the_name_and_links_the_epic_count_to_its_epics(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create(['name' => 'Website redesign']);
+        Epic::factory()->for($project)->create();
+        $lonelyProject = Project::factory()->for($customer)->create(['name' => 'Lonely project']);
+
+        $response = $this->get(route('projects.index'));
+
+        $response
+            ->assertOk()
+            ->assertSeeInOrder([
+                'data-test="project-name-'.$project->id.'"',
+                'editProject(JSON.parse(',
+            ], false)
+            ->assertSee('href="'.route('epics.index', ['search' => 'Website redesign']).'"', false)
+            ->assertSee(__('View :count epics', ['count' => 1]))
+            ->assertDontSee('href="'.route('epics.index', ['search' => 'Lonely project']).'"', false)
+            ->assertSee('data-test="project-epics-count-'.$lonelyProject->id.'"></span>', false)
+            ->assertSee('data-test="project-comments-count-'.$lonelyProject->id.'"></span>', false)
+            ->assertSee(__('Project cannot be deleted while it has epics.'))
+            ->assertDontSee('data-test="project-delete-'.$project->id.'"', false)
+            ->assertSee('data-test="project-deactivate-'.$project->id.'"', false)
+            ->assertSee('data-test="project-delete-'.$lonelyProject->id.'"', false);
+    }
+
     public function test_project_with_epics_cannot_be_deleted(): void
     {
         $this->actingAs(User::factory()->create());

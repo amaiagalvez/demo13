@@ -18,6 +18,51 @@ class ProjectCrudTest extends DuskTestCase
 
     use DatabaseMigrations;
 
+    public function test_project_row_name_opens_the_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create(['name' => 'Editable from the row']);
+
+        $this->browse(function (Browser $browser) use ($user, $project): void {
+            $browser->loginAs($user)
+                ->visit('/projects')
+                ->waitUntil('typeof window.jQuery?.fn?.select2 === "function"', 10)
+                ->click('[data-test="project-name-'.$project->id.'"]')
+                ->waitFor(self::PROJECT_NAME_SELECTOR)
+                ->assertSeeIn('dialog[open]', __('Edit project'))
+                ->assertInputValue(self::PROJECT_NAME_SELECTOR, $project->name);
+        });
+    }
+
+    public function test_project_table_keeps_the_actions_column_stuck_to_the_end(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->create();
+        $longName = 'Very long project name '.str_repeat('x', 120);
+        $project = Project::factory()->for($customer)->create(['name' => $longName]);
+
+        $this->browse(function (Browser $browser) use ($user, $project, $longName): void {
+            $browser->loginAs($user)
+                ->resize(1920, 1080)
+                ->visit('/projects?search='.urlencode($longName));
+
+            $browser->assertAttribute('[data-test="project-name-'.$project->id.'"]', 'title', $longName)
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).position',
+                    'sticky',
+                )
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).textAlign',
+                    'end',
+                )
+                ->resize(320, 420)
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'[data-test="project-name-'.$project->id.'"]\')).textOverflow',
+                    'ellipsis',
+                );
+        });
+    }
+
     public function test_project_can_be_created_updated_and_deleted_from_the_drawer(): void
     {
         $user = User::factory()->create();

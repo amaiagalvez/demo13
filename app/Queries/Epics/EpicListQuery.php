@@ -89,6 +89,20 @@ final class EpicListQuery extends ListQueryBase
     }
 
     /**
+     * Number of records in each list state, shown as the badge of the state tabs.
+     *
+     * @return array{active: int, inactive: int, trashed: int}
+     */
+    public function stateCounts(): array
+    {
+        return [
+            'active' => Epic::query()->where('epics.active', true)->count(),
+            'inactive' => Epic::query()->where('epics.active', false)->count(),
+            'trashed' => Epic::onlyTrashed()->count(),
+        ];
+    }
+
+    /**
      * @param  Builder<Epic>  $query
      * @return Builder<Epic>
      */

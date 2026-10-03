@@ -98,14 +98,6 @@ select:focus[data-flux-control] {
     @apply border-zinc-200 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-800 dark:text-zinc-300;
 }
 
-.resource-list-table .resource-list-actions {
-    @apply sticky start-0 z-30 w-px bg-white px-1 text-start whitespace-nowrap dark:bg-zinc-900;
-}
-
-.resource-list-table [data-flux-column].resource-list-actions {
-    @apply z-40 bg-zinc-50 dark:bg-zinc-800;
-}
-
 .resource-list-table [data-flux-row]:hover > [data-flux-cell] {
     @apply bg-zinc-50 dark:bg-zinc-800/60;
 }

@@ -233,6 +233,39 @@ class ResourceUniformityTest extends TestCase
         ]);
     }
 
+    public function test_row_name_button_and_edit_action_share_the_same_payload(): void
+    {
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+        Epic::factory()->for($project)->create();
+
+        /** @var array<string, list<array{actions: list<array<string, mixed>>, editPayload: array<string, mixed>}>> $rows */
+        $rows = [
+            'customer' => app(CustomerListTransformer::class)->active(
+                app(CustomerListQuery::class)->active(''),
+                '',
+            )['rows'],
+            'project' => app(ProjectListTransformer::class)->active(
+                app(ProjectListQuery::class)->active(''),
+                '',
+            )['rows'],
+            'epic' => app(EpicListTransformer::class)->active(
+                app(EpicListQuery::class)->active(''),
+                '',
+            )['rows'],
+        ];
+
+        foreach ($rows as $resource => $resourceRows) {
+            $row = $resourceRows[0];
+
+            $this->assertSame(
+                $row['actions'][0][$resource],
+                $row['editPayload'],
+                "{$resource}: the row name button and the edit action must open the same form data.",
+            );
+        }
+    }
+
     /**
      * @param  Closure(): array<string, array<int, mixed>>  $rules
      * @return array<string, array<int, mixed>>

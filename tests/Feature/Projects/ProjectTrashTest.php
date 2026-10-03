@@ -34,7 +34,6 @@ class ProjectTrashTest extends TestCase
         $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
             '<thead',
-            __('Actions'),
             __('Name'),
             __('Customer'),
             __('Start date'),
@@ -42,6 +41,7 @@ class ProjectTrashTest extends TestCase
             __('Epics'),
             __('Comments'),
             __('Deleted at'),
+            __('Actions'),
         ], false)->assertSeeInOrder(['Project with dates', $customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
     }
 

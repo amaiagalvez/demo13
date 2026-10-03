@@ -32,6 +32,7 @@
     "Customer cannot be deleted while it has projects.": "Un client ayant des projets ne peut pas être supprimé.",
     "Customer cannot be permanently deleted while it has projects.": "Un client ayant des projets ne peut pas être supprimé définitivement.",
     "View :count projects": "Voir :count projets",
+    "View :count epics": "Voir :count épopées",
     "List views": "Vues de liste",
     "Dashboard": "Tableau de bord",
     "Platform": "Plateforme",

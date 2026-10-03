@@ -40,7 +40,7 @@ class CustomerListTransformer extends ListTransformer
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
                         'test' => 'customer-edit-'.$customer->id,
-                        'customer' => $customer->only(['id', 'name']),
+                        'customer' => $this->editPayload($customer),
                     ],
                     $customer->projects_exists ? [
                         'type' => 'confirm-modal',
@@ -51,7 +51,7 @@ class CustomerListTransformer extends ListTransformer
                         'action' => route('customers.deactivate', $customer),
                         'method' => 'PATCH',
                         'confirmTitle' => __('Deactivate record?'),
-                        'confirmText' => __('Customer cannot be deleted while it has projects.'),
+                        'confirmText' => __('You can reactivate it from the inactive list.'),
                         'confirmLabel' => __('Deactivate'),
                     ] : [
                         'type' => 'confirm-modal',
@@ -219,7 +219,18 @@ class CustomerListTransformer extends ListTransformer
                 : null,
             'epicsCount' => (int) $customer->epics_count,
             'commentsCount' => (int) $customer->comments_count,
-            'editPayload' => $customer->only(['id', 'name']),
+            'editPayload' => $this->editPayload($customer),
         ];
+    }
+
+    /**
+     * Fields the form needs to open in edit mode. Shared by the row name button and the row edit
+     * action so both always open the drawer with the very same data.
+     *
+     * @return array{id: int, name: string}
+     */
+    private function editPayload(Customer $customer): array
+    {
+        return $customer->only(['id', 'name']);
     }
 }

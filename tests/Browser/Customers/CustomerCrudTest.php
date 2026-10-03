@@ -187,6 +187,8 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertScript('window.listSearchPageState', 'preserved')
                 ->assertSee('Ane Bezeroa')
                 ->assertDontSee('Jon Bezeroa')
+                // The create action stays outside the results fragment during the morph.
+                ->assertVisible('[data-test="customer-create-button"]')
                 ->assertAttribute('[data-test="customer-search-clear"]', 'title', __('Clear'))
                 ->assertScript(
                     'document.querySelector(\'[data-test="customer-search-clear"]\').innerText.trim()',

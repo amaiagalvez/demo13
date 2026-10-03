@@ -26,7 +26,7 @@ class EpicTrashController extends Controller
             'epics' => $epics,
             'hasProjects' => false,
             'selectedProjectOption' => null,
-            'list' => $transformer->trash($epics, $search),
+            'list' => $transformer->trash($epics, $search, $query->stateCounts()),
         ]);
     }
 

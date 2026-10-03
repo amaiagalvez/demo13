@@ -72,26 +72,20 @@
         @elseif ($list['create'] && request()->boolean('create'))
             x-init="createCustomer(); $nextTick(() => $dispatch('modal-show', { name: 'customer-form' }))" @endif
         class="flex flex-col gap-y-2 sm:gap-y-3">
-        <x-list.page-header :list="$list" prefix="customer" />
+        <x-list.page-header :list="$list" prefix="customer">
+            <x-slot:actions>
+                @if ($list['create'])
+                    <x-list.create-action prefix="customer" :label="__('New customer')"
+                        click="createCustomer()" />
+                @endif
+            </x-slot:actions>
+        </x-list.page-header>
 
         <x-list.flash prefix="customer" />
 
         @fragment('list-results')
             <x-list.searchable-results :search="$list['search']">
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-                    <x-list.search :search="$list['search']" prefix="customer" />
-
-                    {{--
-                        The create action is a global control, so fragment responses leave it out:
-                        only full page responses render it, next to the search it belongs with.
-                    --}}
-                    @unless (request()->hasHeader('X-List-Fragment'))
-                        @if ($list['create'])
-                            <x-list.create-action prefix="customer" :label="__('New customer')" click="createCustomer()"
-                                class="ms-auto" />
-                        @endif
-                    @endunless
-                </div>
+                <x-list.search :search="$list['search']" prefix="customer" />
 
                 <x-list.table prefix="customer" :paginator="$customers">
                     <flux:table.columns>

@@ -32,6 +32,7 @@
     "Customer cannot be deleted while it has projects.": "Ezin da ezabatu proiektuak dituen bezero bat.",
     "Customer cannot be permanently deleted while it has projects.": "Ezin da behin betiko ezabatu proiektuak dituen bezero bat.",
     "View :count projects": "Ikusi :count proiektu",
+    "View :count epics": "Ikusi :count epika",
     "List views": "Zerrendako ikuspegiak",
     "Dashboard": "Panela",
     "Platform": "Plataforma",

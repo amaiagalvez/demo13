@@ -22,7 +22,7 @@ class ProjectInactiveController extends Controller
         return $this->listView($request, 'projects.list', [
             'projects' => $projects,
             'hasCustomers' => false,
-            'list' => $transformer->inactive($projects, $search),
+            'list' => $transformer->inactive($projects, $search, $query->stateCounts()),
         ]);
     }
 
