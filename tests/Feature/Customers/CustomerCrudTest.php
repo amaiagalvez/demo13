@@ -27,6 +27,8 @@ class CustomerCrudTest extends TestCase
 
         $this->get(route('customers.index'))
             ->assertOk()
+            ->assertSee('role="status"', false)
+            ->assertSee('aria-live="polite"', false)
             ->assertSee('customer-create')
             ->assertSee('aria-labelledby="customer-form-heading"', false)
             ->assertSee('id="customer-form-heading"', false)
