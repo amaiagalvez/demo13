@@ -466,6 +466,29 @@ class CustomerCrudTest extends DuskTestCase
         ]);
     }
 
+    public function test_customer_can_be_restored_from_the_name_conflict_modal(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->trashed()->create(['name' => 'Conflict customer']);
+
+        $this->browse(function (Browser $browser) use ($user, $customer): void {
+            $browser->loginAs($user)
+                ->visit('/customers')
+                ->click('[data-test="customer-create-button"]')
+                ->waitFor('dialog[open] [data-test="customer-name"]')
+                ->type('dialog[open] [data-test="customer-name"]', $customer->name)
+                ->click('dialog[open] [data-test="customer-submit"]')
+                ->waitFor('dialog[open] [data-test="customer-conflict-restore"]')
+                ->assertSeeIn('dialog[open]', __('Customer name already in trash'))
+                ->click('dialog[open] [data-test="customer-conflict-restore"]')
+                ->waitForLocation('/customers/trash')
+                ->assertSee(__('Customer restored successfully.'))
+                ->assertDontSee($customer->name);
+        });
+
+        $this->assertNotSoftDeleted($customer);
+    }
+
     public function test_customer_can_be_restored_or_permanently_deleted_from_trash(): void
     {
         $user = User::factory()->create();

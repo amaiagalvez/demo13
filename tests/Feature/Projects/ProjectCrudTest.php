@@ -81,7 +81,7 @@ class ProjectCrudTest extends TestCase
             ->assertSee('id="project-form-heading"', false)
             ->assertSee('aria-labelledby="project-confirm-heading"', false)
             ->assertSee('id="project-confirm-heading"', false)
-            ->assertSee('project-edit-' . $project->id)
+            ->assertSee('project-edit-'.$project->id)
             ->assertSee('Website renewal')
             ->assertSee('title="Website renewal"', false)
             ->assertSee($customer->name);
@@ -262,6 +262,25 @@ class ProjectCrudTest extends TestCase
             ->assertDontSee('Unrelated project');
     }
 
+    public function test_project_name_with_non_latin_characters_can_be_stored_and_searched(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $name = 'Ñandú プロジェクト';
+
+        $this->post(route('projects.store'), [
+            'name' => $name,
+            'start_date' => '2026-10-01',
+            'customer_id' => $customer->id,
+        ])->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseHas('projects', ['name' => $name, 'customer_id' => $customer->id]);
+
+        $this->get(route('projects.index', ['search' => $name]))
+            ->assertOk()
+            ->assertSee($name);
+    }
+
     public function test_project_search_is_kept_in_pagination_links(): void
     {
         $this->actingAs(User::factory()->create());
@@ -306,8 +325,8 @@ class ProjectCrudTest extends TestCase
 
         $this->get(route('projects.index'))
             ->assertOk()
-            ->assertSeeInOrder(['project-epics-count-' . $project->id, '2'])
-            ->assertSeeInOrder(['project-comments-count-' . $project->id, '3']);
+            ->assertSeeInOrder(['project-epics-count-'.$project->id, '2'])
+            ->assertSeeInOrder(['project-comments-count-'.$project->id, '3']);
     }
 
     public function test_projects_are_ordered_by_start_date_end_date_and_customer_name(): void
@@ -414,8 +433,8 @@ class ProjectCrudTest extends TestCase
             '',
         );
 
-        $this->assertSame('—', $list['rows'][0]['customer']);
-        $this->assertSame('—', $list['rows'][0]['actions'][0]['project']['customer_name']);
+        $this->assertSame('—', data_get($list, 'rows.0.customer'));
+        $this->assertSame('—', data_get($list, 'rows.0.actions.0.project.customer_name'));
     }
 
     public function test_empty_project_list_uses_the_shared_empty_state(): void

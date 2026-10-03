@@ -20,5 +20,19 @@ class ProjectListQueryTest extends TestCase
         $projects = app(ProjectListQuery::class)->active('');
 
         $this->assertSame([$project->id], $projects->pluck('id')->all());
+
+        $listedProject = $projects->first();
+
+        if ($listedProject === null) {
+            self::fail('The active list must include the project with its trashed customer.');
+        }
+
+        $listedCustomer = $listedProject->customer;
+
+        if ($listedCustomer === null) {
+            self::fail('The project must resolve its trashed customer.');
+        }
+
+        $this->assertTrue($listedCustomer->is($customer));
     }
 }

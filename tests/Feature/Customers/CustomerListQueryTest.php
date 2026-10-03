@@ -107,4 +107,14 @@ class CustomerListQueryTest extends TestCase
         $this->assertSame(CustomerListQuery::PER_PAGE, $customers->perPage());
         $this->assertSame(2, $customers->lastPage());
     }
+
+    public function test_trashed_lists_are_paginated_by_five_customers(): void
+    {
+        Customer::factory()->count(6)->trashed()->create();
+
+        $customers = app(CustomerListQuery::class)->trashed('');
+
+        $this->assertSame(CustomerListQuery::PER_PAGE, $customers->perPage());
+        $this->assertSame(2, $customers->lastPage());
+    }
 }

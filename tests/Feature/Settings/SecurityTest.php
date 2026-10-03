@@ -203,11 +203,25 @@ class SecurityTest extends TestCase
             ->assertSee('wire:snapshot="', false);
 
         $html = $response->getContent();
-        preg_match('/wire:snapshot="([^"]+)"/', $html, $matches);
-        $this->assertArrayHasKey(1, $matches);
-        $snapshot = html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5);
+        if (! is_string($html)) {
+            self::fail('The security page response must contain HTML.');
+        }
+
+        $matchCount = preg_match('/wire:snapshot="([^"]+)"/', $html, $matches);
+
+        if ($matchCount !== 1) {
+            self::fail('The security page must contain a Livewire snapshot.');
+        }
+
+        $encodedSnapshot = $matches[1];
+        $snapshot = html_entity_decode($encodedSnapshot, ENT_QUOTES | ENT_HTML5);
         $snapshotData = json_decode($snapshot, true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame('settings/security', $snapshotData['memo']['path']);
+
+        if (! is_array($snapshotData)) {
+            self::fail('The Livewire snapshot must decode to an array.');
+        }
+
+        $this->assertSame('settings/security', data_get($snapshotData, 'memo.path'));
 
         $expiredAt = now()->subSeconds(10801)->timestamp;
         $this->withSession(['auth.password_confirmed_at' => $expiredAt]);

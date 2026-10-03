@@ -24,9 +24,9 @@ class EpicCrudTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $suffix = Str::uuid()->toString();
-        $project = Project::factory()->create(['name' => 'Dusk project ' . $suffix]);
-        $epicName = 'Dusk epic ' . $suffix;
-        $updatedEpicName = 'Updated epic ' . $suffix;
+        $project = Project::factory()->create(['name' => 'Dusk project '.$suffix]);
+        $epicName = 'Dusk epic '.$suffix;
+        $updatedEpicName = 'Updated epic '.$suffix;
         $epicId = null;
 
         $this->browse(function (Browser $browser) use (
@@ -42,7 +42,7 @@ class EpicCrudTest extends DuskTestCase
                 ->waitFor(self::EPIC_PROJECT_SELECTOR)
                 ->click(self::EPIC_PROJECT_SELECTOR)
                 ->waitUntil(
-                    'document.querySelector(\'[data-test="epic-project"] option[value="' . $project->id . '"]\') !== null',
+                    'document.querySelector(\'[data-test="epic-project"] option[value="'.$project->id.'"]\') !== null',
                     10,
                 )
                 ->select(self::EPIC_PROJECT_SELECTOR, (string) $project->id)

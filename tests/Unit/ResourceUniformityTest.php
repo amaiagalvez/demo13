@@ -1,0 +1,327 @@
+<?php
+
+namespace Tests\Unit;
+
+use Closure;
+use Tests\TestCase;
+use App\Models\Epic;
+use ReflectionClass;
+use ReflectionMethod;
+use App\Models\Project;
+use App\Models\Customer;
+use App\Policies\EpicPolicy;
+use Illuminate\Routing\Route;
+use App\Queries\ListQueryBase;
+use App\Policies\ProjectPolicy;
+use App\Policies\CustomerPolicy;
+use App\Http\Requests\EpicRequest;
+use App\Queries\Epics\EpicListQuery;
+use Illuminate\Support\Facades\File;
+use App\Http\Requests\ProjectRequest;
+use App\Http\Requests\CustomerRequest;
+use App\Http\Requests\EpicListRequest;
+use App\Http\Requests\ProjectListRequest;
+use App\Transformers\EpicListTransformer;
+use App\Http\Requests\CustomerListRequest;
+use App\Queries\Projects\ProjectListQuery;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\SearchableListRequest;
+use App\Queries\Customers\CustomerListQuery;
+use App\Transformers\ProjectListTransformer;
+use App\Transformers\CustomerListTransformer;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class ResourceUniformityTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_resource_requests_share_ordered_name_rules_and_deleted_name_flag(): void
+    {
+        $customerRequest = CustomerRequest::create('/', 'POST', ['name' => 'Uniform customer']);
+        $projectRequest = ProjectRequest::create('/', 'POST', ['name' => 'Uniform project']);
+        $epicRequest = EpicRequest::create('/', 'POST', [
+            'name' => 'Uniform epic',
+            'project_id' => 1,
+        ]);
+        $customerRules = $this->requestRules($customerRequest, static fn (): array => $customerRequest->rules());
+        $projectRules = $this->requestRules($projectRequest, static fn (): array => $projectRequest->rules());
+        $epicRules = $this->requestRules($epicRequest, static fn (): array => $epicRequest->rules());
+
+        $this->assertSame(['name', 'reuse_deleted_name'], array_keys($customerRules));
+        $this->assertSame(
+            ['name', 'start_date', 'end_date', 'customer_id', 'reuse_deleted_name'],
+            array_keys($projectRules),
+        );
+        $this->assertSame(
+            ['name', 'start_date', 'end_date', 'project_id', 'reuse_deleted_name'],
+            array_keys($epicRules),
+        );
+
+        foreach ([$customerRules, $projectRules, $epicRules] as $rules) {
+            $this->assertSame(['required', 'string', 'min:4', 'max:255'], array_slice($rules['name'], 0, 4));
+            $this->assertArrayHasKey('reuse_deleted_name', $rules);
+        }
+    }
+
+    public function test_list_requests_share_search_rules_and_normalization(): void
+    {
+        $customerRules = $this->listRequestRules(CustomerListRequest::class);
+        $this->assertSame($customerRules, $this->listRequestRules(ProjectListRequest::class));
+        $this->assertSame($customerRules, $this->listRequestRules(EpicListRequest::class));
+
+        $cases = [
+            [null, ''],
+            ['', ''],
+            ['  x  ', 'x'],
+            ['   ', ''],
+        ];
+
+        foreach ([CustomerListRequest::class, ProjectListRequest::class, EpicListRequest::class] as $requestClass) {
+            foreach ($cases as [$input, $expected]) {
+                $this->assertSame($expected, $this->normalizedSearch($requestClass, $input));
+            }
+        }
+    }
+
+    public function test_policy_abilities_are_uniform_and_have_http_call_sites(): void
+    {
+        $customerAbilities = $this->policyAbilities(CustomerPolicy::class);
+        $projectAbilities = $this->policyAbilities(ProjectPolicy::class);
+        $epicAbilities = $this->policyAbilities(EpicPolicy::class);
+        $expectedEpicAbilities = [...$customerAbilities, 'comment'];
+        sort($expectedEpicAbilities);
+
+        $this->assertSame($customerAbilities, $projectAbilities);
+        $this->assertSame($expectedEpicAbilities, $epicAbilities);
+
+        $httpSource = '';
+
+        foreach (File::allFiles(app_path('Http')) as $file) {
+            $httpSource .= (string) file_get_contents($file->getPathname());
+        }
+
+        foreach ([...$customerAbilities, 'comment'] as $ability) {
+            $pattern = '/->(?:authorize|can)\(\s*[\'\"]'.preg_quote($ability, '/').'[\'\"]/';
+            $this->assertSame(1, preg_match($pattern, $httpSource), "No HTTP call site found for [{$ability}].");
+        }
+    }
+
+    public function test_soft_deletable_factories_share_trashed_and_optional_date_states(): void
+    {
+        foreach ([Customer::class, Project::class, Epic::class] as $modelClass) {
+            $this->assertContains(SoftDeletes::class, class_uses_recursive($modelClass));
+            $this->assertTrue(method_exists($modelClass::factory(), 'trashed'));
+        }
+
+        $epic = Epic::factory()->withoutDates()->make();
+
+        $this->assertNull($epic->start_date);
+        $this->assertNull($epic->end_date);
+    }
+
+    public function test_resource_factories_generate_unique_names(): void
+    {
+        $customerNames = array_map(
+            fn (Customer $customer): string => $this->factoryName($customer),
+            Customer::factory()->count(20)->make()->all(),
+        );
+        $projectNames = array_map(
+            fn (Project $project): string => $this->factoryName($project),
+            Project::factory()->count(20)->make()->all(),
+        );
+        $epicNames = array_map(
+            fn (Epic $epic): string => $this->factoryName($epic),
+            Epic::factory()->count(20)->make()->all(),
+        );
+
+        $this->assertCount(count($customerNames), array_unique($customerNames));
+        $this->assertCount(count($projectNames), array_unique($projectNames));
+        $this->assertCount(count($epicNames), array_unique($epicNames));
+    }
+
+    public function test_list_queries_share_page_size_and_trashed_id_tiebreaking(): void
+    {
+        $this->travelTo('2026-10-03 12:00:00');
+        $customer = Customer::factory()->create();
+        $firstCustomer = Customer::factory()->trashed()->create(['name' => 'Same deleted customer']);
+        $secondCustomer = Customer::factory()->trashed()->create(['name' => 'Same deleted customer']);
+
+        $firstProject = Project::factory()->for($customer)->trashed()->create(['name' => 'Same deleted project']);
+        $secondProject = Project::factory()->for($customer)->trashed()->create(['name' => 'Same deleted project']);
+
+        $project = Project::factory()->create();
+        $firstEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'Same deleted epic']);
+        $secondEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'Same deleted epic']);
+
+        $customerQuery = app(CustomerListQuery::class);
+        $projectQuery = app(ProjectListQuery::class);
+        $epicQuery = app(EpicListQuery::class);
+        $paginators = [
+            $customerQuery->active(''),
+            $customerQuery->trashed(''),
+            $projectQuery->active(''),
+            $projectQuery->trashed(''),
+            $epicQuery->active(''),
+            $epicQuery->trashed(''),
+        ];
+
+        foreach ($paginators as $paginator) {
+            $this->assertSame(ListQueryBase::PER_PAGE, $paginator->perPage());
+        }
+
+        $this->assertSame(
+            [$firstCustomer->id, $secondCustomer->id],
+            $customerQuery->trashed('')->pluck('id')->all(),
+        );
+        $this->assertSame(
+            [$firstProject->id, $secondProject->id],
+            $projectQuery->trashed('')->pluck('id')->all(),
+        );
+        $this->assertSame(
+            [$firstEpic->id, $secondEpic->id],
+            $epicQuery->trashed('')->pluck('id')->all(),
+        );
+    }
+
+    public function test_resource_transformers_share_action_envelopes_and_allowlisted_edit_payloads(): void
+    {
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+        Epic::factory()->for($project)->create();
+
+        $customerList = app(CustomerListTransformer::class)->active(
+            app(CustomerListQuery::class)->active(''),
+            '',
+        );
+        $projectList = app(ProjectListTransformer::class)->active(
+            app(ProjectListQuery::class)->active(''),
+            '',
+        );
+        $epicList = app(EpicListTransformer::class)->active(
+            app(EpicListQuery::class)->active(''),
+            '',
+        );
+
+        /** @var list<array{actions: list<array<string, mixed>>}> $customerRows */
+        $customerRows = $customerList['rows'];
+        /** @var list<array{actions: list<array<string, mixed>>}> $projectRows */
+        $projectRows = $projectList['rows'];
+        /** @var list<array{actions: list<array<string, mixed>>}> $epicRows */
+        $epicRows = $epicList['rows'];
+
+        $this->assertRowActionContract($customerRows[0], 'customer', ['id', 'name']);
+        $this->assertRowActionContract($projectRows[0], 'project', [
+            'id',
+            'name',
+            'start_date',
+            'end_date',
+            'customer_id',
+            'customer_name',
+        ]);
+        $this->assertRowActionContract($epicRows[0], 'epic', [
+            'id',
+            'name',
+            'start_date',
+            'end_date',
+            'project_id',
+            'project_label',
+            'commentAction',
+            'commentsUrl',
+            'commentsCount',
+        ]);
+    }
+
+    /**
+     * @param  Closure(): array<string, array<int, mixed>>  $rules
+     * @return array<string, array<int, mixed>>
+     */
+    private function requestRules(FormRequest $request, Closure $rules): array
+    {
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
+        $route->bind($request);
+        $request->setRouteResolver(static fn (): Route => $route);
+
+        return $rules();
+    }
+
+    /**
+     * @param  class-string<SearchableListRequest>  $requestClass
+     * @return array<string, array<int, string>>
+     */
+    private function listRequestRules(string $requestClass): array
+    {
+        $request = $requestClass::create('/', 'GET');
+        $request->setRouteResolver(static fn (): null => null);
+
+        return $request->rules();
+    }
+
+    /**
+     * @param  class-string<SearchableListRequest>  $requestClass
+     */
+    private function normalizedSearch(string $requestClass, mixed $input): string
+    {
+        $request = $requestClass::create('/', 'GET', ['search' => $input]);
+        $request->setRouteResolver(static fn (): null => null);
+
+        return $request->search();
+    }
+
+    /**
+     * @param  class-string  $policyClass
+     * @return list<string>
+     */
+    private function policyAbilities(string $policyClass): array
+    {
+        $reflection = new ReflectionClass($policyClass);
+        $abilities = [];
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->getDeclaringClass()->getName() === $policyClass) {
+                $abilities[] = $method->getName();
+            }
+        }
+
+        sort($abilities);
+
+        return $abilities;
+    }
+
+    /**
+     * @param  array{actions: list<array<string, mixed>>}  $row
+     * @param  list<string>  $editPayloadKeys
+     */
+    private function assertRowActionContract(array $row, string $resourceKey, array $editPayloadKeys): void
+    {
+        $actions = $row['actions'];
+        $this->assertCount(2, $actions);
+        $this->assertSame(['type', 'label', 'icon', 'test', $resourceKey], array_keys($actions[0]));
+        $this->assertIsArray($actions[0][$resourceKey]);
+        $this->assertSame($editPayloadKeys, array_keys($actions[0][$resourceKey]));
+        $this->assertSame([
+            'type',
+            'label',
+            'icon',
+            'test',
+            'danger',
+            'action',
+            'method',
+            'confirmTitle',
+            'confirmText',
+            'confirmLabel',
+        ], array_keys($actions[1]));
+    }
+
+    private function factoryName(Model $model): string
+    {
+        $name = $model->getAttribute('name');
+
+        if (! is_string($name)) {
+            throw new \UnexpectedValueException('Resource factories must generate string names.');
+        }
+
+        return $name;
+    }
+}

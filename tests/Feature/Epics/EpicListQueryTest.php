@@ -20,5 +20,19 @@ class EpicListQueryTest extends TestCase
         $epics = app(EpicListQuery::class)->active('');
 
         $this->assertSame([$epic->id], $epics->pluck('id')->all());
+
+        $listedEpic = $epics->first();
+
+        if ($listedEpic === null) {
+            self::fail('The active list must include the epic with its trashed project.');
+        }
+
+        $listedProject = $listedEpic->project;
+
+        if ($listedProject === null) {
+            self::fail('The epic must resolve its trashed project.');
+        }
+
+        $this->assertTrue($listedProject->is($project));
     }
 }

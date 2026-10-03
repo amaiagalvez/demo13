@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
-use App\Models\Project;
 use App\Models\User;
-use App\Models\Customer;
-/* @chisel-password-confirmation */
-use App\Http\Middleware\RequirePasswordForLivewire;
 use Livewire\Livewire;
-/* @end-chisel-password-confirmation */
+use App\Models\Project;
+/* @chisel-password-confirmation */
+use App\Models\Customer;
 use Carbon\CarbonImmutable;
+/* @end-chisel-password-confirmation */
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Http\Middleware\RequirePasswordForLivewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,9 +51,12 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function authorizeLogViewer(): void
     {
+        $allowedEmails = config('log-viewer.allowed_emails', []);
+
         Gate::define(
             'viewLogViewer',
-            fn (User $user): bool => in_array($user->email, config('log-viewer.allowed_emails', []), true),
+            fn (User $user): bool => is_array($allowedEmails)
+                && in_array($user->email, $allowedEmails, true),
         );
         Gate::define('downloadLogFile', fn (): bool => true);
         Gate::define('downloadLogFolder', fn (): bool => false);

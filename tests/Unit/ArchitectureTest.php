@@ -32,7 +32,7 @@ class ArchitectureTest extends TestCase
     public function test_every_resource_ships_the_complete_set(): void
     {
         foreach (self::RESOURCES as $resource => $modelClass) {
-            $plural = strtolower($resource) . 's';
+            $plural = strtolower($resource).'s';
 
             $classes = [
                 "App\\Http\\Controllers\\{$resource}Controller",
@@ -66,7 +66,7 @@ class ArchitectureTest extends TestCase
     {
         foreach (self::RESOURCES as $resource => $modelClass) {
             $policy = new ReflectionClass("App\\Policies\\{$resource}Policy");
-            $hasShowRoute = Route::has(strtolower($resource) . 's.show');
+            $hasShowRoute = Route::has(strtolower($resource).'s.show');
 
             $this->assertSame(
                 $hasShowRoute,
@@ -79,7 +79,7 @@ class ArchitectureTest extends TestCase
     public function test_soft_deletable_models_declare_a_policy(): void
     {
         foreach (glob(app_path('Models/*.php')) ?: [] as $file) {
-            $class = 'App\\Models\\' . basename($file, '.php');
+            $class = 'App\\Models\\'.basename($file, '.php');
 
             if (
                 ! class_exists($class)
@@ -126,7 +126,7 @@ class ArchitectureTest extends TestCase
     public function test_input_endpoints_declare_a_form_request(): void
     {
         foreach ($this->controllerFiles() as $file) {
-            $class = 'App\\Http\\Controllers\\' . basename($file, '.php');
+            $class = 'App\\Http\\Controllers\\'.basename($file, '.php');
 
             if (! class_exists($class)) {
                 $this->fail("Missing class {$class}");
@@ -146,7 +146,7 @@ class ArchitectureTest extends TestCase
 
                 $declaresFormRequest = array_filter(
                     $method->getParameters(),
-                    fn($parameter): bool => $parameter->hasType()
+                    fn ($parameter): bool => $parameter->hasType()
                         && is_a((string) $parameter->getType(), FormRequest::class, true),
                 );
 
@@ -197,7 +197,7 @@ class ArchitectureTest extends TestCase
     public function test_form_requests_expose_rules_and_authorize(): void
     {
         foreach (glob(app_path('Http/Requests/*.php')) ?: [] as $file) {
-            $class = 'App\\Http\\Requests\\' . basename($file, '.php');
+            $class = 'App\\Http\\Requests\\'.basename($file, '.php');
 
             if (! class_exists($class)) {
                 $this->fail("Missing class {$class}");
@@ -232,7 +232,7 @@ class ArchitectureTest extends TestCase
 
         return array_values(array_filter(
             $files,
-            fn(string $file): bool => basename($file) !== 'Controller.php',
+            fn (string $file): bool => basename($file) !== 'Controller.php',
         ));
     }
 }

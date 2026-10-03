@@ -13,6 +13,14 @@ class CustomerTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_empty_customer_trash_shows_its_empty_state(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('customers.trash.index'))
+            ->assertOk()
+            ->assertSee(__('Trash is empty.'));
+    }
+
     public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
     {
         $this->actingAs(User::factory()->create());

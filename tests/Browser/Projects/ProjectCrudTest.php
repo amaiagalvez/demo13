@@ -22,9 +22,9 @@ class ProjectCrudTest extends DuskTestCase
     {
         $user = User::factory()->create();
         $suffix = Str::uuid()->toString();
-        $customerName = 'Dusk customer ' . $suffix;
-        $projectName = 'Dusk project ' . $suffix;
-        $updatedProjectName = 'Updated project ' . $suffix;
+        $customerName = 'Dusk customer '.$suffix;
+        $projectName = 'Dusk project '.$suffix;
+        $updatedProjectName = 'Updated project '.$suffix;
         Customer::factory()->create(['name' => $customerName]);
         $projectId = null;
 
@@ -44,7 +44,7 @@ class ProjectCrudTest extends DuskTestCase
                 ->click('#select2-project-customer-id-container')
                 ->type('dialog[open] .select2-container--open .select2-search__field', $customerName)
                 ->waitUntil(
-                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes(' . json_encode($customerName) . ')',
+                    'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode($customerName).')',
                     10,
                 )
                 ->click('dialog[open] .select2-results__option--selectable');

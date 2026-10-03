@@ -13,8 +13,6 @@ class EpicCommentController extends Controller
 {
     public function show(Epic $epic): JsonResponse
     {
-        $this->authorize('view', $epic);
-
         $comments = $epic->comments()
             ->with('user:id,name')
             ->latest()

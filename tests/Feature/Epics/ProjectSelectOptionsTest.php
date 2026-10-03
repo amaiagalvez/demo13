@@ -21,7 +21,7 @@ class ProjectSelectOptionsTest extends TestCase
             ->assertViewHas('hasProjects', false)
             ->assertSee(__('No active projects are available. Open the project form to create one.'))
             ->assertSee(__('Open project form'))
-            ->assertSee('href="' . route('projects.index', ['create' => 1]) . '"', false)
+            ->assertSee('href="'.route('projects.index', ['create' => 1]).'"', false)
             ->assertSee('epic-no-project-form-button');
     }
 

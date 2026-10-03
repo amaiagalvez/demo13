@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Epics;
 
-use App\Models\Epic;
 use Tests\TestCase;
+use App\Models\Epic;
 
 class EpicTest extends TestCase
 {

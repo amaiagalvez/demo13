@@ -16,7 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustHosts(
             at: function (): array {
-                $host = parse_url((string) config('app.url'), PHP_URL_HOST);
+                $appUrl = config('app.url');
+
+                if (! is_string($appUrl)) {
+                    throw new LogicException('APP_URL must be a string.');
+                }
+
+                $host = parse_url($appUrl, PHP_URL_HOST);
 
                 if (! is_string($host) || $host === '') {
                     throw new LogicException('APP_URL must include a valid host for trusted host validation.');

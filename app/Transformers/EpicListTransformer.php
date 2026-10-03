@@ -30,14 +30,14 @@ class EpicListTransformer extends ListTransformer
                 'test' => 'epic-trash-link',
             ],
             'create' => true,
-            'rows' => collect($epics->items())->map(fn(Epic $epic): array => [
+            'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'actions' => [
                     [
                         'type' => 'form-modal',
                         'label' => __('Edit'),
                         'icon' => 'pencil-square',
-                        'test' => 'epic-edit-' . $epic->id,
+                        'test' => 'epic-edit-'.$epic->id,
                         'epic' => [
                             'id' => $epic->id,
                             'name' => $epic->name,
@@ -54,7 +54,7 @@ class EpicListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete'),
                         'icon' => 'trash',
-                        'test' => 'epic-delete-' . $epic->id,
+                        'test' => 'epic-delete-'.$epic->id,
                         'danger' => true,
                         'action' => route('epics.destroy', $epic),
                         'method' => 'DELETE',
@@ -86,7 +86,7 @@ class EpicListTransformer extends ListTransformer
                 'test' => null,
             ],
             'create' => false,
-            'rows' => collect($epics->items())->map(fn(Epic $epic): array => [
+            'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'extraDate' => $epic->updated_at?->toIso8601String(),
                 'actions' => [
@@ -94,7 +94,7 @@ class EpicListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Reactivate'),
                         'icon' => 'lock-open',
-                        'test' => 'epic-reactivate-' . $epic->id,
+                        'test' => 'epic-reactivate-'.$epic->id,
                         'danger' => false,
                         'action' => route('epics.inactive.reactivate', $epic),
                         'method' => 'PATCH',
@@ -128,7 +128,7 @@ class EpicListTransformer extends ListTransformer
                 'test' => 'epic-list-link',
             ],
             'create' => false,
-            'rows' => collect($epics->items())->map(fn(Epic $epic): array => [
+            'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'extraDate' => $epic->deleted_at?->toIso8601String(),
                 'actions' => [
@@ -136,7 +136,7 @@ class EpicListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Restore'),
                         'icon' => 'arrow-path',
-                        'test' => 'epic-restore-' . $epic->id,
+                        'test' => 'epic-restore-'.$epic->id,
                         'danger' => false,
                         'action' => route('epics.trash.restore', $epic->id),
                         'method' => 'PATCH',
@@ -150,7 +150,7 @@ class EpicListTransformer extends ListTransformer
                         'type' => 'confirm-modal',
                         'label' => __('Delete permanently'),
                         'icon' => 'trash',
-                        'test' => 'epic-force-delete-' . $epic->id,
+                        'test' => 'epic-force-delete-'.$epic->id,
                         'danger' => true,
                         'action' => route('epics.trash.destroy', $epic->id),
                         'method' => 'DELETE',
@@ -173,8 +173,8 @@ class EpicListTransformer extends ListTransformer
         return [
             'id' => $epic->id,
             'name' => $epic->name,
-            'project' => $project?->name ?? '—',
-            'customer' => $project?->customer?->name ?? '—',
+            'project' => $project->name ?? '—',
+            'customer' => $project->customer->name ?? '—',
             'startDate' => $epic->start_date?->format('Y-m-d') ?? '',
             'endDate' => $epic->end_date?->format('Y-m-d') ?? '',
             'commentsCount' => (int) $epic->comments_count,
@@ -189,6 +189,6 @@ class EpicListTransformer extends ListTransformer
             return '—';
         }
 
-        return $project->name . ' (' . ($project->customer?->name ?? '—') . ')';
+        return $project->name.' ('.($project->customer->name ?? '—').')';
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Projects;
 
-use App\Models\Project;
 use Tests\TestCase;
+use App\Models\Project;
 
 class ProjectTest extends TestCase
 {

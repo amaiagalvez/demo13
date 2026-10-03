@@ -56,7 +56,7 @@ class EpicCrudTest extends TestCase
             ->assertSee('id="epic-form-heading"', false)
             ->assertSee('aria-labelledby="epic-confirm-heading"', false)
             ->assertSee('id="epic-confirm-heading"', false)
-            ->assertSee('epic-edit-' . $epic->id)
+            ->assertSee('epic-edit-'.$epic->id)
             ->assertSee('Checkout flow')
             ->assertSee('title="Checkout flow"', false)
             ->assertSee($project->name)
@@ -130,9 +130,9 @@ class EpicCrudTest extends TestCase
             '',
         );
 
-        $this->assertSame('—', $list['rows'][0]['project']);
-        $this->assertSame('—', $list['rows'][0]['customer']);
-        $this->assertSame('—', $list['rows'][0]['actions'][0]['epic']['project_label']);
+        $this->assertSame('—', data_get($list, 'rows.0.project'));
+        $this->assertSame('—', data_get($list, 'rows.0.customer'));
+        $this->assertSame('—', data_get($list, 'rows.0.actions.0.epic.project_label'));
     }
 
     public function test_empty_epic_list_uses_the_shared_empty_state(): void
@@ -227,6 +227,24 @@ class EpicCrudTest extends TestCase
             ->assertDontSee('Unrelated epic');
     }
 
+    public function test_epic_name_with_non_latin_characters_can_be_stored_and_searched(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        $name = 'Ñandú プロジェクト';
+
+        $this->post(route('epics.store'), [
+            'name' => $name,
+            'project_id' => $project->id,
+        ])->assertRedirect(route('epics.index'));
+
+        $this->assertDatabaseHas('epics', ['name' => $name, 'project_id' => $project->id]);
+
+        $this->get(route('epics.index', ['search' => $name]))
+            ->assertOk()
+            ->assertSee($name);
+    }
+
     public function test_epic_search_is_kept_in_pagination_links(): void
     {
         $this->actingAs(User::factory()->create());
@@ -287,7 +305,7 @@ class EpicCrudTest extends TestCase
 
         $this->get(route('epics.index'))
             ->assertOk()
-            ->assertSeeInOrder(['epic-comments-count-' . $epic->id, '3']);
+            ->assertSeeInOrder(['epic-comments-count-'.$epic->id, '3']);
     }
 
     public function test_guests_are_redirected_to_login_from_the_epics_list(): void

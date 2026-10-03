@@ -1,9 +1,9 @@
 <?php
 
 /* @chisel-password-confirmation */
-use App\Http\Middleware\RequirePasswordForLivewire;
-/* @end-chisel-password-confirmation */
 use Illuminate\Support\Facades\Route;
+/* @end-chisel-password-confirmation */
+use App\Http\Middleware\RequirePasswordForLivewire;
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

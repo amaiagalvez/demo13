@@ -89,7 +89,7 @@ class EpicCommentTest extends TestCase
 
         foreach (range(1, $limit) as $index) {
             EpicComment::factory()->for($epic)->create([
-                'body' => 'Recent comment ' . $index,
+                'body' => 'Recent comment '.$index,
                 'created_at' => now()->subMinutes($limit - $index),
             ]);
         }
@@ -101,15 +101,15 @@ class EpicCommentTest extends TestCase
             ->assertDontSee('Oldest hidden comment')
             ->assertDontSee('Recent comment 1')
             ->assertDontSee('Other epic comment')
-            ->assertSee('epic-comments-count-' . $epic->id, false);
+            ->assertSee('epic-comments-count-'.$epic->id, false);
 
         $this->getJson(route('epics.comments.index', $epic))
             ->assertOk()
             ->assertJsonCount($limit, 'comments')
             ->assertJsonMissing(['body' => 'Oldest hidden comment'])
             ->assertJsonMissing(['body' => 'Other epic comment'])
-            ->assertJsonPath('comments.0.body', 'Recent comment ' . $limit)
-            ->assertJsonPath('comments.' . ($limit - 1) . '.body', 'Recent comment 1');
+            ->assertJsonPath('comments.0.body', 'Recent comment '.$limit)
+            ->assertJsonPath('comments.'.($limit - 1).'.body', 'Recent comment 1');
     }
 
     public function test_comment_body_is_required(): void
@@ -208,5 +208,26 @@ class EpicCommentTest extends TestCase
         }
 
         $this->assertNull($freshComment->user_id);
+    }
+
+    public function test_comments_can_resolve_their_epic_after_it_is_trashed(): void
+    {
+        $epic = Epic::factory()->create();
+        $comment = EpicComment::factory()->for($epic)->create();
+
+        $epic->delete();
+        $freshComment = $comment->fresh();
+
+        if ($freshComment === null) {
+            self::fail('The comment must still exist after its epic is trashed.');
+        }
+
+        $commentEpic = $freshComment->epic;
+
+        if ($commentEpic === null) {
+            self::fail('The comment must still resolve its trashed epic.');
+        }
+
+        $this->assertTrue($commentEpic->is($epic));
     }
 }
