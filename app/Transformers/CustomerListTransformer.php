@@ -9,28 +9,31 @@ class CustomerListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function active(LengthAwarePaginator $customers, string $search): array
+    public function active(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
     {
         return [
             'resource' => __('Customers'),
             'state' => 'active',
-            'extraDateHeading' => null,
-            'inactiveUrl' => route('customers.inactive.index'),
+            'breadcrumbs' => [
+                ['label' => __('Dashboard'), 'url' => route('dashboard')],
+                ['label' => __('Customers'), 'url' => null],
+            ],
+            'extraDateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('No customers yet.')
                 : __('No customers match your search.'),
             'search' => $this->search(route('customers.index'), $search, __('Search customers...')),
-            'navigation' => [
-                'label' => __('Trash'),
-                'url' => route('customers.trash.index'),
-                'icon' => 'trash',
-                'test' => 'customer-trash-link',
-            ],
+            'tabs' => $this->tabs('active', $counts),
             'create' => true,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
+                'extraDate' => $customer->created_at?->toIso8601String(),
+                'actionHint' => $customer->projects_exists
+                    ? __('Customer cannot be deleted while it has projects.')
+                    : null,
                 'actions' => [
                     [
                         'type' => 'form-modal',
@@ -48,7 +51,7 @@ class CustomerListTransformer extends ListTransformer
                         'action' => route('customers.deactivate', $customer),
                         'method' => 'PATCH',
                         'confirmTitle' => __('Deactivate record?'),
-                        'confirmText' => __('You can reactivate it from the inactive list.'),
+                        'confirmText' => __('Customer cannot be deleted while it has projects.'),
                         'confirmLabel' => __('Deactivate'),
                     ] : [
                         'type' => 'confirm-modal',
@@ -69,22 +72,23 @@ class CustomerListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function inactive(LengthAwarePaginator $customers, string $search): array
+    public function inactive(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
     {
         return [
             'resource' => __('Customers'),
             'state' => 'inactive',
+            'breadcrumbs' => [
+                ['label' => __('Dashboard'), 'url' => route('dashboard')],
+                ['label' => __('Customers'), 'url' => route('customers.index')],
+                ['label' => __('Inactive'), 'url' => null],
+            ],
             'extraDateHeading' => __('Updated at'),
             'emptyMessage' => $search === '' ? __('No inactive records.') : __('No customers match your search.'),
             'search' => $this->search(route('customers.inactive.index'), $search, __('Search customers...')),
-            'navigation' => [
-                'label' => __('Customers'),
-                'url' => route('customers.index'),
-                'icon' => 'arrow-left',
-                'test' => null,
-            ],
+            'tabs' => $this->tabs('inactive', $counts),
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
@@ -109,24 +113,25 @@ class CustomerListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function trash(LengthAwarePaginator $customers, string $search): array
+    public function trash(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
     {
         return [
             'resource' => __('Customers'),
             'state' => 'trash',
+            'breadcrumbs' => [
+                ['label' => __('Dashboard'), 'url' => route('dashboard')],
+                ['label' => __('Customers'), 'url' => route('customers.index')],
+                ['label' => __('Trash'), 'url' => null],
+            ],
             'extraDateHeading' => __('Deleted at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No customers match your search.'),
             'search' => $this->search(route('customers.trash.index'), $search, __('Search customers...')),
-            'navigation' => [
-                'label' => __('Customers'),
-                'url' => route('customers.index'),
-                'icon' => 'arrow-left',
-                'test' => 'customer-list-link',
-            ],
+            'tabs' => $this->tabs('trash', $counts),
             'create' => false,
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
@@ -164,16 +169,57 @@ class CustomerListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, projectsCount: int, epicsCount: int, commentsCount: int}
+     * State tabs shown under the page heading: the resource itself plus its other states, each one
+     * with the number of records it holds.
+     *
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @return list<array{label: string, url: string, current: bool, count: int|null, test: string}>
+     */
+    private function tabs(string $state, ?array $counts): array
+    {
+        return [
+            [
+                'label' => __('Customers'),
+                'url' => route('customers.index'),
+                'current' => $state === 'active',
+                'count' => $counts['active'] ?? null,
+                'test' => 'customer-active-link',
+            ],
+            [
+                'label' => __('Inactive'),
+                'url' => route('customers.inactive.index'),
+                'current' => $state === 'inactive',
+                'count' => $counts['inactive'] ?? null,
+                'test' => 'customer-inactive-link',
+            ],
+            [
+                'label' => __('Trash'),
+                'url' => route('customers.trash.index'),
+                'current' => $state === 'trash',
+                'count' => $counts['trashed'] ?? null,
+                'test' => 'customer-trash-link',
+            ],
+        ];
+    }
+
+    /**
+     * @return array{id: int, name: string, projectsCount: int, projectsUrl: string|null, epicsCount: int, commentsCount: int, editPayload: array{id: int, name: string}}
      */
     private function columns(Customer $customer): array
     {
+        $projectsCount = (int) $customer->projects_count;
+
         return [
             'id' => $customer->id,
             'name' => $customer->name,
-            'projectsCount' => (int) $customer->projects_count,
+            'projectsCount' => $projectsCount,
+            // The projects list searches customer names, so the row count can link to its own slice.
+            'projectsUrl' => $projectsCount > 0
+                ? route('projects.index', ['search' => $customer->name])
+                : null,
             'epicsCount' => (int) $customer->epics_count,
             'commentsCount' => (int) $customer->comments_count,
+            'editPayload' => $customer->only(['id', 'name']),
         ];
     }
 }

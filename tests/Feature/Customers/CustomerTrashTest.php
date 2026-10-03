@@ -32,7 +32,7 @@ class CustomerTrashTest extends TestCase
         $response = $this->get(route('customers.trash.index'));
 
         $activeResponse->assertDontSee(__('Deleted at'));
-        $response->assertSeeInOrder(['<thead', __('Actions'), __('Name'), __('Projects'), __('Epics'), __('Comments'), __('Deleted at')], false)
+        $response->assertSeeInOrder(['<thead', __('Name'), __('Projects'), __('Epics'), __('Comments'), __('Deleted at'), __('Actions')], false)
             ->assertSeeInOrder(['Customer with dates', '2026-10-02']);
     }
 
@@ -96,11 +96,29 @@ class CustomerTrashTest extends TestCase
             ->assertRedirect(route('customers.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Customer cannot be restored while another active customer uses this name.'),
+                __('Customer cannot be restored because another customer outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedCustomer);
         $this->assertModelExists($activeCustomer);
+    }
+
+    public function test_deleted_customer_cannot_be_restored_when_an_inactive_customer_uses_its_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedCustomer = Customer::factory()->trashed()->create(['name' => 'Ane Bezeroa']);
+        $inactiveCustomer = Customer::factory()->inactive()->create(['name' => 'Ane Bezeroa']);
+
+        $this->patch(route('customers.trash.restore', $deletedCustomer->id))
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Customer cannot be restored because another customer outside the trash uses this name.'),
+            );
+
+        $this->assertSoftDeleted($deletedCustomer);
+        $this->assertModelExists($inactiveCustomer);
+        $this->assertFalse($inactiveCustomer->active);
     }
 
     public function test_restore_returns_conflict_when_unique_name_is_taken_after_precheck(): void
@@ -119,7 +137,7 @@ class CustomerTrashTest extends TestCase
             ->assertRedirect(route('customers.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Customer cannot be restored while another active customer uses this name.'),
+                __('Customer cannot be restored because another customer outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedCustomer);

@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
+use App\Models\Customer;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -180,14 +181,37 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Project cannot be restored while another active project uses this name.'),
+                __('Project cannot be restored because another project outside the trash uses this name.'),
             );
 
         $this->get(route('projects.trash.index'))
-            ->assertSee(__('Project cannot be restored while another active project uses this name.'));
+            ->assertSee(__('Project cannot be restored because another project outside the trash uses this name.'));
 
         $this->assertModelExists($activeProject);
         $this->assertSoftDeleted($deletedProject);
+    }
+
+    public function test_project_cannot_be_restored_when_an_inactive_project_uses_its_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $deletedProject = Project::factory()->for($customer)->trashed()->create([
+            'name' => 'Repeated project name',
+        ]);
+        $inactiveProject = Project::factory()->for($customer)->inactive()->create([
+            'name' => 'Repeated project name',
+        ]);
+
+        $this->patch(route('projects.trash.restore', $deletedProject->id))
+            ->assertRedirect(route('projects.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Project cannot be restored because another project outside the trash uses this name.'),
+            );
+
+        $this->assertSoftDeleted($deletedProject);
+        $this->assertModelExists($inactiveProject);
+        $this->assertFalse($inactiveProject->active);
     }
 
     public function test_restore_returns_conflict_when_name_becomes_active_after_precheck(): void
@@ -206,7 +230,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Project cannot be restored while another active project uses this name.'),
+                __('Project cannot be restored because another project outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedProject);

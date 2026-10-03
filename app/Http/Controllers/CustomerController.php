@@ -28,7 +28,7 @@ class CustomerController extends Controller
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->active($customers, $search, $query->trashedCount()),
+            'list' => $transformer->active($customers, $search, $query->stateCounts()),
         ]);
     }
 

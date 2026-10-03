@@ -24,16 +24,34 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    /* Mahaia brand scale; brand-700 on white and brand-400 on zinc-900 both pass AA. */
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-200: #bfdbfe;
+    --color-brand-300: #93c5fd;
+    --color-brand-400: #60a5fa;
+    --color-brand-500: #3b82f6;
+    --color-brand-600: #2563eb;
+    --color-brand-700: #1d4ed8;
+    --color-brand-800: #1e40af;
+    --color-brand-900: #1e3a8a;
+    --color-brand-950: #172554;
+
+    /* Single source for every focus indicator; overridden for dark mode below. */
+    --color-focus: var(--color-brand-700);
+
+    --color-accent: var(--color-brand-700);
+    --color-accent-content: var(--color-brand-700);
     --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-focus: var(--color-brand-400);
+
+        --color-accent: var(--color-brand-400);
+        --color-accent-content: var(--color-brand-400);
+        --color-accent-foreground: var(--color-zinc-900);
     }
 }
 
@@ -45,6 +63,11 @@
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
+    }
+
+    /* Zero specificity, so any component focus style still wins. */
+    :where(a, button, summary, [tabindex]):focus-visible {
+        @apply outline-2 outline-offset-2 outline-focus;
     }
 }
 
@@ -68,7 +91,7 @@ select:focus[data-flux-control] {
 }
 
 .resource-list-table [data-flux-column] {
-    @apply border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold tracking-wide text-zinc-700 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200;
+    @apply border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400;
 }
 
 .resource-list-table [data-flux-cell] {

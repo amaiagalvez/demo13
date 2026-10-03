@@ -80,6 +80,6 @@ class ProjectTrashController extends Controller
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route('projects.trash.index')
-            ->with('error', __('Project cannot be restored while another active project uses this name.'));
+            ->with('error', __('Project cannot be restored because another project outside the trash uses this name.'));
     }
 }

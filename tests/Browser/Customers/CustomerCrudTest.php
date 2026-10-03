@@ -42,24 +42,43 @@ class CustomerCrudTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user, $customer, $longName): void {
             $browser->loginAs($user)
-                ->resize(320, 420)
+                ->resize(1920, 1080)
                 ->visit('/customers?search='.urlencode($longName));
 
-            $browser->assertAttribute('[data-test="customer-name-'.$customer->id.'"]', 'title', $longName)
+            $browser->assertScript(<<<'JS'
+                (() => {
+                    const content = document.querySelector('.max-w-none');
+
+                    if (!(content instanceof HTMLElement)) {
+                        return false;
+                    }
+
+                    const bounds = content.getBoundingClientRect();
+
+                    return bounds.left < window.innerWidth * 0.2
+                        && window.innerWidth - bounds.right < window.innerWidth * 0.1;
+                })()
+                JS, true)
+                ->resize(320, 420)
+                ->assertAttribute('[data-test="customer-name-'.$customer->id.'"]', 'title', $longName)
                 ->assertScript(
                     'getComputedStyle(document.querySelector(\'[data-test="customer-name-'.$customer->id.'"]\')).textOverflow',
                     'ellipsis',
                 )
                 ->assertScript(
-                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody .resource-list-actions\')).position',
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).position',
                     'sticky',
                 )
                 ->assertScript(
-                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody .resource-list-actions\')).insetInlineStart',
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).insetInlineEnd',
                     '0px',
                 )
                 ->assertScript(
-                    '(() => { const container = document.querySelector(\'.resource-list-table ui-table-scroll-area\'); container.querySelector(\'table\').style.minWidth = \'800px\'; container.scrollLeft = 200; const actions = container.querySelector(\'tbody .resource-list-actions\'); return container.scrollLeft > 0 && Math.abs(actions.getBoundingClientRect().left - container.getBoundingClientRect().left) < 3; })()',
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody tr td:last-child\')).textAlign',
+                    'end',
+                )
+                ->assertScript(
+                    '(() => { const container = document.querySelector(\'.resource-list-table ui-table-scroll-area\'); container.querySelector(\'table\').style.minWidth = \'800px\'; container.scrollLeft = 200; const actions = container.querySelector(\'tbody tr td:last-child\'); return container.scrollLeft > 0 && Math.abs(actions.getBoundingClientRect().right - container.getBoundingClientRect().right) < 3; })()',
                     true,
                 );
         });
@@ -121,7 +140,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->click('[data-test="customer-inactive-link"]')
                 ->waitForLocation('/customers/inactive')
                 ->assertSee($customer->name)
-                ->assertSeeIn('thead', mb_strtoupper(__('Updated at')))
+                ->assertSeeIn('thead', __('Updated at'))
                 ->assertMissing("[data-test='customer-edit-{$customer->id}']")
                 ->click("[data-test='customer-reactivate-{$customer->id}']")
                 ->waitFor('dialog[open]')
@@ -408,6 +427,21 @@ class CustomerCrudTest extends DuskTestCase
         $this->assertDatabaseCount('customers', 0);
     }
 
+    public function test_customer_row_name_opens_the_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::factory()->create(['name' => 'Editable from the row']);
+
+        $this->browse(function (Browser $browser) use ($user, $customer): void {
+            $browser->loginAs($user)
+                ->visit('/customers')
+                ->click('[data-test="customer-name-'.$customer->id.'"]')
+                ->waitFor('dialog[open] [data-test="customer-name"]')
+                ->assertSeeIn('dialog[open]', __('Edit customer'))
+                ->assertInputValue('dialog[open] [data-test="customer-name"]', $customer->name);
+        });
+    }
+
     public function test_customer_can_be_created_updated_and_deleted_from_the_drawer(): void
     {
         $user = User::factory()->create();
@@ -500,7 +534,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->visit('/customers/trash')
                 ->assertSee('Restorable Customer')
                 ->assertSee('Deletable Customer')
-                ->click('[data-test="customer-list-link"]')
+                ->click('[data-test="customer-active-link"]')
                 ->waitForLocation('/customers')
                 ->visit('/customers/trash')
                 ->click("[data-test='customer-restore-{$restorableCustomer->id}']")

@@ -2,10 +2,12 @@
     Row action buttons built by the *ListTransformer classes.
     "form-modal" actions open the "{prefix}-form" drawer and pass $action[$payloadKey] to the
     Alpine $editHandler; any other action opens the "{prefix}-confirm" modal.
+    $blockedHint, when given, replaces the tooltip of the blocking action so the reason why the
+    record cannot be deleted is readable before clicking it.
 --}}
-@props(['actions', 'prefix', 'payloadKey', 'editHandler'])
+@props(['actions', 'prefix', 'payloadKey', 'editHandler', 'blockedHint' => null])
 
-<div class="flex justify-start gap-0.5">
+<div class="flex justify-end gap-0.5">
     @foreach ($actions as $action)
         @if ($action['type'] === 'form-modal')
             <flux:modal.trigger :name="$prefix.'-form'">
@@ -19,7 +21,7 @@
             </flux:modal.trigger>
         @else
             <flux:modal.trigger :name="$prefix.'-confirm'">
-                <flux:tooltip :content="$action['label']">
+                <flux:tooltip :content="$blockedHint ?? $action['label']">
                     <flux:button size="xs" square variant="ghost" :icon="$action['icon']"
                         :aria-label="$action['label']"
                         :class="($action['danger'] ?? false) ? 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300' : ''"

@@ -2,7 +2,7 @@
 
 <form method="GET" action="{{ $search['action'] }}"
     data-list-search
-    class="ml-auto flex w-full items-center gap-2 sm:max-w-md">
+    class="flex w-full items-center gap-2 sm:max-w-md">
     <div class="relative min-w-0 flex-1">
         <flux:input x-ref="search" class="min-w-0 flex-1" name="search"
             :aria-label="__('Search')" :placeholder="$search['placeholder']"

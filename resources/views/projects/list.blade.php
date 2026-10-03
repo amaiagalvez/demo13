@@ -85,7 +85,7 @@
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-name-conflict' }))"
         @elseif ($list['create'] && request()->boolean('create'))
             x-init="createProject(); $nextTick(() => $dispatch('modal-show', { name: 'project-form' }))" @endif
-        class="flex flex-col gap-4">
+        class="flex flex-col gap-y-2 sm:gap-y-3">
         <x-list.header :list="$list" prefix="project" :create-label="__('New project')"
             create-click="createProject()" />
 

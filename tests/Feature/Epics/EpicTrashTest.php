@@ -5,6 +5,7 @@ namespace Tests\Feature\Epics;
 use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
+use App\Models\Project;
 use App\Models\EpicComment;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,7 +53,7 @@ class EpicTrashTest extends TestCase
             '2026-08-04',
             '2026-10-02',
         ]);
-        $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"', false);
+        $response->assertSee('data-test="epic-comments-count-' . $epic->id . '"', false);
     }
 
     public function test_trash_orders_by_deletion_timestamp_descending_then_id_ascending(): void
@@ -151,10 +152,29 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Epic cannot be restored while another active epic in the same project uses this name.'),
+                __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedEpic);
+    }
+
+    public function test_epic_cannot_be_restored_when_an_inactive_epic_in_the_same_project_uses_its_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        $deletedEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'Repeated epic']);
+        $inactiveEpic = Epic::factory()->for($project)->inactive()->create(['name' => 'Repeated epic']);
+
+        $this->patch(route('epics.trash.restore', $deletedEpic->id))
+            ->assertRedirect(route('epics.trash.index'))
+            ->assertSessionHas(
+                'error',
+                __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'),
+            );
+
+        $this->assertSoftDeleted($deletedEpic);
+        $this->assertModelExists($inactiveEpic);
+        $this->assertFalse($inactiveEpic->active);
     }
 
     public function test_epic_can_be_restored_when_its_name_is_used_only_in_another_project(): void
@@ -209,7 +229,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Epic cannot be restored while another active epic in the same project uses this name.'),
+                __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'),
             );
 
         $this->assertSoftDeleted($deletedEpic);

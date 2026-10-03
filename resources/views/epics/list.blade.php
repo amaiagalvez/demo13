@@ -207,7 +207,7 @@
         @endif $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
     @elseif ($deletedEpicConflict)
         x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))" @endif
-        class="flex flex-col gap-4">
+        class="flex flex-col gap-y-2 sm:gap-y-3">
         <x-list.header :list="$list" prefix="epic" :create-label="__('New epic')"
             create-click="createEpic()" />
 

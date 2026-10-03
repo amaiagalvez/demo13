@@ -22,12 +22,28 @@ class ListTransformerContractTest extends TestCase
         'rows',
     ];
 
+    /**
+     * Customers already moved to the page header (breadcrumbs + state tabs), so they no longer
+     * carry the toolbar keys.
+     */
+    private const CUSTOMER_ACTIVE_KEYS = [
+        'resource',
+        'state',
+        'breadcrumbs',
+        'extraDateHeading',
+        'emptyMessage',
+        'search',
+        'tabs',
+        'create',
+        'rows',
+    ];
+
     public function test_customer_active_payload_has_the_expected_keys(): void
     {
         $list = app(CustomerListTransformer::class)->active(new LengthAwarePaginator([], 0, 15), '');
 
-        $this->assertSame(self::ACTIVE_KEYS, array_keys($list));
-        $this->assertNull($list['extraDateHeading']);
+        $this->assertSame(self::CUSTOMER_ACTIVE_KEYS, array_keys($list));
+        $this->assertSame(__('Created at'), $list['extraDateHeading']);
     }
 
     public function test_project_active_payload_has_the_expected_keys(): void

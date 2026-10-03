@@ -151,6 +151,67 @@ class CustomerCrudTest extends TestCase
             ->assertSeeInOrder(['customer-comments-count-'.$customer->id, '5']);
     }
 
+    public function test_customer_list_header_offers_the_state_tabs_with_the_record_count_of_each_one(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->count(2)->create();
+        Customer::factory()->inactive()->create();
+        Customer::factory()->count(3)->trashed()->create();
+
+        $this->get(route('customers.index'))
+            ->assertOk()
+            ->assertSee('data-test="customer-breadcrumbs"', false)
+            ->assertSeeInOrder([
+                'href="'.route('dashboard').'"',
+                __('Dashboard'),
+                __('Customers'),
+            ], false)
+            ->assertSee('data-test="customer-heading"', false)
+            ->assertSeeInOrder([
+                'data-test="customer-active-link"',
+                'aria-current="page"',
+                'data-test="customer-inactive-link"',
+                'data-test="customer-trash-link"',
+            ], false)
+            ->assertSeeInOrder(['data-test="customer-active-link"', '>2</span>'], false)
+            ->assertSeeInOrder(['data-test="customer-inactive-link"', '>1</span>'], false)
+            ->assertSeeInOrder(['data-test="customer-trash-link"', '>3</span>'], false);
+
+        $this->get(route('customers.inactive.index'))
+            ->assertOk()
+            ->assertSeeInOrder([__('Dashboard'), __('Customers'), __('Inactive')], false);
+
+        $this->get(route('customers.trash.index'))
+            ->assertOk()
+            ->assertSeeInOrder([__('Dashboard'), __('Customers'), __('Trash')], false);
+    }
+
+    public function test_customer_row_edits_from_the_name_and_links_the_project_count_to_its_projects(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Ane Bezeroa']);
+        Project::factory()->for($customer)->create();
+        $lonelyCustomer = Customer::factory()->create(['name' => 'Jon Bezeroa']);
+
+        $response = $this->get(route('customers.index'));
+
+        $response
+            ->assertOk()
+            ->assertSeeInOrder([
+                'data-test="customer-name-'.$customer->id.'"',
+                'editCustomer(JSON.parse(',
+            ], false)
+            ->assertSee('href="'.route('projects.index', ['search' => 'Ane Bezeroa']).'"', false)
+            ->assertSee(__('View :count projects', ['count' => 1]))
+            ->assertDontSee('href="'.route('projects.index', ['search' => 'Jon Bezeroa']).'"', false)
+            ->assertSee('data-test="customer-projects-count-'.$lonelyCustomer->id.'"></span>', false)
+            ->assertSee('data-test="customer-epics-count-'.$lonelyCustomer->id.'"></span>', false)
+            ->assertSee('data-test="customer-comments-count-'.$lonelyCustomer->id.'"></span>', false)
+            ->assertSee(__('Customer cannot be deleted while it has projects.'))
+            ->assertDontSee('data-test="customer-delete-'.$customer->id.'"', false)
+            ->assertSee('data-test="customer-delete-'.$lonelyCustomer->id.'"', false);
+    }
+
     public function test_customer_with_a_trashed_project_cannot_be_deleted(): void
     {
         $this->actingAs(User::factory()->create());

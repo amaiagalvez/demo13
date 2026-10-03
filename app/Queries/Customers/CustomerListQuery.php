@@ -58,11 +58,17 @@ final class CustomerListQuery extends ListQueryBase
     }
 
     /**
-     * Number of records waiting in the trash, shown as the badge of the trash tab.
+     * Number of records in each list state, shown as the badge of the state tabs.
+     *
+     * @return array{active: int, inactive: int, trashed: int}
      */
-    public function trashedCount(): int
+    public function stateCounts(): array
     {
-        return Customer::onlyTrashed()->count();
+        return [
+            'active' => Customer::query()->where('active', true)->count(),
+            'inactive' => Customer::query()->where('active', false)->count(),
+            'trashed' => Customer::onlyTrashed()->count(),
+        ];
     }
 
     /**

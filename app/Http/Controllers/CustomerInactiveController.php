@@ -21,7 +21,7 @@ class CustomerInactiveController extends Controller
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->inactive($customers, $search, $query->trashedCount()),
+            'list' => $transformer->inactive($customers, $search, $query->stateCounts()),
         ]);
     }
 

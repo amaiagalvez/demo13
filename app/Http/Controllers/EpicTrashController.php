@@ -72,6 +72,6 @@ class EpicTrashController extends Controller
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route('epics.trash.index')
-            ->with('error', __('Epic cannot be restored while another active epic in the same project uses this name.'));
+            ->with('error', __('Epic cannot be restored because another epic in the same project outside the trash uses this name.'));
     }
 }

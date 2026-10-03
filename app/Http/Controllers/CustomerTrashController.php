@@ -25,7 +25,7 @@ class CustomerTrashController extends Controller
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->trash($customers, $search, $query->trashedCount()),
+            'list' => $transformer->trash($customers, $search, $query->stateCounts()),
         ]);
     }
 
@@ -79,6 +79,6 @@ class CustomerTrashController extends Controller
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route('customers.trash.index')
-            ->with('error', __('Customer cannot be restored while another active customer uses this name.'));
+            ->with('error', __('Customer cannot be restored because another customer outside the trash uses this name.'));
     }
 }
