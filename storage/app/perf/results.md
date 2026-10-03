@@ -4,24 +4,28 @@ Medición realizada siguiendo `.github/tasks/09.performancce-test-plan.md`.
 
 ## Conclusión
 
-1. **No hay N+1.** Cada petición del listado ejecuta **8 consultas** en los tres estados y en
-   los tres perfiles de volumen. El número no crece al aumentar los registros.
-2. **La base de datos no es el cuello de botella.** De los ~60 ms de cada petición, solo 4–6 ms
-   (7–10 %) son consultas. El resto (~50 ms) es PHP: renderizado de Blade y componentes Flux.
-   Este coste **no depende del volumen**: 100 o 1.000 clientes dan prácticamente lo mismo.
-3. **Pasar de 100 a 1.000 clientes (×10) añade solo ~1,5–2 ms de base de datos.**
-4. **Las subconsultas correlacionadas de conteo son el coste de base de datos real**: ~5,5 ms de
-   los 6,1 ms de la consulta principal con 1.000 clientes. Todas usan índices cubridentes, sin
-   tablas temporales ni escaneos.
-5. **Los escaneos completos y el `filesort` que aparecen en los planes son reales pero Baratos**
-   (~1 ms). La sonda de un índice candidato `(active, deleted_at, name)` dio diferencias que
-   oscilan entre negativo y positivo, es decir **no hay ganancia medible**, por lo que **no se
-   propone ninguna optimización**.
-6. El único punto a vigilar a futuro es el número de filas por página: los conteos correlacionados
-   se ejecutan 4 veces por fila (proyectos, épicas, comentarios, `exists` de proyectos).
-7. **El coste O(n) está diferido, no ausente**: hoy la base de datos es el 7–10 % de la petición,
-   pero crece ~2,9 µs por cada cliente que casa y la consulta no se rompe hasta alrededor de
-   20.000–25.000 clientes. Ver el apartado «Escalado».
+1. **No hay N+1.** Cada petición del listado ejecuta **7–9 consultas** en los cuatro perfiles de
+   volumen y en los tres estados. El número no crece al aumentar los registros.
+2. **Hasta ~1.000 clientes la base de datos no es el cuello de botella.** De los ~60 ms de cada
+   petición solo 4–6 ms (7–10 %) son consultas; el resto (~50 ms) es PHP (renderizado de Blade y
+   componentes Flux), y ese coste **no depende del volumen**.
+3. **A partir de ~10.000 clientes sí hay un cuello de botella, y está medido**: la base de datos
+   pasa de 6 ms a ~29 ms y la consulta de filas de ~3,7 ms a ~15 ms. El culpable no es la búsqueda
+   ni los conteos de las pestañas, sino que **`Using filesort` obliga a calcular los tres conteos
+   correlacionados y el `exists` para *todas* las filas que casan, no solo para las 25 de la
+   página**.
+4. **El arreglo está medido y es reproducible**: un índice `customers (active, deleted_at, name)`
+   elimina el `filesort`, baja la consulta de filas de ~15 ms a ~2,5 ms (**−84 %**) y deja el total
+   de base de datos en ~16 ms. Tres repeticiones seguidas dan −13,6 / −13,0 / −12,9 ms.
+5. **La papelera no necesita nada**: ordena por `deleted_at desc, id`, que el índice
+   `customers_deleted_at_id_index` ya cubre, así que su consulta de filas es plana (~2 ms con
+   10.000 clientes). Es más barata porque casa con el 15 % de los registros, frente al 60 % de los
+   activos.
+6. **Aun con el arreglo, el renderizado es el mayor coste** y no escala con la base de datos pero sí
+   con las filas por página: la respuesta pesa 334 kB, de los cuales 242 kB son las 25 filas
+   (~10 kB de marcado por fila: Flux genera clases largas e iconos SVG).
+7. Las subconsultas correlacionadas usan índices cubrientes (`Using index`), sin tablas temporales.
+   El problema nunca fue **cómo** se ejecutan, sino **cuántas veces**.
 
 ## Metodología
 
@@ -84,6 +88,7 @@ Perfiles de carga; las proporciones no cambian con la escala.
 | 100 | 100 | 300 | 1.200 | 3.600 | 60 / 25 / 15 |
 | 300 | 300 | 900 | 3.600 | 10.800 | 180 / 75 / 45 |
 | 1.000 | 1.000 | 3.000 | 12.000 | 36.000 | 600 / 250 / 150 |
+| 10.000 | 10.000 | 30.000 | 120.000 | 360.000 | 6.000 / 2.500 / 1.500 |
 
 Reparto de estados: 60 % activos, 25 % inactivos, 15 % en la papelera, aplicado por rotación fija
 para que la mezcla sea idéntica en cualquier escala.
@@ -177,11 +182,49 @@ de los otros perfiles (`trash / one`: 48,3 ms con mínimo de 30,3 ms; `trash / a
 p95 de 204,9 ms y mínimo de 53,9 ms). Son picos de ruido del contenedor: el mínimo sigue siendo
 coherente con los otros perfiles y el número de consultas no cambia.
 
+### Perfil 10.000
+
+Medido con el host bajo carga (había navegador y otros procesos activos), así que los totales son
+poco fiables y **el mínimo es el mejor dato**: el mínimo de la primera página de activos es 85,0 ms,
+y la mediana de esa misma petición bajó a 107,5 ms cuando la máquina quedó más tranquila. La
+columna `db`, en cambio, es estable y es la que se usa para el análisis.
+
+| escenario | mediana | p95 | mín | db | php | consultas |
+|---|---|---|---|---|---|---|
+| active / sin búsqueda / pág. 1 | 107,5 ms | 181,5 ms | 85,0 ms | 28,9 ms | 78,6 ms | 7 |
+| active / sin búsqueda / pág. 2 | 127,3 ms | 157,8 ms | 98,5 ms | 28,2 ms | 99,1 ms | 7 |
+| active / `Perf` / pág. 1 | 113,1 ms | 163,0 ms | 86,2 ms | 29,8 ms | 83,3 ms | 8 |
+| active / `Perf` / pág. 2 | 103,5 ms | 128,4 ms | 85,6 ms | 30,1 ms | 73,4 ms | 8–9 |
+| active / `00001` / pág. 1 | 64,2 ms | 88,9 ms | 45,5 ms | 32,4 ms | 31,8 ms | 8 |
+| active / `00001` / pág. 2 | 111,6 ms | 157,6 ms | 41,9 ms | 49,5 ms | 62,1 ms | 8–9 |
+| active / `zzz-no-match` / pág. 1 | 75,5 ms | 106,0 ms | 46,4 ms | 20,8 ms | 54,7 ms | 7 |
+| active / `zzz-no-match` / pág. 2 | 50,8 ms | 72,5 ms | 36,2 ms | 15,4 ms | 35,3 ms | 7 |
+| inactive / sin búsqueda / pág. 1 | 98,9 ms | 166,3 ms | 84,0 ms | 25,4 ms | 73,5 ms | 8–9 |
+| inactive / sin búsqueda / pág. 2 | 179,4 ms | 250,0 ms | 102,5 ms | 37,7 ms | 141,8 ms | 8 |
+| inactive / `Perf` / pág. 1 | 233,6 ms | 299,5 ms | 137,7 ms | 62,6 ms | 171,0 ms | 8–9 |
+| inactive / `Perf` / pág. 2 | 117,0 ms | 157,8 ms | 94,4 ms | 33,6 ms | 83,5 ms | 8 |
+| inactive / `00001` / pág. 1 | 56,5 ms | 76,2 ms | 50,0 ms | 31,4 ms | 25,1 ms | 8–9 |
+| inactive / `00001` / pág. 2 | 60,4 ms | 96,7 ms | 49,4 ms | 34,0 ms | 26,4 ms | 8 |
+| inactive / `zzz-no-match` / pág. 1 | 36,2 ms | 53,9 ms | 28,3 ms | 11,8 ms | 24,4 ms | 7 |
+| inactive / `zzz-no-match` / pág. 2 | 54,8 ms | 81,3 ms | 34,9 ms | 16,0 ms | 38,8 ms | 7 |
+| trash / sin búsqueda / pág. 1 | 129,1 ms | 181,2 ms | 80,3 ms | 12,5 ms | 116,5 ms | 8 |
+| trash / sin búsqueda / pág. 2 | 81,0 ms | 100,0 ms | 72,0 ms | 8,4 ms | 72,5 ms | 8 |
+| trash / `Perf` / pág. 1 | 81,3 ms | 96,6 ms | 70,4 ms | 12,9 ms | 68,5 ms | 8 |
+| trash / `Perf` / pág. 2 | 82,6 ms | 138,3 ms | 72,7 ms | 15,5 ms | 67,0 ms | 8–9 |
+| trash / `00001` / pág. 1 | 39,3 ms | 47,1 ms | 36,9 ms | 14,1 ms | 25,2 ms | 8 |
+| trash / `00001` / pág. 2 | 33,3 ms | 82,1 ms | 30,9 ms | 14,5 ms | 18,8 ms | 8–9 |
+| trash / `zzz-no-match` / pág. 1 | 30,4 ms | 44,0 ms | 27,0 ms | 9,6 ms | 20,8 ms | 7–8 |
+| trash / `zzz-no-match` / pág. 2 | 34,9 ms | 47,0 ms | 28,1 ms | 9,6 ms | 25,3 ms | 7 |
+
+Lo relevante de este perfil es la columna `db`: **la papelera se mantiene en 8–16 ms mientras los
+activos y los inactivos suben a 25–63 ms**, con solo 7–9 consultas en todos los casos. La diferencia
+está explicada en el apartado «Escalado».
+
 ## Número de consultas
 
-Constante en todos los casos: **8 consultas** por petición (7 cuando el resultado está vacío, ya
-que no se ejecuta la consulta de filas; 9 en la petición que inserta la fila de sesión en lugar de
-actualizarla). Reparto:
+Constante en todos los casos y en los cuatro perfiles: **7–9 consultas** por petición (7 cuando el
+resultado está vacío, ya que no se ejecuta la consulta de filas; 9 en la petición que inserta la
+fila de sesión en lugar de actualizarla). Reparto:
 
 1. `select * from sessions where id = ?` (recuperación de sesión)
 2. `select exists(select * from users where id = ? and active = 1)` (`EnsureUserIsActive`)
@@ -192,8 +235,10 @@ actualizarla). Reparto:
 7. `select count(*) ... deleted_at is not null` (pestaña papelera)
 8. `update sessions ...` (escritura de la sesión)
 
-Al multiplicar por diez los registros, el número de consultas no se mueve: **no hay indicios de
-N+1**. Los conteos vienen dentro de la misma consulta de filas, no en una consulta por fila.
+Al multiplicar por diez los registros (1.000 → 10.000 clientes), el número de consultas no se
+mueve: **no hay indicios de N+1**. Los conteos vienen dentro de la misma consulta de filas, no en
+una consulta por fila. Lo que sí crece es cuántas veces los ejecuta MariaDB por dentro (ver
+«Escalado»).
 
 ## Desglose por consulta
 
@@ -210,10 +255,24 @@ Perfil 1.000, primera página de cada estado (mediana de las 20 ejecuciones):
 | pestaña papelera | 0,51 ms | 0,25 ms | 0,20 ms |
 | `update sessions` | 0,56 ms | 0,47 ms | 0,45 ms |
 
+Perfil 10.000, misma petición (primera página de activos):
+
+| consulta | 1.000 clientes | 10.000 clientes | crecimiento |
+|---|---|---|---|
+| total de paginación | 0,88 ms | 2,93 ms | ×10 filas → ×3,3 |
+| filas + 3 conteos + `exists` | 5,49 ms | 14,55 ms | ×10 filas que casan → ×2,7 |
+| pestaña activos | 1,28 ms | 2,85 ms | ×10 filas → ×2,2 |
+| pestaña inactivos | 0,73 ms | 0,70 ms | escaneo que no crece (índice) |
+| pestaña papelera | 0,51 ms | 0,66 ms | escaneo que no crece (índice) |
+| **total db de la petición** | **6,1 ms** | **28,9 ms** | |
+
+El crecimiento no es de ×10 porque cada sentencia tiene una parte fija de ~1–3 ms (round trip y
+arranque) que a 1.000 clientes aún pesa; la pendiente sí es lineal (ver «Escalado»).
+
 Perfil 300, misma petición: la consulta de filas baja de 5,49 ms a **2,26 ms** y los totales de
 pestañas rondan 0,24–0,37 ms. Es la única parte que crece con el volumen.
 
-## Planes de ejecución (`EXPLAIN`, perfil 1.000)
+## Planes de ejecución (`EXPLAIN`)
 
 **Consulta de filas del listado de activos**
 
@@ -239,10 +298,17 @@ projects   ref    projects_customer_id_foreign    Using where
   comodín inicial, así que escanea `customers` igual que el resto. Con 1.000 clientes el escenario
   completo de búsqueda suma 2,6–6,4 ms de base de datos: no se aprecia penalización.
 
+Con 10.000 clientes el plan **mantiene la misma forma** (mismo índice, mismo `filesort`, mismas
+subconsultas con `ref` y `Using index`): lo único que crece es laestimation de filas
+(`rows=8500` frente a `rows=255` a 1.000 clientes). Por eso el problema no se ve en el plan sino en el
+tiempo: el plan es el correcto dado el índice disponible, y lo que falta es ese índice.
+
 ## Sonda de índice
 
-Índice candidato `customers (active, deleted_at, name)`, medido sobre 1.000 clientes con 25
-ejecuciones por sentencia y repetido varias veces. Diferencia (después − antes) de cada sentencia:
+Índice candidato `customers (active, deleted_at, name)`, creado y eliminado por el propio guión.
+Se mide cada sentencia del listado por separado (25 ejecuciones, mediana) antes y después.
+
+### Con 1.000 clientes: no se aprecia nada
 
 | sentencia | rango de la diferencia |
 |---|---|
@@ -253,75 +319,99 @@ ejecuciones por sentencia y repetido varias veces. Diferencia (después − ante
 | trash / filas | −1,55 ms … +2,44 ms |
 | trash / conteos | −0,18 ms … +0,95 ms |
 
-Las diferencias cambian de signo entre repeticiones y su magnitud es comparable a la propia
-sentencia: **el índice no aporta una mejora medible a esta escala**. El ruido del contenedor llega
-a duplicar el tiempo de la sentencia (`before` llegó a 10,81 ms en una repetición), así que el
-límite de ruido de este entorno es del mismo orden que el efecto que se quiere medir; decidir sobre
-índices con estos números exigiría un entorno más silencioso. Conforme a lo que pedía el plan, **no
-se propone ninguna optimización**. Si el volumen creciera dos órdenes de magnitud habría que volver
-a medir, porque los escaneos completos y el `filesort` sí son el punto por el que se rompería esta
-consulta.
+Las diferencias cambian de signo y el ruido del contenedor llegaba a duplicar el tiempo de la
+sentencia (`before` llegó a 10,81 ms en una repetición). A esa escala la parte variable de la consulta
+de filas son 1,7 ms de 3,7 ms, así que el efecto del índice queda enterrado en el ruido: **a 1.000
+clientes no se puede decidir nada con estos números**.
+
+### Con 10.000 clientes: el índice paga, y mucho
+
+Tres repeticiones seguidas, misma sesión:
+
+| sentencia | antes | después | diferencia |
+|---|---|---|---|
+| active / filas | 16,13 ms | 2,55 ms | **−13,58 ms** |
+| inactive / filas | 15,38 ms | 2,56 ms | **−12,82 ms** |
+| active / conteos | 0,96 ms | 0,56 ms | −0,40 ms |
+| inactive / conteos | 0,51 ms | 0,55 ms | +0,04 ms |
+| trash / filas | 2,03 ms | 2,16 ms | +0,13 ms |
+| trash / conteos | 0,53 ms | 0,57 ms | +0,04 ms |
+
+Repeticiones 2 y 3: `active / filas` −12,97 ms y −12,92 ms; `inactive / filas` −16,71 ms y
+−12,92 ms. Los conteos de las pestañas no cambian (son escaneos sobre `active`, que el índice no
+toca) y la papelera tampoco (su consulta ya es barata).
+
+### Por qué: el plan cambia
+
+Sin el índice, la tabla principal se ordena con `filesort`:
+
+```
+customers  range  customers_deleted_at_id_index  Using index condition; Using where; Using filesort
+```
+
+Con el índice, la consulta sale del índice **en orden y sin ordenar nada**:
+
+```
+customers  range  customers_state_name_index     Using where
+```
+
+Sin `filesort`, MariaDB puede leer las 25 filas de la página, calcular los conteos y parar: los
+conteos correlacionados pasan de ejecutarse ~6.000 veces a 25. Esa es exactamente la diferencia de
+13 ms.
 
 ## Escalado: qué pasa si la base de datos crece
 
-**Sí habrá problemas, y se sabe por dónde antes de que aparezcan.** Lo que sigue sale de los tres
-perfiles ya medidos, sin necesidad de un perfil mayor.
+**Sí habrá problemas, y a partir de ~10.000 clientes ya se pueden medir.**
 
 ### La consulta de filas crece con las filas que casan, no con las de la página
 
-Agrupando por número de clientes que casan con el filtro (no por volumen total):
+| clientes que casan (activos) | consulta de filas |
+|---|---|
+| 60 | 2,09 ms |
+| 180 | 2,49 ms |
+| 600 | 3,70 ms |
+| 6.000 | ~15 ms |
 
-| clientes que casan (activos) | consulta de filas | incremento |
-|---|---|---|
-| 60 | 2,09 ms | — |
-| 180 | 2,49 ms | +0,40 ms por 120 filas |
-| 600 | 3,70 ms | +1,21 ms por 420 filas |
+El ajuste es una recta: **≈ 2,3 ms fijos + ~2,1 µs por cada cliente que casa**. La papelera se
+comporta igual (1,04 → 1,47 → 1,65 → ~2,1 ms para 15/45/150/1.500 filas): no tiene un mecanismo
+distinto, simplemente casa con muchas menos filas (15 % frente al 60 %).
 
-El ajuste es casi perfecto a una recta: **≈ 2,0 ms fijos + 2,9 µs por cada cliente que casa**. La
-papelera se comporta igual (1,04 → 1,47 → 1,65 ms para 15/45/150 filas).
-
-Es decir, **los conteos correlacionados no se ejecutan 25 veces (las de la página), sino una vez por
-cada cliente que casa**. La causa está en el plan: como no hay índice que cubra
-`active = 1 order by name`, MariaDB hace `Using filesort`, y para ordenar necesita materializar la
-lista de selección —con los tres `count(*)` y el `exists` dentro— de todas las filas, no solo de las
-25 que devuelve.
+La causa está en el plan: como no hay índice que cubra `active = 1 order by name`, MariaDB hace
+`Using filesort`, y para ordenar necesita materializar la lista de selección —con los tres `count(*)`
+y el `exists` dentro— de todas las filas, no solo de las 25 que devuelve.
 
 ### Qué escala y qué no
 
 | parte | coste | escala con |
 |---|---|---|
-| conteos correlacionados + `exists` | ~2,9 µs por fila | clientes que casan (**O(n)**, no O(página)) |
-| 4 escaneos completos de `customers` (paginación + 3 pestañas) | ~0,75 µs por fila y escaneo | total de clientes (**O(n)**, 4 veces) |
+| conteos correlacionados + `exists` | ~2,1 µs por fila | clientes que casan (**O(n)**, no O(página)) |
+| 2 escaneos completos de `customers` (paginación + pestaña activos) | ~0,28 µs por fila y escaneo | total de clientes (**O(n)**, 2 veces) |
+| 2 conteos que ya usan índice (pestaña inactivos, papelera) | ~0,1 µs por fila | casi plano |
 | búsqueda `LIKE '%texto%'` | un escaneo más | clientes que casan |
 | sesión + usuario activo | ~1,5 ms fijos | no escala |
-| renderizado Blade/Flux | ~50 ms | **no escala** (25 filas siempre) |
+| renderizado Blade/Flux | ~50–75 ms | **no escala con la BD**, sí con las filas por página |
 
-### Proyección
+### Proyección con la recta ajustada
 
-| clientes | db | petición total |
-|---|---|---|
-| 1.000 | 6,1 ms (medido) | ~62 ms (medido) |
-| 10.000 | ~65 ms (estimado) | ~120 ms (estimado) |
-| 100.000 | ~650 ms (estimado) | ~700 ms (estimado) |
+| clientes | filas de la consulta | conteos | db total | petición total |
+|---|---|---|---|---|
+| 1.000 | 3,7 ms (medido) | 3,4 ms (medido) | 6,1 ms (medido) | ~62 ms (medido) |
+| 10.000 | ~15 ms (medido) | ~7 ms (medido) | ~29 ms (medido) | 85–130 ms (medido) |
+| 50.000 | ~65 ms (estimado) | ~30 ms | ~95 ms | ~170 ms |
+| 100.000 | ~128 ms (estimado) | ~60 ms | ~190 ms | ~265 ms |
 
-El punto de inflexión está alrededor de **20.000–25.000 clientes** (unos 75.000 proyectos, 300.000
-épicas y 900.000 comentarios): ahí la petición deja de estar en ~60 ms y se va a 200 ms o más. Por
-debajo de 10.000 clientes el listado aguanta bien, porque hoy el renderizado (~50 ms) pesa más que
-la base de datos.
+Y con el índice `customers (active, deleted_at, name)`, la consulta de filas deja de depender del
+volumen: ~2,5 ms con 6.000 clientes que casan, y ese mismo coste con 60.000. Los conteos de las
+pestañas pasarían a ser el único término O(n) (~0,3 ms por escaneo con 100.000 clientes).
 
-### Qué lo arreglaría
+### Conclusión operativa
 
-Un índice que permita leer **solo las 25 filas de la página ya ordenadas** (por ejemplo
-`customers (active, deleted_at, name)`) convierte los conteos en O(página): constante, y con ella
-desaparecen el `filesort` y los 2,9 µs por fila. Los cuatro escaneos completos se quedarían
-(~0,3 ms por escaneo con 100.000 filas) y pasarían a ser la parte irrelevante.
-
-La sonda **no lo confirmó** a 1.000 clientes: las diferencias cambiaban de signo y el ruido del
-contenedor llegaba a duplicar el tiempo de la sentencia. Es coherente con el modelo —a esa escala la
-parte variable son 1,7 ms de 3,7 ms—, pero hace falta medirlo donde la parte variable domine el
-tiempo. Por eso se lanzó además un perfil de **10.000 clientes** (≈520.000 filas); su resultado
-completaría este apartado y decidiría si el índice empieza a pagar. La conclusión de este
-documento (no se propone optimización) sigue en pie hasta que ese dato esté disponible.
+- **Hasta ~5.000–10.000 clientes** no hace falta tocar nada: la petición se mantiene en ~60–130 ms y
+  el coste es de renderizado, no de datos.
+- **A partir de ahí** el índice es la diferencia entre 29 ms y 16 ms de base de datos, y la diferencia
+  crece con el volumen (a 100.000 clientes serían ~128 ms frente a ~2,5 ms).
+- **El segundo cuello de botella, ya visible hoy, es el renderizado**: ~10 kB de HTML por fila.
+  Bajar `PER_PAGE` de 25 a 15 reduciría el trabajo de PHP en un 40 % sin tocar la base de datos.
 
 ## Discrepancias y limitaciones
 
@@ -338,6 +428,11 @@ documento (no se propone optimización) sigue en pie hasta que ese dato esté di
   índice único `active_name` aborta el sembrado si Faker repite un nombre.
 - Las cifras salen de un contenedor de desarrollo compartido con otros servicios: el p95 hay que
   tomarlo como orientativo, y por eso se reportan también mediana y mínimo.
+- El perfil de 10.000 clientes se midió con el host bajo carga (navegador con Debugbar y Xdebug
+  abierto al mismo tiempo, con peticiones de 1,4 s en el log de Apache). Los totales de ese perfil
+  hay que leerlos como un rango cuyo suelo es el mínimo; la columna `db` sí es estable y es la que
+  sostiene el análisis. Se comprobó que no es una deriva del arranque: con 30 peticiones seguidas en
+  un mismo proceso la memoria se mantiene en 40,5 MB y el HTML en 334,1 kB constantes.
 
 ## Archivos
 
@@ -346,6 +441,21 @@ documento (no se propone optimización) sigue en pie hasta que ese dato esté di
 | `database/seeders/CustomerPerformanceSeeder.php` | Semilla de carga. Independiente, no está conectada a `DatabaseSeeder`; el número de clientes es el único parámetro (300 por defecto). |
 | `storage/app/perf/customer-list-bench.php` | Medición de los tres estados del listado con sus búsquedas y páginas. |
 | `storage/app/perf/index-probe.php` | Sonda de índice candidato sobre las sentencias del listado. |
+
+## Observación: el peso del HTML
+
+Medido sobre la primera página de activos con 10.000 clientes:
+
+| parte | tamaño |
+|---|---|
+| respuesta completa | 334,1 kB |
+| `<head>` (Vite, Flux, scripts) | 11,2 kB |
+| tabla con las 25 filas | 242,3 kB (~9,7 kB por fila) |
+| navegación de paginación (15 enlaces) | 12,8 kB |
+
+Los enlaces de paginación están acotados (15, no uno por página), así que no escalan con el volumen:
+lo que pesa es el marcado de cada fila, generado por Flux (botones, distintivos, tooltips, iconos SVG
+y clases largas de Tailwind). Bajar `PER_PAGE` es la palanca directa sobre ese coste.
 
 Verificación tras los cambios: `pint` sin cambios pendientes, `phpstan` nivel 9 sin errores y
 `php artisan test --parallel` con **OK (370 tests, 1841 aserciones)**.

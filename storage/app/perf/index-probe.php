@@ -105,11 +105,33 @@ $measure = static function (array $statements): array {
 
 $before = $measure($statements);
 
+$plans = static function (array $statements, string $title): void {
+    echo PHP_EOL.$title.PHP_EOL;
+
+    foreach ($statements as $label => [$sql, $bindings]) {
+        echo PHP_EOL.$label.PHP_EOL;
+
+        foreach (DB::select('EXPLAIN '.$sql, $bindings) as $row) {
+            echo sprintf(
+                "    table=%-14s type=%-8s key=%-32s rows=%-8s extra=%s\n",
+                $row->table ?? '-',
+                $row->type ?? '-',
+                $row->key ?? '-',
+                $row->rows ?? '-',
+                $row->Extra ?? '-',
+            );
+        }
+    }
+};
+
+$plans($statements, 'EXPLAIN sin el indice candidato');
+
 DB::statement('create index customers_state_name_index on customers (active, deleted_at, name)');
 $after = $measure($statements);
+$plans($statements, 'EXPLAIN con el indice candidato (active, deleted_at, name)');
 DB::statement('drop index customers_state_name_index on customers');
 
-echo "Customers: ".Customer::withTrashed()->count().PHP_EOL.PHP_EOL;
+echo PHP_EOL.'Customers: '.Customer::withTrashed()->count().PHP_EOL.PHP_EOL;
 echo sprintf("%-22s %10s %10s %10s\n", 'statement', 'before', 'after', 'delta');
 echo str_repeat('-', 56).PHP_EOL;
 
@@ -121,21 +143,4 @@ foreach ($before as $label => $time) {
         $after[$label],
         $after[$label] - $time,
     ).PHP_EOL;
-}
-
-echo PHP_EOL.'EXPLAIN'.PHP_EOL;
-
-foreach ($statements as $label => [$sql, $bindings]) {
-    echo PHP_EOL.$label.PHP_EOL;
-
-    foreach (DB::select('EXPLAIN '.$sql, $bindings) as $row) {
-        echo sprintf(
-            "    table=%-14s type=%-8s key=%-32s rows=%-8s extra=%s\n",
-            $row->table ?? '-',
-            $row->type ?? '-',
-            $row->key ?? '-',
-            $row->rows ?? '-',
-            $row->Extra ?? '-',
-        );
-    }
 }
