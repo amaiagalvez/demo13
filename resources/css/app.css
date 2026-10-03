@@ -76,7 +76,11 @@ select:focus[data-flux-control] {
 }
 
 .resource-list-table .resource-list-actions {
-    @apply w-px px-1 text-start whitespace-nowrap;
+    @apply sticky start-0 z-30 w-px bg-white px-1 text-start whitespace-nowrap dark:bg-zinc-900;
+}
+
+.resource-list-table [data-flux-column].resource-list-actions {
+    @apply z-40 bg-zinc-50 dark:bg-zinc-800;
 }
 
 .resource-list-table [data-flux-row]:hover > [data-flux-cell] {

@@ -4,7 +4,7 @@
 crear un nuevo archivo de configuracion y configurar la ruta register, por defecto sera false y entonces no se podran registrar nuevos usuarios desde fuera
 [] añadir created_by, updated_by, deleted_by en tdodas las tablas (modificar migrations, no crear nueva) Crear un Trait que modifique los valorres de esos campos cada vez que se hace una operacón sobre los dtos de la tabla
 [] añadir datatables
-[] installar debugbar
+[] installar logviewsee
 [] gestion de roles y permisos
 [] en los select hay dos opciones: 
     1. si el formulario se abre en modo create, en el select o select2 solo se mostrarán los que tengan active=1
@@ -12,6 +12,7 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [] if (in_array(DB::connection()->getDriverName(), ['sqlite', 'pgsql'], true)) { se usa en varios sitiios, crea una funcion isSqlite como helper para poder reuitlzarla
  [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
  [] listado bezeroak, quitar sortze-data y añadir columnas con el número de proyectos y el número de epicas (formato, como el del número de comments en el listado epics)
+ [] si hubiera muchos datos en todoas lass atablas, analiza el compoartamiento de las tres listados
 ----------------------------------------------------------------------------------
 [ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
 [ ] ahora busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github

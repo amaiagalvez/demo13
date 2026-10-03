@@ -33,6 +33,38 @@ class CustomerCrudTest extends DuskTestCase
         });
     }
 
+    public function test_customer_table_truncates_long_names_and_keeps_actions_sticky(): void
+    {
+        $user = User::factory()->create();
+        $longName = str_repeat('C', 255);
+        $customer = Customer::factory()->create(['name' => $longName]);
+        Customer::factory()->count(15)->create();
+
+        $this->browse(function (Browser $browser) use ($user, $customer, $longName): void {
+            $browser->loginAs($user)
+                ->resize(320, 420)
+                ->visit('/customers?search='.urlencode($longName));
+
+            $browser->assertAttribute('[data-test="customer-name-'.$customer->id.'"]', 'title', $longName)
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'[data-test="customer-name-'.$customer->id.'"]\')).textOverflow',
+                    'ellipsis',
+                )
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody .resource-list-actions\')).position',
+                    'sticky',
+                )
+                ->assertScript(
+                    'getComputedStyle(document.querySelector(\'.resource-list-table tbody .resource-list-actions\')).insetInlineStart',
+                    '0px',
+                )
+                ->assertScript(
+                    '(() => { const container = document.querySelector(\'.resource-list-table ui-table-scroll-area\'); container.querySelector(\'table\').style.minWidth = \'800px\'; container.scrollLeft = 200; const actions = container.querySelector(\'tbody .resource-list-actions\'); return container.scrollLeft > 0 && Math.abs(actions.getBoundingClientRect().left - container.getBoundingClientRect().left) < 3; })()',
+                    true,
+                );
+        });
+    }
+
     public function test_customer_trash_timestamp_displays_local_time(): void
     {
         $user = User::factory()->create();

@@ -52,6 +52,7 @@ class ProjectCrudTest extends TestCase
             ->assertSee('id="project-confirm-heading"', false)
             ->assertSee('project-edit-'.$project->id)
             ->assertSee('Website renewal')
+            ->assertSee('title="Website renewal"', false)
             ->assertSee($customer->name);
 
         $this->put(route('projects.update', $project), [

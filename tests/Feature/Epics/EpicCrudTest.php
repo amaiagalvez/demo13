@@ -59,6 +59,7 @@ class EpicCrudTest extends TestCase
             ->assertSee('id="epic-confirm-heading"', false)
             ->assertSee('epic-edit-'.$epic->id)
             ->assertSee('Checkout flow')
+            ->assertSee('title="Checkout flow"', false)
             ->assertSee($project->name)
             ->assertSee($projectCustomer->name);
 

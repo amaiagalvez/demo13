@@ -101,7 +101,9 @@
                                 <x-list.row-actions :actions="$row['actions']" prefix="customer"
                                     payload-key="customer" edit-handler="editCustomer" />
                             </flux:table.cell>
-                            <flux:table.cell class="font-medium">{{ $row['name'] }}
+                            <flux:table.cell class="max-w-[16rem] truncate font-medium" :title="$row['name']"
+                                :data-test="'customer-name-'.$row['id']">
+                                {{ $row['name'] }}
                             </flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" icon="briefcase"

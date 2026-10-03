@@ -125,9 +125,12 @@
                                 <x-list.row-actions :actions="$row['actions']" prefix="project"
                                     payload-key="project" edit-handler="editProject" />
                             </flux:table.cell>
-                            <flux:table.cell class="font-medium">{{ $row['name'] }}
+                            <flux:table.cell class="max-w-[16rem] truncate font-medium" :title="$row['name']">
+                                {{ $row['name'] }}
                             </flux:table.cell>
-                            <flux:table.cell>{{ $row['customer'] }}</flux:table.cell>
+                            <flux:table.cell class="max-w-[16rem] truncate" :title="$row['customer']">
+                                {{ $row['customer'] }}
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <x-list.local-time :datetime="$row['startDate']" format="date" />
                             </flux:table.cell>

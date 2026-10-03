@@ -74,7 +74,7 @@ return [
 
     'options' => [
         'time' => [
-            'memory_usage' => env('DEBUGBAR_OPTIONS_TIME_MEMORY_USAGE', false), // Calculated by subtracting memory start and end, it may be inaccurate
+            'memory_usage' => env('DEBUGBAR_OPTIONS_TIME_MEMORY_USAGE', true), // Calculated by subtracting memory start and end, it may be inaccurate
         ],
         'messages' => [
             'trace' => env('DEBUGBAR_OPTIONS_MESSAGES_TRACE', true),                  // Trace the origin of the debug message
@@ -185,7 +185,7 @@ return [
     |
     */
 
-    'editor' => env('DEBUGBAR_EDITOR') ?: env('IGNITION_EDITOR', 'phpstorm'),
+    'editor' => env('DEBUGBAR_EDITOR') ?: env('IGNITION_EDITOR', 'vscode'),
 
     /*
     |--------------------------------------------------------------------------
