@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class CustomerFactory extends Factory
 {
+    use HasTrashedState;
+
     /**
      * Define the model's default state.
      *
@@ -27,12 +29,5 @@ class CustomerFactory extends Factory
         return $this->state([
             'active' => false,
         ]);
-    }
-
-    public function trashed(): static
-    {
-        return $this->afterCreating(static function (Customer $customer): void {
-            $customer->delete();
-        });
     }
 }

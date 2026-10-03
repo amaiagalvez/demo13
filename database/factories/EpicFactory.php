@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class EpicFactory extends Factory
 {
+    use HasTrashedState;
+
     /**
      * Define the model's default state.
      *
@@ -23,7 +25,7 @@ class EpicFactory extends Factory
         return [
             'name' => fake()->unique()->sentence(3),
             'start_date' => $startDate,
-            'end_date' => fake()->dateTimeBetween($startDate.' +1 day', '+1 year')->format('Y-m-d'),
+            'end_date' => fake()->dateTimeBetween($startDate . ' +1 day', '+1 year')->format('Y-m-d'),
             'project_id' => Project::factory(),
         ];
     }
@@ -41,12 +43,5 @@ class EpicFactory extends Factory
         return $this->state([
             'active' => false,
         ]);
-    }
-
-    public function trashed(): static
-    {
-        return $this->afterCreating(static function (Epic $epic): void {
-            $epic->delete();
-        });
     }
 }

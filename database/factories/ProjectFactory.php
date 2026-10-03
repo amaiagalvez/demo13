@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProjectFactory extends Factory
 {
+    use HasTrashedState;
+
     /**
      * Define the model's default state.
      *
@@ -33,12 +35,5 @@ class ProjectFactory extends Factory
         return $this->state([
             'active' => false,
         ]);
-    }
-
-    public function trashed(): static
-    {
-        return $this->afterCreating(static function (Project $project): void {
-            $project->delete();
-        });
     }
 }
