@@ -3,7 +3,6 @@
 namespace App\Transformers;
 
 use App\Models\Project;
-use App\Models\Customer;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProjectListTransformer
@@ -44,7 +43,7 @@ class ProjectListTransformer
                             'start_date' => $project->start_date->toDateString(),
                             'end_date' => $project->end_date?->toDateString() ?? '',
                             'customer_id' => $project->customer_id,
-                            'customer_name' => $project->customer->name ?? '',
+                            'customer_name' => $project->customer?->name ?? '—',
                         ],
                     ],
                     $project->epics_exists ? [
@@ -176,13 +175,10 @@ class ProjectListTransformer
      */
     private function columns(Project $project): array
     {
-        /** @var Customer $customer */
-        $customer = $project->customer;
-
         return [
             'id' => $project->id,
             'name' => $project->name,
-            'customer' => $customer->name,
+            'customer' => $project->customer?->name ?? '—',
             'startDate' => $project->start_date->format('Y-m-d'),
             'endDate' => $project->end_date?->format('Y-m-d') ?? '',
         ];

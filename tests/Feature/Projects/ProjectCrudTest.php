@@ -9,7 +9,9 @@ use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use App\Transformers\ProjectListTransformer;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectCrudTest extends TestCase
@@ -278,6 +280,20 @@ class ProjectCrudTest extends TestCase
 
         $this->assertNotSoftDeleted($project);
         $this->assertModelExists($epic);
+    }
+
+    public function test_project_list_transformer_uses_a_fallback_when_customer_is_missing(): void
+    {
+        $project = Project::factory()->create();
+        $project->setRelation('customer', null);
+
+        $list = app(ProjectListTransformer::class)->active(
+            new LengthAwarePaginator([$project], 1, 15),
+            '',
+        );
+
+        $this->assertSame('—', $list['rows'][0]['customer']);
+        $this->assertSame('—', $list['rows'][0]['actions'][0]['project']['customer_name']);
     }
 
     public function test_guests_are_redirected_to_login_from_the_projects_list(): void

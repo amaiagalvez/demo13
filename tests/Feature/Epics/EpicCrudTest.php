@@ -10,7 +10,9 @@ use App\Models\Customer;
 use App\Models\EpicComment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use App\Transformers\EpicListTransformer;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCrudTest extends TestCase
@@ -88,6 +90,21 @@ class EpicCrudTest extends TestCase
         Epic::factory()->count(2)->for($project)->create();
 
         $this->assertCount(2, $project->epics);
+    }
+
+    public function test_epic_list_transformer_uses_fallbacks_when_parent_relations_are_missing(): void
+    {
+        $epic = Epic::factory()->create();
+        $epic->setRelation('project', null);
+
+        $list = app(EpicListTransformer::class)->active(
+            new LengthAwarePaginator([$epic], 1, 15),
+            '',
+        );
+
+        $this->assertSame('—', $list['rows'][0]['project']);
+        $this->assertSame('—', $list['rows'][0]['customer']);
+        $this->assertSame('—', $list['rows'][0]['actions'][0]['epic']['project_label']);
     }
 
     public function test_database_rejects_duplicate_epic_names_in_the_same_project(): void

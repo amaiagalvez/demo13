@@ -4,7 +4,6 @@ namespace App\Transformers;
 
 use App\Models\Epic;
 use App\Models\Project;
-use App\Models\Customer;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class EpicListTransformer
@@ -169,16 +168,13 @@ class EpicListTransformer
      */
     private function columns(Epic $epic): array
     {
-        /** @var Project $project */
         $project = $epic->project;
-        /** @var Customer $customer */
-        $customer = $project->customer;
 
         return [
             'id' => $epic->id,
             'name' => $epic->name,
-            'project' => $project->name,
-            'customer' => $customer->name,
+            'project' => $project?->name ?? '—',
+            'customer' => $project?->customer?->name ?? '—',
             'startDate' => $epic->start_date?->format('Y-m-d') ?? '',
             'endDate' => $epic->end_date?->format('Y-m-d') ?? '',
             'commentsCount' => (int) $epic->comments_count,
@@ -193,7 +189,7 @@ class EpicListTransformer
             return '—';
         }
 
-        return $project->name.' ('.($project->customer->name ?? '—').')';
+        return $project->name.' ('.($project->customer?->name ?? '—').')';
     }
 
     /**
