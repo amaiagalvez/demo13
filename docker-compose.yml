@@ -41,6 +41,7 @@ services:
             HOME: /tmp
             APP_URL: http://laravel13-dusk
             APP_CONFIG_CACHE: /tmp/laravel13-dusk-config-cache.php
+            DUSK_CHROMEDRIVER_PATH: /usr/bin/chromedriver
             DB_CONNECTION: mysql
             DB_HOST: db
             DB_PORT: 3306
