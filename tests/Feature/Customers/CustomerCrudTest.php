@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Support\Facades\Gate;
@@ -516,7 +517,9 @@ class CustomerCrudTest extends TestCase
 
         Customer::factory()->create(['name' => 'Aardvark customer']);
 
-        foreach (range(2, 16) as $number) {
+        $total = ListQueryBase::PER_PAGE + 1;
+
+        for ($number = 2; $number <= $total; $number++) {
             Customer::factory()->create(['name' => sprintf('Customer %02d', $number)]);
         }
 
@@ -524,7 +527,7 @@ class CustomerCrudTest extends TestCase
             ->assertOk()
             ->assertSee('customer-pagination')
             ->assertSee('Aardvark customer')
-            ->assertDontSee('Customer 16');
+            ->assertDontSee(sprintf('Customer %02d', $total));
     }
 
     public function test_customers_can_be_searched_by_visible_data(): void
@@ -582,7 +585,10 @@ class CustomerCrudTest extends TestCase
     public function test_customer_list_returns_an_empty_result_for_a_page_beyond_the_last_page(): void
     {
         $this->actingAs(User::factory()->create());
-        Customer::factory()->count(6)->create();
+
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            Customer::factory()->create();
+        }
 
         $this->get(route('customers.index', ['page' => 999]))
             ->assertOk()
@@ -590,7 +596,7 @@ class CustomerCrudTest extends TestCase
                 'customers',
                 static fn (LengthAwarePaginator $customers): bool => $customers->currentPage() === 999
                     && $customers->count() === 0
-                    && $customers->total() === 6
+                    && $customers->total() === ListQueryBase::PER_PAGE + 1
             );
     }
 }

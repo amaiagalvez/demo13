@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use App\Queries\ListQueryBase;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
@@ -176,12 +177,21 @@ class EpicCrudTest extends TestCase
         $zuluProjectZuluCustomer = Project::factory()->for($zuluCustomer)->create(['name' => 'Zulu project Z']);
 
         $dates = ['start_date' => '2026-10-01', 'end_date' => '2026-10-03'];
-        Epic::factory()->withoutDates()->for($alphaProject)->create(['name' => 'Epic without dates']);
         Epic::factory()->for($alphaProject)->create(['name' => 'Epic later start', 'start_date' => '2026-10-02', 'end_date' => '2026-10-03']);
         Epic::factory()->for($alphaProject)->create(['name' => 'Epic later end', 'start_date' => '2026-10-01', 'end_date' => '2026-10-04']);
         Epic::factory()->for($zuluProjectZuluCustomer)->create(['name' => 'Epic zulu customer', ...$dates]);
         Epic::factory()->for($zuluProjectAlphaCustomer)->create(['name' => 'Epic alpha customer', ...$dates]);
         Epic::factory()->for($alphaProject)->create(['name' => 'Epic alpha project', ...$dates]);
+
+        // Fill the first page so the undated epic, which always sorts last, lands on the second one.
+        for ($index = 6; $index <= ListQueryBase::PER_PAGE; $index++) {
+            Epic::factory()->for($alphaProject)->create([
+                'name' => "Epic filler {$index}",
+                ...$dates,
+            ]);
+        }
+
+        Epic::factory()->withoutDates()->for($alphaProject)->create(['name' => 'Epic without dates']);
 
         $this->get(route('epics.index'))
             ->assertSeeInOrder([
@@ -290,7 +300,9 @@ class EpicCrudTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create();
-        Epic::factory()->count(16)->for($project)->create();
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            Epic::factory()->for($project)->create();
+        }
 
         $this->get(route('epics.index'))
             ->assertOk()

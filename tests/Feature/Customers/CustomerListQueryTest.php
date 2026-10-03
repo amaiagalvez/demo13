@@ -4,6 +4,7 @@ namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\Customer;
+use App\Queries\ListQueryBase;
 use App\Queries\Customers\CustomerListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -98,23 +99,29 @@ class CustomerListQueryTest extends TestCase
         $this->assertSame(['Ane\\One'], $customers->pluck('name')->all());
     }
 
-    public function test_lists_are_paginated_by_five_customers(): void
+    public function test_lists_are_paginated_by_the_shared_page_size(): void
     {
-        Customer::factory()->count(6)->create();
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            Customer::factory()->create();
+        }
 
         $customers = app(CustomerListQuery::class)->active('');
 
-        $this->assertSame(CustomerListQuery::PER_PAGE, $customers->perPage());
+        $this->assertSame(ListQueryBase::PER_PAGE, $customers->perPage());
+        $this->assertSame(ListQueryBase::PER_PAGE + 1, $customers->total());
         $this->assertSame(2, $customers->lastPage());
     }
 
-    public function test_trashed_lists_are_paginated_by_five_customers(): void
+    public function test_trashed_lists_are_paginated_by_the_shared_page_size(): void
     {
-        Customer::factory()->count(6)->trashed()->create();
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            Customer::factory()->trashed()->create();
+        }
 
         $customers = app(CustomerListQuery::class)->trashed('');
 
-        $this->assertSame(CustomerListQuery::PER_PAGE, $customers->perPage());
+        $this->assertSame(ListQueryBase::PER_PAGE, $customers->perPage());
+        $this->assertSame(ListQueryBase::PER_PAGE + 1, $customers->total());
         $this->assertSame(2, $customers->lastPage());
     }
 }

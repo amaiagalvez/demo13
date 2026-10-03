@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
@@ -394,7 +395,9 @@ class ProjectCrudTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
-        Project::factory()->count(16)->for($customer)->create();
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            Project::factory()->for($customer)->create();
+        }
 
         $this->get(route('projects.index'))
             ->assertOk()
