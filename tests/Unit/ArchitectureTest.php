@@ -9,6 +9,7 @@ use ReflectionMethod;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -58,6 +59,20 @@ class ArchitectureTest extends TestCase
             foreach (['list', 'form'] as $view) {
                 $this->assertFileExists(resource_path("views/{$plural}/{$view}.blade.php"));
             }
+        }
+    }
+
+    public function test_resource_view_abilities_match_show_routes(): void
+    {
+        foreach (self::RESOURCES as $resource => $modelClass) {
+            $policy = new ReflectionClass("App\\Policies\\{$resource}Policy");
+            $hasShowRoute = Route::has(strtolower($resource) . 's.show');
+
+            $this->assertSame(
+                $hasShowRoute,
+                $policy->hasMethod('view'),
+                "{$resource}Policy::view must exist exactly when its show route exists",
+            );
         }
     }
 
@@ -194,6 +209,10 @@ class ArchitectureTest extends TestCase
                 $reflection->isSubclassOf(FormRequest::class),
                 "{$reflection->getName()} must extend FormRequest",
             );
+
+            if ($reflection->isAbstract()) {
+                continue;
+            }
 
             foreach (['rules', 'authorize'] as $method) {
                 $this->assertTrue(

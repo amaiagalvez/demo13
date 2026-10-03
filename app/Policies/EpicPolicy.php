@@ -16,14 +16,6 @@ class EpicPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Epic $epic): bool
-    {
-        return true;
-    }
-
-    /**
      * Determine whether the user can create models.
      */
     public function create(User $user): bool

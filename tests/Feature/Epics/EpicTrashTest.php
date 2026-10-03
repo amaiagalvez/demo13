@@ -102,11 +102,12 @@ class EpicTrashTest extends TestCase
         $this->assertDatabaseMissing('epics', ['id' => $activeEpic->id]);
     }
 
-    public function test_active_epics_cannot_be_permanently_deleted_from_the_trash_route(): void
+    public function test_active_epics_are_not_found_through_trash_actions(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
 
+        $this->patch(route('epics.trash.restore', $epic->id))->assertNotFound();
         $this->delete(route('epics.trash.destroy', $epic->id))->assertNotFound();
 
         $this->assertModelExists($epic);
