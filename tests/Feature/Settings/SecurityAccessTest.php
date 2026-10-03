@@ -5,12 +5,9 @@ namespace Tests\Feature\Settings;
 use Tests\TestCase;
 use App\Models\User;
 use Laravel\Fortify\Features;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SecurityAccessTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,7 +23,7 @@ class SecurityAccessTest extends TestCase
     /* @chisel-password-confirmation */
     public function test_security_settings_page_requires_password_confirmation_when_enabled(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->make()->forceFill(['id' => 1]))
             ->get(route('security.edit'))
             ->assertRedirect(route('password.confirm'));
     }

@@ -4,22 +4,19 @@ namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicAccessTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_unverified_users_are_redirected_to_email_verification(): void
     {
-        $this->actingAs(User::factory()->unverified()->create())
+        $this->actingAs(User::factory()->unverified()->make()->forceFill(['id' => 1]))
             ->get(route('epics.index'))
             ->assertRedirect(route('verification.notice'));
     }
 
     public function test_invalid_search_input_is_rejected(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->make()->forceFill(['id' => 1]))
             ->get(route('epics.index', ['search' => ['Ane']]))
             ->assertSessionHasErrors(['search']);
     }

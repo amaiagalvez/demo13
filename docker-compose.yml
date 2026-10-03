@@ -48,6 +48,7 @@ services:
             DB_DATABASE: laravel_test
             DB_USERNAME: laravel
             DB_PASSWORD: laravel
+            SESSION_DRIVER: array
             WEB_DOCUMENT_ROOT: /docker/public
             CONTAINER_UID: 1000
         depends_on:

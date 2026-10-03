@@ -4,12 +4,9 @@ namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerAccessTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_guests_are_redirected_to_the_customers_login_page(): void
     {
         $this->get(route('customers.index'))->assertRedirect(route('login'));
@@ -17,14 +14,14 @@ class CustomerAccessTest extends TestCase
 
     public function test_unverified_users_are_redirected_to_email_verification(): void
     {
-        $this->actingAs(User::factory()->unverified()->create())
+        $this->actingAs(User::factory()->unverified()->make()->forceFill(['id' => 1]))
             ->get(route('customers.index'))
             ->assertRedirect(route('verification.notice'));
     }
 
     public function test_invalid_search_input_is_rejected(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->make()->forceFill(['id' => 1]))
             ->get(route('customers.index', ['search' => ['Ane']]))
             ->assertSessionHasErrors(['search']);
     }
