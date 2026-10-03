@@ -19,6 +19,36 @@ class ProjectCrudTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_has_customers_is_true_when_an_active_customer_exists(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create();
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertViewHas('hasCustomers', true);
+    }
+
+    public function test_has_customers_is_false_when_only_inactive_customers_exist(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->inactive()->create();
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertViewHas('hasCustomers', false);
+    }
+
+    public function test_has_customers_is_false_when_only_deleted_customers_exist(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->trashed()->create();
+
+        $this->get(route('projects.index'))
+            ->assertOk()
+            ->assertViewHas('hasCustomers', false);
+    }
+
     public function test_authenticated_users_can_create_update_and_delete_projects(): void
     {
         $this->actingAs(User::factory()->create());

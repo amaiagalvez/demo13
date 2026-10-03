@@ -13,6 +13,26 @@ class ProjectCustomerSelectTest extends DuskTestCase
 {
     use DatabaseMigrations;
 
+    private const OPEN_DIALOG = 'dialog[open]';
+
+    public function test_no_active_customers_action_opens_the_customer_form(): void
+    {
+        $user = User::factory()->create();
+        Customer::factory()->inactive()->create();
+        Customer::factory()->trashed()->create();
+
+        $this->browse(function (Browser $browser) use ($user): void {
+            $browser->loginAs($user)
+                ->visit('/projects')
+                ->click('[data-test="project-no-customer-form-button"]')
+                ->assertPathIs('/customers')
+                ->waitFor(self::OPEN_DIALOG)
+                ->assertSeeIn(self::OPEN_DIALOG, __('New customer'))
+                ->assertVisible('dialog[open] [data-test="customer-name"]')
+                ->assertMissing('dialog[open] [data-test="project-name"]');
+        });
+    }
+
     public function test_project_customer_select_can_search_and_create_customers(): void
     {
         $user = User::factory()->create();
@@ -33,7 +53,7 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 ->assertScript('typeof window.initializeProjectCustomerSelect', 'function')
                 ->waitUntil('typeof window.jQuery?.fn?.select2 === "function"', 10)
                 ->click('[data-test="project-create-button"]')
-                ->waitFor('dialog[open]')
+                ->waitFor(self::OPEN_DIALOG)
                 ->assertScript(
                     'document.querySelector("#project-customer-id").classList.contains("select2-hidden-accessible")',
                     true,

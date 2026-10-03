@@ -32,7 +32,7 @@ class ProjectController extends Controller
 
         return $this->listView($request, 'projects.list', [
             'projects' => $projects,
-            'hasCustomers' => Customer::query()->exists(),
+            'hasCustomers' => Customer::query()->where('active', true)->exists(),
             'selectedCustomer' => $selectedCustomer,
             'list' => $transformer->active($projects, $search),
         ]);

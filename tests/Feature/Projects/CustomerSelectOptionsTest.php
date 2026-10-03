@@ -32,8 +32,9 @@ class CustomerSelectOptionsTest extends TestCase
 
         $this->get(route('projects.index'))
             ->assertOk()
-            ->assertSee(__('No active customers are available. Open the project form to create one.'))
-            ->assertSee(__('Open project form'))
+            ->assertSee(__('No active customers are available. Open the customer form to create one.'))
+            ->assertSee(__('Open customer form'))
+            ->assertSee('href="'.route('customers.index', ['create' => 1]).'"', false)
             ->assertSee('project-no-customer-form-button');
     }
 
