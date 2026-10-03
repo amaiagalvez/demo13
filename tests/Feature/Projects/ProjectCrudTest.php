@@ -80,7 +80,7 @@ class ProjectCrudTest extends TestCase
             ->assertSee('id="project-form-heading"', false)
             ->assertSee('aria-labelledby="project-confirm-heading"', false)
             ->assertSee('id="project-confirm-heading"', false)
-            ->assertSee('project-edit-'.$project->id)
+            ->assertSee('project-edit-' . $project->id)
             ->assertSee('Website renewal')
             ->assertSee('title="Website renewal"', false)
             ->assertSee($customer->name);
@@ -244,8 +244,8 @@ class ProjectCrudTest extends TestCase
 
         $this->get(route('projects.index'))
             ->assertOk()
-            ->assertSeeInOrder(['project-epics-count-'.$project->id, '2'])
-            ->assertSeeInOrder(['project-comments-count-'.$project->id, '3']);
+            ->assertSeeInOrder(['project-epics-count-' . $project->id, '2'])
+            ->assertSeeInOrder(['project-comments-count-' . $project->id, '3']);
     }
 
     public function test_projects_are_ordered_by_start_date_end_date_and_customer_name(): void
@@ -357,6 +357,31 @@ class ProjectCrudTest extends TestCase
     public function test_guests_are_redirected_to_login_from_the_projects_list(): void
     {
         $this->get(route('projects.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_guests_cannot_create_update_or_delete_projects(): void
+    {
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create(['name' => 'Existing project']);
+
+        $this->post(route('projects.store'), [
+            'name' => 'Guest project',
+            'start_date' => '2045-07-09',
+            'customer_id' => $customer->id,
+        ])->assertRedirect(route('login'));
+
+        $this->put(route('projects.update', $project), [
+            'name' => 'Updated project',
+            'start_date' => '2045-07-09',
+            'customer_id' => $customer->id,
+        ])->assertRedirect(route('login'));
+
+        $this->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'name' => 'Existing project']);
+        $this->assertNotSoftDeleted($project);
     }
 
     private function insertProjectAfterNameUniquenessCheck(string $name): void

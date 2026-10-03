@@ -36,13 +36,24 @@ class EpicTrashTest extends TestCase
 
         $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
-            '<thead', __('Actions'), __('Name'), __('Project'), __('Customer'), __('Start date'), __('End date'),
-            __('Comments'), __('Deleted at'),
+            '<thead',
+            __('Actions'),
+            __('Name'),
+            __('Project'),
+            __('Customer'),
+            __('Start date'),
+            __('End date'),
+            __('Comments'),
+            __('Deleted at'),
         ], false)->assertSeeInOrder([
-            'Epic with dates', $project->name, $customer->name,
-            '2026-01-03', '2026-08-04', '2026-10-02',
+            'Epic with dates',
+            $project->name,
+            $customer->name,
+            '2026-01-03',
+            '2026-08-04',
+            '2026-10-02',
         ]);
-        $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"', false);
+        $response->assertSee('data-test="epic-comments-count-' . $epic->id . '"', false);
     }
 
     public function test_trash_orders_by_deletion_timestamp_descending_then_id_ascending(): void
@@ -57,7 +68,9 @@ class EpicTrashTest extends TestCase
         $response = $this->get(route('epics.trash.index'));
 
         $response->assertSeeInOrder([
-            $newerEpic->name, $tiedEpic->name, $olderEpic->name,
+            $newerEpic->name,
+            $tiedEpic->name,
+            $olderEpic->name,
         ]);
     }
 
@@ -141,6 +154,24 @@ class EpicTrashTest extends TestCase
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
             ->assertSessionHas('status', __('Epic restored successfully.'));
 
+        $this->assertNotSoftDeleted($deletedEpic);
+    }
+
+    public function test_confirmed_restore_does_not_create_an_additional_epic(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Restored epic']);
+
+        $this->patch(route('epics.trash.restore', $deletedEpic->id), [
+            'resolve_name_conflict' => '1',
+        ])
+            ->assertRedirect(route('epics.trash.index'))
+            ->assertSessionHas(
+                'status',
+                __('Epic restored successfully. No new epic was created with the repeated name.'),
+            );
+
+        $this->assertDatabaseCount('epics', 1);
         $this->assertNotSoftDeleted($deletedEpic);
     }
 

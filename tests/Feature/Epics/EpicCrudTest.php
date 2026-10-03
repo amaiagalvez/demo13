@@ -57,7 +57,7 @@ class EpicCrudTest extends TestCase
             ->assertSee('id="epic-form-heading"', false)
             ->assertSee('aria-labelledby="epic-confirm-heading"', false)
             ->assertSee('id="epic-confirm-heading"', false)
-            ->assertSee('epic-edit-'.$epic->id)
+            ->assertSee('epic-edit-' . $epic->id)
             ->assertSee('Checkout flow')
             ->assertSee('title="Checkout flow"', false)
             ->assertSee($project->name)
@@ -195,12 +195,35 @@ class EpicCrudTest extends TestCase
 
         $this->get(route('epics.index'))
             ->assertOk()
-            ->assertSeeInOrder(['epic-comments-count-'.$epic->id, '3']);
+            ->assertSeeInOrder(['epic-comments-count-' . $epic->id, '3']);
     }
 
     public function test_guests_are_redirected_to_login_from_the_epics_list(): void
     {
         $this->get(route('epics.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_guests_cannot_create_update_or_delete_epics(): void
+    {
+        $project = Project::factory()->create();
+        $epic = Epic::factory()->for($project)->create(['name' => 'Existing epic']);
+
+        $this->post(route('epics.store'), [
+            'name' => 'Guest epic',
+            'project_id' => $project->id,
+        ])->assertRedirect(route('login'));
+
+        $this->put(route('epics.update', $epic), [
+            'name' => 'Updated epic',
+            'project_id' => $project->id,
+        ])->assertRedirect(route('login'));
+
+        $this->delete(route('epics.destroy', $epic))
+            ->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('epics', 1);
+        $this->assertDatabaseHas('epics', ['id' => $epic->id, 'name' => 'Existing epic']);
+        $this->assertNotSoftDeleted($epic);
     }
 
     public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void

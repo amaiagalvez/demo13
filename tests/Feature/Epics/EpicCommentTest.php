@@ -77,7 +77,7 @@ class EpicCommentTest extends TestCase
 
         foreach (range(1, $limit) as $index) {
             EpicComment::factory()->for($epic)->create([
-                'body' => 'Recent comment '.$index,
+                'body' => 'Recent comment ' . $index,
                 'created_at' => now()->subMinutes($limit - $index),
             ]);
         }
@@ -89,15 +89,15 @@ class EpicCommentTest extends TestCase
             ->assertDontSee('Oldest hidden comment')
             ->assertDontSee('Recent comment 1')
             ->assertDontSee('Other epic comment')
-            ->assertSee('epic-comments-count-'.$epic->id, false);
+            ->assertSee('epic-comments-count-' . $epic->id, false);
 
         $this->getJson(route('epics.comments.index', $epic))
             ->assertOk()
             ->assertJsonCount($limit, 'comments')
             ->assertJsonMissing(['body' => 'Oldest hidden comment'])
             ->assertJsonMissing(['body' => 'Other epic comment'])
-            ->assertJsonPath('comments.0.body', 'Recent comment '.$limit)
-            ->assertJsonPath('comments.'.($limit - 1).'.body', 'Recent comment 1');
+            ->assertJsonPath('comments.0.body', 'Recent comment ' . $limit)
+            ->assertJsonPath('comments.' . ($limit - 1) . '.body', 'Recent comment 1');
     }
 
     public function test_comment_body_is_required(): void
@@ -107,6 +107,33 @@ class EpicCommentTest extends TestCase
 
         $this->from(route('epics.index'))
             ->post(route('epics.comments.store', $epic), ['body' => '   '])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrorsIn('comment', ['body']);
+
+        $this->assertDatabaseCount('epic_comments', 0);
+    }
+
+    public function test_comment_body_accepts_5000_characters_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create();
+        $body = str_repeat('x', 5000);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.comments.store', $epic), ['body' => $body])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('epic_comments', ['epic_id' => $epic->id, 'body' => $body]);
+    }
+
+    public function test_comment_body_rejects_5001_characters_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create();
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.comments.store', $epic), ['body' => str_repeat('x', 5001)])
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrorsIn('comment', ['body']);
 

@@ -31,4 +31,14 @@ class SecurityAccessTest extends TestCase
             ->assertRedirect(route('password.confirm'));
     }
     /* @end-chisel-password-confirmation */
+
+    public function test_passkey_endpoint_discovery_is_public_and_points_to_security_settings(): void
+    {
+        $this->getJson(route('well-known.passkeys'))
+            ->assertOk()
+            ->assertExactJson([
+                'enroll' => route('security.edit'),
+                'manage' => route('security.edit'),
+            ]);
+    }
 }

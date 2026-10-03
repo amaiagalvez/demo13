@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerCrudTest extends TestCase
@@ -37,7 +38,7 @@ class CustomerCrudTest extends TestCase
             ->assertSee('id="customer-form-heading"', false)
             ->assertSee('aria-labelledby="customer-confirm-heading"', false)
             ->assertSee('id="customer-confirm-heading"', false)
-            ->assertSee('customer-edit-'.$customer->id);
+            ->assertSee('customer-edit-' . $customer->id);
 
         $this->put(route('customers.update', $customer), ['name' => 'Jon Bezeroa'])
             ->assertRedirect(route('customers.index'));
@@ -65,7 +66,7 @@ class CustomerCrudTest extends TestCase
     public function test_customer_creation_is_forbidden_when_the_gate_denies_it(): void
     {
         $this->actingAs(User::factory()->create());
-        Gate::before(static fn (User $user, string $ability): bool => false);
+        Gate::before(static fn(User $user, string $ability): bool => false);
 
         $this->post(route('customers.store'), ['name' => 'Forbidden customer'])
             ->assertForbidden();
@@ -100,9 +101,9 @@ class CustomerCrudTest extends TestCase
 
         $this->get(route('customers.index'))
             ->assertOk()
-            ->assertSeeInOrder(['customer-projects-count-'.$customer->id, '2'])
-            ->assertSeeInOrder(['customer-epics-count-'.$customer->id, '3'])
-            ->assertSeeInOrder(['customer-comments-count-'.$customer->id, '5']);
+            ->assertSeeInOrder(['customer-projects-count-' . $customer->id, '2'])
+            ->assertSeeInOrder(['customer-epics-count-' . $customer->id, '3'])
+            ->assertSeeInOrder(['customer-comments-count-' . $customer->id, '5']);
     }
 
     public function test_customer_with_a_trashed_project_cannot_be_deleted(): void
@@ -208,6 +209,18 @@ class CustomerCrudTest extends TestCase
         $this->assertDatabaseHas('customers', ['name' => 'Ane Bezeroa']);
     }
 
+    public function test_store_accepts_a_255_character_unicode_name_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $name = str_repeat('x', 252) . 'é中😀';
+
+        $this->post(route('customers.store'), ['name' => $name])
+            ->assertRedirect(route('customers.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('customers', ['name' => $name]);
+    }
+
     public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
     {
         $this->actingAs(User::factory()->create());
@@ -293,13 +306,13 @@ class CustomerCrudTest extends TestCase
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), [
-                '_customer_form' => 'edit-'.$customer->id,
+                '_customer_form' => 'edit-' . $customer->id,
                 '_customer_id' => $customer->id,
                 'name' => '',
             ])
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name'])
-            ->assertSessionHasInput('_customer_form', 'edit-'.$customer->id)
+            ->assertSessionHasInput('_customer_form', 'edit-' . $customer->id)
             ->assertSessionHasInput('_customer_id', (string) $customer->id);
     }
 
@@ -369,6 +382,33 @@ class CustomerCrudTest extends TestCase
         $this->get(route('customers.index', ['search' => 'Searchable']))
             ->assertOk()
             ->assertSee('search=Searchable', false);
+    }
+
+    public function test_empty_customer_search_returns_all_customers(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create(['name' => 'Ane Bezeroa']);
+        Customer::factory()->create(['name' => 'Jon Bezeroa']);
+
+        $this->get(route('customers.index', ['search' => '']))
+            ->assertOk()
+            ->assertSee('Ane Bezeroa')
+            ->assertSee('Jon Bezeroa');
+    }
+
+    public function test_customer_list_returns_an_empty_result_for_a_page_beyond_the_last_page(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->count(6)->create();
+
+        $this->get(route('customers.index', ['page' => 999]))
+            ->assertOk()
+            ->assertViewHas(
+                'customers',
+                static fn(LengthAwarePaginator $customers): bool => $customers->currentPage() === 999
+                    && $customers->count() === 0
+                    && $customers->total() === 6
+            );
     }
 
     private function insertCustomerAfterNameUniquenessCheck(string $name): void
