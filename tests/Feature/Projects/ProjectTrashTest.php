@@ -73,15 +73,25 @@ class ProjectTrashTest extends TestCase
     public function test_deleted_project_with_epics_cannot_be_permanently_deleted(): void
     {
         $this->actingAs(User::factory()->create());
-        $project = Project::factory()->create();
+        $project = Project::factory()->trashed()->create();
         Epic::factory()->for($project)->create();
-        $project->delete();
 
         $this->delete(route('projects.trash.destroy', $project->id))
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas('error', __('Project cannot be permanently deleted while it has epics.'));
 
         $this->assertSoftDeleted($project);
+    }
+
+    public function test_project_model_cannot_be_force_deleted_while_it_has_trashed_epics(): void
+    {
+        $project = Project::factory()->trashed()->create();
+        $epic = Epic::factory()->for($project)->trashed()->create();
+
+        $this->assertFalse($project->forceDelete());
+
+        $this->assertSoftDeleted($project);
+        $this->assertSoftDeleted($epic);
     }
 
     public function test_project_restore_conflict_resolution_reports_that_no_duplicate_was_created(): void

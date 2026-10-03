@@ -3,6 +3,7 @@
 namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
+use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
@@ -29,7 +30,6 @@ class CustomerCrudTest extends TestCase
             ->assertOk()
             ->assertSee('role="status"', false)
             ->assertSee('aria-live="polite"', false)
-            ->assertSee('datetime="'.$customer->created_at?->toIso8601String().'"', false)
             ->assertSee('customer-create')
             ->assertSee('aria-labelledby="customer-form-heading"', false)
             ->assertSee('id="customer-form-heading"', false)
@@ -58,6 +58,33 @@ class CustomerCrudTest extends TestCase
 
         $this->assertNotSoftDeleted($customer);
         $this->assertModelExists($project);
+    }
+
+    public function test_customer_model_cannot_be_deleted_while_it_has_projects(): void
+    {
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+
+        $this->assertFalse($customer->delete());
+
+        $this->assertNotSoftDeleted($customer);
+        $this->assertModelExists($project);
+    }
+
+    public function test_customer_list_shows_the_number_of_active_projects_and_epics(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+        Epic::factory()->count(3)->for($project)->create();
+        Project::factory()->for($customer)->inactive()->create();
+        Epic::factory()->for($project)->inactive()->create();
+        Epic::factory()->for($project)->trashed()->create();
+
+        $this->get(route('customers.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['customer-projects-count-'.$customer->id, '1'])
+            ->assertSeeInOrder(['customer-epics-count-'.$customer->id, '3']);
     }
 
     public function test_customer_with_a_trashed_project_cannot_be_deleted(): void

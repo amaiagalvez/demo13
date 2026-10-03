@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Project;
+use App\Models\Customer;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
@@ -23,6 +25,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Customer::deleting(
+            static fn (Customer $customer): bool => ! $customer->projects()->withTrashed()->exists(),
+        );
+        Project::deleting(
+            static fn (Project $project): bool => ! $project->epics()->withTrashed()->exists(),
+        );
+
         $this->configureDefaults();
     }
 

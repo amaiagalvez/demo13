@@ -18,7 +18,6 @@ class CustomerListTransformer
             'state' => 'active',
             'extraDateHeading' => null,
             'inactiveUrl' => route('customers.inactive.index'),
-            'dateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('No customers yet.')
                 : __('No customers match your search.'),
@@ -77,7 +76,6 @@ class CustomerListTransformer
         return [
             'resource' => __('Customers'),
             'state' => 'inactive',
-            'dateHeading' => __('Created at'),
             'extraDateHeading' => __('Updated at'),
             'emptyMessage' => $search === '' ? __('No inactive records.') : __('No customers match your search.'),
             'search' => $this->search(route('customers.inactive.index'), $search),
@@ -119,7 +117,6 @@ class CustomerListTransformer
             'resource' => __('Customers'),
             'state' => 'trash',
             'extraDateHeading' => __('Deleted at'),
-            'dateHeading' => __('Created at'),
             'emptyMessage' => $search === ''
                 ? __('Trash is empty.')
                 : __('No customers match your search.'),
@@ -167,14 +164,15 @@ class CustomerListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, date: ?string}
+     * @return array{id: int, name: string, projectsCount: int, epicsCount: int}
      */
     private function columns(Customer $customer): array
     {
         return [
             'id' => $customer->id,
             'name' => $customer->name,
-            'date' => $customer->created_at?->toIso8601String(),
+            'projectsCount' => (int) $customer->projects_count,
+            'epicsCount' => (int) $customer->epics_count,
         ];
     }
 

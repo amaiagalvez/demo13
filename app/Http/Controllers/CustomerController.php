@@ -94,12 +94,10 @@ class CustomerController extends Controller
     {
         $this->authorize('delete', $customer);
 
-        if ($customer->projects()->withTrashed()->exists()) {
+        if ($customer->delete() === false) {
             return to_route('customers.index')
                 ->with('error', __('Customer cannot be deleted while it has projects.'));
         }
-
-        $customer->delete();
 
         return to_route('customers.index')->with('status', __('Customer moved to trash.'));
     }

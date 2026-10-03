@@ -85,7 +85,8 @@
                         <span class="sr-only">{{ __('Actions') }}</span>
                     </flux:table.column>
                     <flux:table.column>{{ __('Name') }}</flux:table.column>
-                    <flux:table.column>{{ $list['dateHeading'] }}</flux:table.column>
+                    <flux:table.column>{{ __('Projects') }}</flux:table.column>
+                    <flux:table.column>{{ __('Epics') }}</flux:table.column>
                     @if ($list['extraDateHeading'])
                         <flux:table.column>{{ $list['extraDateHeading'] }}</flux:table.column>
                     @endif
@@ -102,8 +103,16 @@
                             <flux:table.cell class="font-medium">{{ $row['name'] }}
                             </flux:table.cell>
                             <flux:table.cell>
-                                <x-list.local-time :datetime="$row['date']"
-                                    :data-test="'customer-created-at-'.$row['id']" />
+                                <flux:badge size="sm" icon="briefcase"
+                                    :data-test="'customer-projects-count-'.$row['id']">
+                                    {{ $row['projectsCount'] }}
+                                </flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" icon="rectangle-stack"
+                                    :data-test="'customer-epics-count-'.$row['id']">
+                                    {{ $row['epicsCount'] }}
+                                </flux:badge>
                             </flux:table.cell>
                             @if ($list['extraDateHeading'])
                                 <flux:table.cell>
@@ -114,7 +123,7 @@
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell :colspan="$list['create'] ? 3 : 4" class="py-8 text-center text-zinc-500">
+                            <flux:table.cell :colspan="$list['create'] ? 4 : 5" class="py-8 text-center text-zinc-500">
                                 <div class="flex flex-col items-center gap-3 px-4 py-4">
                                     <flux:icon.magnifying-glass class="size-8 text-zinc-400 dark:text-zinc-500"
                                         aria-hidden="true" />

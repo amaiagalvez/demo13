@@ -18,18 +18,15 @@ class CustomerTrashTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $this->travelTo('2026-10-02 12:00:00');
-        $customer = Customer::factory()->create([
-            'name' => 'Customer with dates',
-            'created_at' => '2026-01-03 09:00:00',
-        ]);
+        $customer = Customer::factory()->create(['name' => 'Customer with dates']);
         $activeResponse = $this->get(route('customers.index'));
         $customer->delete();
 
         $response = $this->get(route('customers.trash.index'));
 
         $activeResponse->assertDontSee(__('Deleted at'));
-        $response->assertSeeInOrder(['<thead', __('Actions'), __('Name'), __('Created at'), __('Deleted at')], false)
-            ->assertSeeInOrder(['Customer with dates', '2026-01-03', '2026-10-02']);
+        $response->assertSeeInOrder(['<thead', __('Actions'), __('Name'), __('Projects'), __('Epics'), __('Deleted at')], false)
+            ->assertSeeInOrder(['Customer with dates', '2026-10-02']);
     }
 
     public function test_trash_only_lists_deleted_customers(): void
@@ -156,6 +153,17 @@ class CustomerTrashTest extends TestCase
 
         $this->assertSoftDeleted($customer);
         $this->assertModelExists($project);
+    }
+
+    public function test_customer_model_cannot_be_force_deleted_while_it_has_trashed_projects(): void
+    {
+        $customer = Customer::factory()->trashed()->create();
+        $project = Project::factory()->for($customer)->trashed()->create();
+
+        $this->assertFalse($customer->forceDelete());
+
+        $this->assertSoftDeleted($customer);
+        $this->assertSoftDeleted($project);
     }
 
     public function test_active_customer_cannot_be_restored_or_permanently_deleted(): void

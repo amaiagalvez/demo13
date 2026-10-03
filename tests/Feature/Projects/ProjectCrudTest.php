@@ -269,6 +269,17 @@ class ProjectCrudTest extends TestCase
         $this->assertNotSoftDeleted($project);
     }
 
+    public function test_project_model_cannot_be_deleted_while_it_has_epics(): void
+    {
+        $project = Project::factory()->create();
+        $epic = Epic::factory()->for($project)->create();
+
+        $this->assertFalse($project->delete());
+
+        $this->assertNotSoftDeleted($project);
+        $this->assertModelExists($epic);
+    }
+
     public function test_guests_are_redirected_to_login_from_the_projects_list(): void
     {
         $this->get(route('projects.index'))->assertRedirect(route('login'));

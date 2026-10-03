@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property bool $active
  * @property-read bool $projects_exists
+ * @property-read int $projects_count
+ * @property-read int $epics_count
  */
 #[Fillable(['name'])]
 #[UsePolicy(CustomerPolicy::class)]
@@ -45,5 +48,15 @@ class Customer extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    /**
+     * Epics reached through the projects of this customer; trashed projects are excluded.
+     *
+     * @return HasManyThrough<Epic, Project, $this>
+     */
+    public function epics(): HasManyThrough
+    {
+        return $this->hasManyThrough(Epic::class, Project::class, 'customer_id', 'project_id');
     }
 }

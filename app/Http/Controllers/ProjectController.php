@@ -88,12 +88,10 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        if ($project->epics()->withTrashed()->exists()) {
+        if ($project->delete() === false) {
             return to_route('projects.index')
                 ->with('error', __('Project cannot be deleted while it has epics.'));
         }
-
-        $project->delete();
 
         return to_route('projects.index')->with('status', __('Project moved to trash.'));
     }

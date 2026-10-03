@@ -58,12 +58,10 @@ class CustomerTrashController extends Controller
         $customer = Customer::onlyTrashed()->findOrFail($customer);
         $this->authorize('forceDelete', $customer);
 
-        if ($customer->projects()->withTrashed()->exists()) {
+        if ($customer->forceDelete() === false) {
             return to_route('customers.trash.index')
                 ->with('error', __('Customer cannot be permanently deleted while it has projects.'));
         }
-
-        $customer->forceDelete();
 
         return to_route('customers.trash.index')->with('status', __('Customer permanently deleted.'));
     }

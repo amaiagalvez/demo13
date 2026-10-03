@@ -19,11 +19,13 @@ final class CustomerListQuery extends ListQueryBase
     public function active(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            Customer::query()->where('active', true)
-                ->withExists(['projects' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)])
-                ->orderBy('name'),
+            $this->withActiveCounts(
+                Customer::query()->where('active', true)
+                    ->withExists(['projects' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)])
+                    ->orderBy('name'),
+            ),
             $search,
-            searchColumns: ['name', 'created_at'],
+            searchColumns: ['name'],
         );
     }
 
@@ -33,9 +35,9 @@ final class CustomerListQuery extends ListQueryBase
     public function inactive(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            Customer::query()->where('active', false)->orderBy('name')->orderBy('id'),
+            $this->withActiveCounts(Customer::query()->where('active', false)->orderBy('name')->orderBy('id')),
             $search,
-            searchColumns: ['name', 'created_at', 'updated_at'],
+            searchColumns: ['name', 'updated_at'],
         );
     }
 
@@ -45,9 +47,23 @@ final class CustomerListQuery extends ListQueryBase
     public function trashed(string $search): LengthAwarePaginator
     {
         return $this->paginate(
-            Customer::onlyTrashed()->latest('deleted_at')->orderBy('id'),
+            $this->withActiveCounts(Customer::onlyTrashed()->latest('deleted_at')->orderBy('id')),
             $search,
             searchColumns: ['name', 'deleted_at'],
         );
+    }
+
+    /**
+     * Only active children are counted; deleted ones are excluded by the relations.
+     *
+     * @param  Builder<Customer>  $query
+     * @return Builder<Customer>
+     */
+    private function withActiveCounts(Builder $query): Builder
+    {
+        return $query->withCount([
+            'projects' => fn (Builder $projects) => $projects->where('projects.active', true),
+            'epics' => fn (Builder $epics) => $epics->where('epics.active', true),
+        ]);
     }
 }
