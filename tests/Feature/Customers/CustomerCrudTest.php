@@ -8,10 +8,9 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use Illuminate\Support\Facades\DB;
+use Tests\Support\RacesNameInsert;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\QueryException;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -252,7 +251,9 @@ class CustomerCrudTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $name = 'Concurrent Store Customer';
-        $this->insertCustomerAfterNameUniquenessCheck($name);
+        RacesNameInsert::afterUniquenessSelect('customers', $name, static function () use ($name): void {
+            Customer::factory()->create(['name' => $name]);
+        });
 
         $this->from(route('customers.index'))
             ->post(route('customers.store'), ['name' => $name])
@@ -270,7 +271,9 @@ class CustomerCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create(['name' => 'Original Customer']);
         $name = 'Concurrent Update Customer';
-        $this->insertCustomerAfterNameUniquenessCheck($name);
+        RacesNameInsert::afterUniquenessSelect('customers', $name, static function () use ($name): void {
+            Customer::factory()->create(['name' => $name]);
+        });
 
         $this->from(route('customers.index'))
             ->put(route('customers.update', $customer), ['name' => $name])
@@ -470,24 +473,5 @@ class CustomerCrudTest extends TestCase
                     && $customers->count() === 0
                     && $customers->total() === 6
             );
-    }
-
-    private function insertCustomerAfterNameUniquenessCheck(string $name): void
-    {
-        $competitorCreated = false;
-
-        DB::listen(static function (QueryExecuted $query) use ($name, &$competitorCreated): void {
-            if (
-                $competitorCreated
-                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'customers')
-                || ! in_array($name, $query->bindings, true)
-            ) {
-                return;
-            }
-
-            $competitorCreated = true;
-            Customer::factory()->create(['name' => $name]);
-        });
     }
 }

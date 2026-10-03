@@ -6,8 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Events\QueryExecuted;
+use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectTrashTest extends TestCase
@@ -195,21 +194,13 @@ class ProjectTrashTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $deletedProject = Project::factory()->trashed()->create(['name' => 'Concurrent restore project']);
-        $competitorCreated = false;
-
-        DB::listen(static function (QueryExecuted $query) use (&$competitorCreated): void {
-            if (
-                $competitorCreated
-                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'projects')
-                || ! in_array('Concurrent restore project', $query->bindings, true)
-            ) {
-                return;
-            }
-
-            $competitorCreated = true;
-            Project::factory()->create(['name' => 'Concurrent restore project']);
-        });
+        RacesNameInsert::afterUniquenessSelect(
+            'projects',
+            'Concurrent restore project',
+            static function (): void {
+                Project::factory()->create(['name' => 'Concurrent restore project']);
+            },
+        );
 
         $this->patch(route('projects.trash.restore', $deletedProject->id))
             ->assertRedirect(route('projects.trash.index'))

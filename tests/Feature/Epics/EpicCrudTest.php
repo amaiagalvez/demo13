@@ -8,10 +8,9 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use Illuminate\Support\Facades\DB;
+use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -324,7 +323,9 @@ class EpicCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create();
         $name = 'Concurrent epic';
-        $this->insertEpicAfterNameUniquenessCheck($project, $name);
+        RacesNameInsert::afterUniquenessSelect('epics', $name, static function () use ($project, $name): void {
+            Epic::factory()->for($project)->create(['name' => $name]);
+        });
 
         $this->from(route('epics.index'))
             ->post(route('epics.store'), [
@@ -350,7 +351,9 @@ class EpicCrudTest extends TestCase
             self::fail('The epic must belong to a project.');
         }
 
-        $this->insertEpicAfterNameUniquenessCheck($epicProject, $name);
+        RacesNameInsert::afterUniquenessSelect('epics', $name, static function () use ($epicProject, $name): void {
+            Epic::factory()->for($epicProject)->create(['name' => $name]);
+        });
 
         $this->from(route('epics.index'))
             ->put(route('epics.update', $epic), [
@@ -364,24 +367,5 @@ class EpicCrudTest extends TestCase
 
         $this->assertDatabaseHas('epics', ['id' => $epic->id, 'name' => 'Original epic']);
         $this->assertDatabaseHas('epics', ['name' => $name, 'deleted_at' => null]);
-    }
-
-    private function insertEpicAfterNameUniquenessCheck(Project $project, string $name): void
-    {
-        $competitorCreated = false;
-
-        DB::listen(static function (QueryExecuted $query) use ($project, $name, &$competitorCreated): void {
-            if (
-                $competitorCreated
-                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'epics')
-                || ! in_array($name, $query->bindings, true)
-            ) {
-                return;
-            }
-
-            $competitorCreated = true;
-            Epic::factory()->for($project)->create(['name' => $name]);
-        });
     }
 }

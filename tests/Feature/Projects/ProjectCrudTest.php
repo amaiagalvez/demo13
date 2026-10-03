@@ -8,10 +8,9 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use Illuminate\Support\Facades\DB;
+use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
 use App\Transformers\ProjectListTransformer;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -186,7 +185,9 @@ class ProjectCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
         $name = 'Concurrent project';
-        $this->insertProjectAfterNameUniquenessCheck($name);
+        RacesNameInsert::afterUniquenessSelect('projects', $name, static function () use ($name): void {
+            Project::factory()->create(['name' => $name]);
+        });
 
         $this->from(route('projects.index'))
             ->post(route('projects.store'), [
@@ -208,7 +209,9 @@ class ProjectCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create(['name' => 'Original project']);
         $name = 'Concurrent project update';
-        $this->insertProjectAfterNameUniquenessCheck($name);
+        RacesNameInsert::afterUniquenessSelect('projects', $name, static function () use ($name): void {
+            Project::factory()->create(['name' => $name]);
+        });
 
         $this->from(route('projects.index'))
             ->put(route('projects.update', $project), [
@@ -452,24 +455,5 @@ class ProjectCrudTest extends TestCase
         $this->assertDatabaseCount('projects', 1);
         $this->assertDatabaseHas('projects', ['id' => $project->id, 'name' => 'Existing project']);
         $this->assertNotSoftDeleted($project);
-    }
-
-    private function insertProjectAfterNameUniquenessCheck(string $name): void
-    {
-        $competitorCreated = false;
-
-        DB::listen(static function (QueryExecuted $query) use ($name, &$competitorCreated): void {
-            if (
-                $competitorCreated
-                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'projects')
-                || ! in_array($name, $query->bindings, true)
-            ) {
-                return;
-            }
-
-            $competitorCreated = true;
-            Project::factory()->create(['name' => $name]);
-        });
     }
 }

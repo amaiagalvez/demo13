@@ -6,8 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\EpicComment;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Events\QueryExecuted;
+use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicTrashTest extends TestCase
@@ -198,21 +197,13 @@ class EpicTrashTest extends TestCase
             self::fail('The deleted epic must belong to a project.');
         }
 
-        $competitorCreated = false;
-
-        DB::listen(static function (QueryExecuted $query) use ($deletedProject, &$competitorCreated): void {
-            if (
-                $competitorCreated
-                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'epics')
-                || ! in_array('Concurrent restore epic', $query->bindings, true)
-            ) {
-                return;
-            }
-
-            $competitorCreated = true;
-            Epic::factory()->for($deletedProject)->create(['name' => 'Concurrent restore epic']);
-        });
+        RacesNameInsert::afterUniquenessSelect(
+            'epics',
+            'Concurrent restore epic',
+            static function () use ($deletedProject): void {
+                Epic::factory()->for($deletedProject)->create(['name' => 'Concurrent restore epic']);
+            },
+        );
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
             ->assertRedirect(route('epics.trash.index'))

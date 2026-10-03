@@ -6,8 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Events\QueryExecuted;
+use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerTrashTest extends TestCase
@@ -100,21 +99,13 @@ class CustomerTrashTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $deletedCustomer = Customer::factory()->trashed()->create(['name' => 'Concurrent Restore Customer']);
-        $competitorCreated = false;
-
-        DB::listen(static function (QueryExecuted $query) use (&$competitorCreated): void {
-            if (
-                $competitorCreated
-                || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'customers')
-                || ! in_array('Concurrent Restore Customer', $query->bindings, true)
-            ) {
-                return;
-            }
-
-            $competitorCreated = true;
-            Customer::factory()->create(['name' => 'Concurrent Restore Customer']);
-        });
+        RacesNameInsert::afterUniquenessSelect(
+            'customers',
+            'Concurrent Restore Customer',
+            static function (): void {
+                Customer::factory()->create(['name' => 'Concurrent Restore Customer']);
+            },
+        );
 
         $this->patch(route('customers.trash.restore', $deletedCustomer->id))
             ->assertRedirect(route('customers.trash.index'))
