@@ -57,6 +57,10 @@ only inactive, non-deleted records and append the last modification date. Trash 
 include every deleted record regardless of `active`; restoring preserves that flag.
 Deactivation does not cascade to children. Index rows offer deactivation instead of
 deletion when a customer has projects or a project has epics, including deleted children.
+Parent selectors show only active customers when creating or changing a project and
+only active projects when creating or changing an epic. In edit mode, the current
+parent remains selected even if it has since become inactive; other inactive parents
+are not offered.
 
 Important constraints: customer and project names are unique among non-deleted records,
 including inactive records.

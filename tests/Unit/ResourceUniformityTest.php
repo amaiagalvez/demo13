@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\File;
 use App\Http\Requests\ProjectRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\EpicListRequest;
+use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\ProjectListRequest;
 use App\Transformers\EpicListTransformer;
 use App\Http\Requests\CustomerListRequest;
@@ -29,7 +30,6 @@ use App\Http\Requests\SearchableListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\ProjectListTransformer;
 use App\Transformers\CustomerListTransformer;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

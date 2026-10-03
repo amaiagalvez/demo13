@@ -22,15 +22,16 @@ final class CustomerSelectOptionsQuery extends ListQueryBase
         $pattern = $this->searchPattern($search);
 
         return Customer::query()
-            ->when($search !== '', fn (Builder $query) => $query->whereRaw(
-                'customers.name LIKE ? ESCAPE \''.self::LIKE_ESCAPE.'\'',
+            ->where('active', true)
+            ->when($search !== '', fn(Builder $query) => $query->whereRaw(
+                'customers.name LIKE ? ESCAPE \'' . self::LIKE_ESCAPE . '\'',
                 [$pattern],
             ))
             ->orderBy('customers.name')
             ->orderBy('customers.id')
             ->limit(self::RESULTS_LIMIT)
             ->get(['id', 'name'])
-            ->map(fn (Customer $customer): array => [
+            ->map(fn(Customer $customer): array => [
                 'id' => $customer->id,
                 'text' => $customer->name,
             ]);

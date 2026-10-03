@@ -21,7 +21,7 @@ class ProjectSelectOptionsTest extends TestCase
             ->assertViewHas('hasProjects', false)
             ->assertSee(__('No active projects are available. Open the project form to create one.'))
             ->assertSee(__('Open project form'))
-            ->assertSee('href="'.route('projects.index', ['create' => 1]).'"', false)
+            ->assertSee('href="' . route('projects.index', ['create' => 1]) . '"', false)
             ->assertSee('epic-no-project-form-button');
     }
 
@@ -96,6 +96,20 @@ class ProjectSelectOptionsTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'results')
             ->assertJsonPath('results.0.text', 'Project result 21 (Shared search customer)');
+    }
+
+    public function test_project_options_only_include_active_projects(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create();
+        Project::factory()->for($customer)->create(['name' => 'Active select project']);
+        Project::factory()->for($customer)->inactive()->create(['name' => 'Inactive select project']);
+        Project::factory()->for($customer)->trashed()->create(['name' => 'Deleted select project']);
+
+        $this->getJson(route('projects.options', ['q' => 'select project']))
+            ->assertOk()
+            ->assertJsonCount(1, 'results')
+            ->assertJsonPath('results.0.text', 'Active select project (' . $customer->name . ')');
     }
 
     public function test_project_options_reject_search_terms_over_one_hundred_characters(): void

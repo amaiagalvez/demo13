@@ -51,12 +51,13 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function authorizeLogViewer(): void
     {
-        $allowedEmails = config('log-viewer.allowed_emails', []);
-
         Gate::define(
             'viewLogViewer',
-            fn (User $user): bool => is_array($allowedEmails)
-                && in_array($user->email, $allowedEmails, true),
+            static function (User $user): bool {
+                $allowedEmails = config('log-viewer.allowed_emails', []);
+
+                return is_array($allowedEmails) && in_array($user->email, $allowedEmails, true);
+            },
         );
         Gate::define('downloadLogFile', fn (): bool => true);
         Gate::define('downloadLogFolder', fn (): bool => false);
@@ -75,14 +76,15 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
-                ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()
-            : null,
+        Password::defaults(
+            fn (): ?Password => app()->isProduction()
+                ? Password::min(12)
+                    ->mixedCase()
+                    ->letters()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised()
+                : null,
         );
     }
 }

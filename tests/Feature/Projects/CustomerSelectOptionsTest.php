@@ -34,7 +34,7 @@ class CustomerSelectOptionsTest extends TestCase
             ->assertOk()
             ->assertSee(__('No active customers are available. Open the customer form to create one.'))
             ->assertSee(__('Open customer form'))
-            ->assertSee('href="'.route('customers.index', ['create' => 1]).'"', false)
+            ->assertSee('href="' . route('customers.index', ['create' => 1]) . '"', false)
             ->assertSee('project-no-customer-form-button');
     }
 
@@ -54,6 +54,19 @@ class CustomerSelectOptionsTest extends TestCase
             ->assertJsonCount(20, 'results')
             ->assertJsonPath('results.0.text', 'Search result 01')
             ->assertJsonMissing(['text' => 'Search result 21']);
+    }
+
+    public function test_customer_options_only_include_active_customers(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Customer::factory()->create(['name' => 'Active select customer']);
+        Customer::factory()->inactive()->create(['name' => 'Inactive select customer']);
+        Customer::factory()->trashed()->create(['name' => 'Deleted select customer']);
+
+        $this->getJson(route('customers.options', ['q' => 'select customer']))
+            ->assertOk()
+            ->assertJsonCount(1, 'results')
+            ->assertJsonPath('results.0.text', 'Active select customer');
     }
 
     public function test_customer_options_reject_search_terms_over_one_hundred_characters(): void
