@@ -8,7 +8,7 @@ trait HasStates
 {
     public function inactive(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'active' => false,
         ]);
     }

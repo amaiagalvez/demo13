@@ -8,9 +8,10 @@ return [
     |--------------------------------------------------------------------------
     |
     | Every validated string has a ceiling, and the two ceilings come from two
-    | different places. "string" backs a varchar column, so its value is fixed
-    | by the schema (255). "longtext" backs a longText column, which the
-    | database does not bound, so the limit is a product decision taken here.
+    | different places. "string" backs a varchar column with a 255-character
+    | schema limit; its lower validation limit also keeps unique indexes within
+    | database key-size limits. "longtext" has no database length limit, so its
+    | ceiling is a product decision taken here.
     |
     | Rules, the maxlength attributes of the forms and the boundary tests all
     | read these values, so a change lands everywhere at once and the three

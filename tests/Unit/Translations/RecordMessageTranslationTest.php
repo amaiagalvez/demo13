@@ -33,6 +33,8 @@ class RecordMessageTranslationTest extends TestCase
         'Delete record?',
         'Permanently delete record?',
         'Restore record?',
+        'Search record',
+        'Loading records...',
     ];
 
     public function test_every_shared_message_is_translated_in_every_supported_locale(): void

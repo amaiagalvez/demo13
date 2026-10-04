@@ -356,10 +356,10 @@ class CustomerCrudTest extends TestCase
         $this->assertDatabaseHas('customers', ['name' => 'Ane Bezeroa']);
     }
 
-    public function test_store_accepts_a_255_character_unicode_name_over_http(): void
+    public function test_store_accepts_a_unicode_name_at_the_configured_maximum_over_http(): void
     {
         $this->actingAs(User::factory()->create());
-        $name = str_repeat('x', 252).'é中😀';
+        $name = str_repeat('x', MaxLength::string() - 3).'é中😀';
 
         $this->post(route('customers.store'), ['name' => $name])
             ->assertRedirect(route('customers.index'))

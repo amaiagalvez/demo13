@@ -118,11 +118,6 @@ class CustomerListTransformer extends ListTransformer
         return __('No customers yet.');
     }
 
-    protected function searchPlaceholder(): string
-    {
-        return __('Search customers...');
-    }
-
     protected function resourceKey(): string
     {
         return 'customer';

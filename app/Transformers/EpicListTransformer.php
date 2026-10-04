@@ -152,11 +152,6 @@ class EpicListTransformer extends ListTransformer
         return __('No epics yet.');
     }
 
-    protected function searchPlaceholder(): string
-    {
-        return __('Search epics...');
-    }
-
     protected function resourceKey(): string
     {
         return 'epic';

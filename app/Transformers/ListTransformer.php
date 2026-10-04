@@ -279,6 +279,15 @@ abstract class ListTransformer
     }
 
     /**
+     * Translated placeholder of the search box. Shared by every resource: the box lives in the
+     * common page skeleton, so it does not name the resource it filters.
+     */
+    protected function searchPlaceholder(): string
+    {
+        return __('Search record');
+    }
+
+    /**
      * Translated plural name of the resource.
      */
     abstract protected function resourceLabel(): string;
@@ -292,11 +301,6 @@ abstract class ListTransformer
      * Translated message shown when the resource has no records yet.
      */
     abstract protected function noRecordsMessage(): string;
-
-    /**
-     * Translated placeholder of the search box.
-     */
-    abstract protected function searchPlaceholder(): string;
 
     /**
      * Singular slug of the resource. It names the data-test attributes of the row actions, the

@@ -7,6 +7,7 @@ use App\Models\Project;
 use Tests\DuskTestCase;
 use App\Models\Customer;
 use Laravel\Dusk\Browser;
+use App\Support\Validation\MaxLength;
 use Facebook\WebDriver\Chrome\ChromeDevToolsDriver;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
@@ -43,7 +44,10 @@ class CustomerCrudTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($user, $customer, $longName): void {
             $browser->loginAs($user)
                 ->resize(1920, 1080)
-                ->visit('/customers?search='.urlencode($longName));
+                ->visit(route('customers.index', [
+                    'search' => substr($longName, 0, MaxLength::string()),
+                ]))
+                ->waitFor('[data-test="customer-name-'.$customer->id.'"]');
 
             $browser->assertScript(<<<'JS'
                 (() => {

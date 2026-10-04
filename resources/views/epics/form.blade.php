@@ -24,7 +24,7 @@
         </flux:select>
         <flux:error name="project_id" />
         <flux:text x-show="projectOptionsLoading" role="status" data-test="epic-project-loading">
-            {{ __('Loading projects...') }}
+            {{ __('Loading records...') }}
         </flux:text>
         <flux:text x-show="projectOptionsSearched && !projectOptionsLoading && !projectOptionsError && projectOptionsResultCount === 0"
             role="status" data-test="epic-project-empty">
@@ -116,7 +116,7 @@
                 </form>
 
                 <p x-show="form.commentsLoading" class="text-sm text-zinc-500"
-                    data-test="epic-comments-loading">{{ __('Loading comments...') }}</p>
+                    data-test="epic-comments-loading">{{ __('Loading records...') }}</p>
 
                 <p x-show="form.commentsError" x-text="form.commentsError" role="alert"
                     class="text-sm text-red-600" data-test="epic-comments-error"></p>

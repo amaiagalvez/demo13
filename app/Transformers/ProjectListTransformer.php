@@ -128,11 +128,6 @@ class ProjectListTransformer extends ListTransformer
         return __('No projects yet.');
     }
 
-    protected function searchPlaceholder(): string
-    {
-        return __('Search projects...');
-    }
-
     protected function resourceKey(): string
     {
         return 'project';
