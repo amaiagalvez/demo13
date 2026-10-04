@@ -67,11 +67,7 @@ final class CustomerListQuery extends ListQueryBase
         ?int $inactiveTotal = null,
         ?int $trashedTotal = null,
     ): array {
-        return [
-            'active' => $activeTotal ?? Customer::query()->where('active', true)->count(),
-            'inactive' => $inactiveTotal ?? Customer::query()->where('active', false)->count(),
-            'trashed' => $trashedTotal ?? Customer::onlyTrashed()->count(),
-        ];
+        return $this->countStates(Customer::class, $activeTotal, $inactiveTotal, $trashedTotal);
     }
 
     /**

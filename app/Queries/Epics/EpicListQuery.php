@@ -98,11 +98,7 @@ final class EpicListQuery extends ListQueryBase
         ?int $inactiveTotal = null,
         ?int $trashedTotal = null,
     ): array {
-        return [
-            'active' => $activeTotal ?? Epic::query()->where('epics.active', true)->count(),
-            'inactive' => $inactiveTotal ?? Epic::query()->where('epics.active', false)->count(),
-            'trashed' => $trashedTotal ?? Epic::onlyTrashed()->count(),
-        ];
+        return $this->countStates(Epic::class, $activeTotal, $inactiveTotal, $trashedTotal);
     }
 
     /**

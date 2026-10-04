@@ -6,9 +6,9 @@ use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @extends RestoreRequest<Project>
+ * @extends TrashDestroyRequest<Project>
  */
-final class ProjectRestoreRequest extends RestoreRequest
+final class ProjectDestroyRequest extends TrashDestroyRequest
 {
     /**
      * @return Project

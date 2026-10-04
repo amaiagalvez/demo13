@@ -4,16 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
+use App\Http\Requests\CustomerDestroyRequest;
 use App\Http\Requests\CustomerRestoreRequest;
 use App\Transformers\CustomerListTransformer;
-use App\Support\Database\UniqueConstraintViolation;
 
-class CustomerTrashController extends Controller
+/**
+ * @extends TrashController<Customer>
+ */
+class CustomerTrashController extends TrashController
 {
     public function index(
         CustomerListRequest $request,
@@ -35,54 +37,37 @@ class CustomerTrashController extends Controller
 
     public function restore(CustomerRestoreRequest $request): RedirectResponse
     {
-        $customer = $request->customer();
-
-        if (Customer::query()->where('name', $customer->name)->exists()) {
-            return $this->restoreConflictResponse();
-        }
-
-        try {
-            $customer->restore();
-        } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            return $this->restoreConflictResponse();
-        }
-
-        $message = $request->boolean('resolve_name_conflict')
-            ? __('Record restored successfully. No new record was created with the repeated name.')
-            : __('Record restored successfully.');
-
-        return to_route('customers.trash.index')->with('status', $message);
+        return $this->restoreTrashed($request);
     }
 
-    public function destroy(int $customer): RedirectResponse
+    public function destroy(CustomerDestroyRequest $request): RedirectResponse
     {
-        $customer = Customer::onlyTrashed()->findOrFail($customer);
-        $this->authorize('forceDelete', $customer);
-
-        $deleted = DB::transaction(static function () use ($customer): bool {
-            $lockedCustomer = Customer::onlyTrashed()
-                ->whereKey($customer->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            return $lockedCustomer->forceDelete() !== false;
-        });
-
-        if (! $deleted) {
-            return to_route('customers.trash.index')
-                ->with('error', __('Cannot be permanently deleted while it has related records.'));
-        }
-
-        return to_route('customers.trash.index')->with('status', __('Record permanently deleted.'));
+        return $this->destroyTrashed($request);
     }
 
-    private function restoreConflictResponse(): RedirectResponse
+    /**
+     * @param  Customer  $record
+     */
+    protected function restoreTrashedRecord(Model $record): void
     {
-        return to_route('customers.trash.index')
-            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
+        $record->restore();
+    }
+
+    /**
+     * @param  Customer  $record
+     */
+    protected function nameIsTaken(Model $record): bool
+    {
+        return $this->takenBy(Customer::query(), $record->name);
+    }
+
+    protected function recordClass(): string
+    {
+        return Customer::class;
+    }
+
+    protected function trashRoute(): string
+    {
+        return 'customers.trash.index';
     }
 }

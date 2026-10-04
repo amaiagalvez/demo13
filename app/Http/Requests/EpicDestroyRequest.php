@@ -6,9 +6,9 @@ use App\Models\Epic;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @extends RestoreRequest<Epic>
+ * @extends TrashDestroyRequest<Epic>
  */
-final class EpicRestoreRequest extends RestoreRequest
+final class EpicDestroyRequest extends TrashDestroyRequest
 {
     /**
      * @return Epic

@@ -9,7 +9,7 @@ use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
 
-class CustomerInactiveController extends Controller
+class CustomerInactiveController extends InactiveController
 {
     public function index(
         CustomerListRequest $request,
@@ -31,19 +31,21 @@ class CustomerInactiveController extends Controller
 
     public function deactivate(Customer $customer): RedirectResponse
     {
-        $this->authorize('deactivate', $customer);
-        $customer->active = false;
-        $customer->save();
-
-        return to_route('customers.index')->with('status', __('Record deactivated successfully.'));
+        return $this->deactivateRecord($customer);
     }
 
     public function reactivate(Customer $customer): RedirectResponse
     {
-        $this->authorize('reactivate', $customer);
-        $customer->active = true;
-        $customer->save();
+        return $this->reactivateRecord($customer);
+    }
 
-        return to_route('customers.inactive.index')->with('status', __('Record reactivated successfully.'));
+    protected function activeRoute(): string
+    {
+        return 'customers.index';
+    }
+
+    protected function inactiveRoute(): string
+    {
+        return 'customers.inactive.index';
     }
 }

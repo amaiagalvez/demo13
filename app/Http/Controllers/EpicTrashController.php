@@ -7,12 +7,15 @@ use Illuminate\View\View;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\Model;
+use App\Http\Requests\EpicDestroyRequest;
 use App\Http\Requests\EpicRestoreRequest;
 use App\Transformers\EpicListTransformer;
-use App\Support\Database\UniqueConstraintViolation;
 
-class EpicTrashController extends Controller
+/**
+ * @extends TrashController<Epic>
+ */
+class EpicTrashController extends TrashController
 {
     public function index(
         EpicListRequest $request,
@@ -36,46 +39,42 @@ class EpicTrashController extends Controller
 
     public function restore(EpicRestoreRequest $request): RedirectResponse
     {
-        $epic = $request->epic();
-
-        $nameIsInUse = Epic::query()
-            ->where('project_id', $epic->project_id)
-            ->where('name', $epic->name)
-            ->exists();
-
-        if ($nameIsInUse) {
-            return $this->restoreConflictResponse();
-        }
-
-        try {
-            $epic->restore();
-        } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            return $this->restoreConflictResponse();
-        }
-
-        $message = $request->boolean('resolve_name_conflict')
-            ? __('Record restored successfully. No new record was created with the repeated name.')
-            : __('Record restored successfully.');
-
-        return to_route('epics.trash.index')->with('status', $message);
+        return $this->restoreTrashed($request);
     }
 
-    public function destroy(int $epic): RedirectResponse
+    public function destroy(EpicDestroyRequest $request): RedirectResponse
     {
-        $epic = Epic::onlyTrashed()->findOrFail($epic);
-        $this->authorize('forceDelete', $epic);
-        $epic->forceDelete();
-
-        return to_route('epics.trash.index')->with('status', __('Record permanently deleted.'));
+        return $this->destroyTrashed($request);
     }
 
-    private function restoreConflictResponse(): RedirectResponse
+    /**
+     * @param  Epic  $record
+     */
+    protected function restoreTrashedRecord(Model $record): void
     {
-        return to_route('epics.trash.index')
-            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
+        $record->restore();
+    }
+
+    /**
+     * Epic names are only unique inside their project, so the search is narrowed to it.
+     *
+     * @param  Epic  $record
+     */
+    protected function nameIsTaken(Model $record): bool
+    {
+        return $this->takenBy(
+            Epic::query()->where('project_id', $record->project_id),
+            $record->name,
+        );
+    }
+
+    protected function recordClass(): string
+    {
+        return Epic::class;
+    }
+
+    protected function trashRoute(): string
+    {
+        return 'epics.trash.index';
     }
 }

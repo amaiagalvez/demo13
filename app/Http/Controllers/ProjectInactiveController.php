@@ -9,7 +9,7 @@ use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
 
-class ProjectInactiveController extends Controller
+class ProjectInactiveController extends InactiveController
 {
     public function index(
         ProjectListRequest $request,
@@ -32,19 +32,21 @@ class ProjectInactiveController extends Controller
 
     public function deactivate(Project $project): RedirectResponse
     {
-        $this->authorize('deactivate', $project);
-        $project->active = false;
-        $project->save();
-
-        return to_route('projects.index')->with('status', __('Record deactivated successfully.'));
+        return $this->deactivateRecord($project);
     }
 
     public function reactivate(Project $project): RedirectResponse
     {
-        $this->authorize('reactivate', $project);
-        $project->active = true;
-        $project->save();
+        return $this->reactivateRecord($project);
+    }
 
-        return to_route('projects.inactive.index')->with('status', __('Record reactivated successfully.'));
+    protected function activeRoute(): string
+    {
+        return 'projects.index';
+    }
+
+    protected function inactiveRoute(): string
+    {
+        return 'projects.inactive.index';
     }
 }

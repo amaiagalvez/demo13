@@ -4,16 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
+use App\Http\Requests\ProjectDestroyRequest;
 use App\Http\Requests\ProjectRestoreRequest;
 use App\Transformers\ProjectListTransformer;
-use App\Support\Database\UniqueConstraintViolation;
 
-class ProjectTrashController extends Controller
+/**
+ * @extends TrashController<Project>
+ */
+class ProjectTrashController extends TrashController
 {
     public function index(
         ProjectListRequest $request,
@@ -36,54 +38,37 @@ class ProjectTrashController extends Controller
 
     public function restore(ProjectRestoreRequest $request): RedirectResponse
     {
-        $project = $request->project();
-
-        if (Project::query()->where('name', $project->name)->exists()) {
-            return $this->restoreConflictResponse();
-        }
-
-        try {
-            $project->restore();
-        } catch (QueryException $exception) {
-            if (! UniqueConstraintViolation::causedBy($exception)) {
-                throw $exception;
-            }
-
-            return $this->restoreConflictResponse();
-        }
-
-        $message = $request->boolean('resolve_name_conflict')
-            ? __('Record restored successfully. No new record was created with the repeated name.')
-            : __('Record restored successfully.');
-
-        return to_route('projects.trash.index')->with('status', $message);
+        return $this->restoreTrashed($request);
     }
 
-    public function destroy(int $project): RedirectResponse
+    public function destroy(ProjectDestroyRequest $request): RedirectResponse
     {
-        $project = Project::onlyTrashed()->findOrFail($project);
-        $this->authorize('forceDelete', $project);
-
-        $deleted = DB::transaction(static function () use ($project): bool {
-            $lockedProject = Project::onlyTrashed()
-                ->whereKey($project->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            return $lockedProject->forceDelete() !== false;
-        });
-
-        if (! $deleted) {
-            return to_route('projects.trash.index')
-                ->with('error', __('Cannot be permanently deleted while it has related records.'));
-        }
-
-        return to_route('projects.trash.index')->with('status', __('Record permanently deleted.'));
+        return $this->destroyTrashed($request);
     }
 
-    private function restoreConflictResponse(): RedirectResponse
+    /**
+     * @param  Project  $record
+     */
+    protected function restoreTrashedRecord(Model $record): void
     {
-        return to_route('projects.trash.index')
-            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
+        $record->restore();
+    }
+
+    /**
+     * @param  Project  $record
+     */
+    protected function nameIsTaken(Model $record): bool
+    {
+        return $this->takenBy(Project::query(), $record->name);
+    }
+
+    protected function recordClass(): string
+    {
+        return Project::class;
+    }
+
+    protected function trashRoute(): string
+    {
+        return 'projects.trash.index';
     }
 }

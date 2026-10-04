@@ -6,9 +6,9 @@ use App\Models\Customer;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @extends RestoreRequest<Customer>
+ * @extends TrashDestroyRequest<Customer>
  */
-final class CustomerRestoreRequest extends RestoreRequest
+final class CustomerDestroyRequest extends TrashDestroyRequest
 {
     /**
      * @return Customer

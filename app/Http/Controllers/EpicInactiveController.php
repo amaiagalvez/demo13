@@ -9,7 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use App\Transformers\EpicListTransformer;
 
-class EpicInactiveController extends Controller
+class EpicInactiveController extends InactiveController
 {
     public function index(
         EpicListRequest $request,
@@ -33,19 +33,21 @@ class EpicInactiveController extends Controller
 
     public function deactivate(Epic $epic): RedirectResponse
     {
-        $this->authorize('deactivate', $epic);
-        $epic->active = false;
-        $epic->save();
-
-        return to_route('epics.index')->with('status', __('Record deactivated successfully.'));
+        return $this->deactivateRecord($epic);
     }
 
     public function reactivate(Epic $epic): RedirectResponse
     {
-        $this->authorize('reactivate', $epic);
-        $epic->active = true;
-        $epic->save();
+        return $this->reactivateRecord($epic);
+    }
 
-        return to_route('epics.inactive.index')->with('status', __('Record reactivated successfully.'));
+    protected function activeRoute(): string
+    {
+        return 'epics.index';
+    }
+
+    protected function inactiveRoute(): string
+    {
+        return 'epics.inactive.index';
     }
 }

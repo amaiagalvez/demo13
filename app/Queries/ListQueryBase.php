@@ -60,6 +60,27 @@ abstract class ListQueryBase
     }
 
     /**
+     * Number of records in each list state, shown as the badge of the state tabs. A caller that
+     * already paginated an unfiltered list passes the total it has, so the same count is not run
+     * twice for the same request. Each state is counted on its own table, so the "active" column
+     * needs no qualifier.
+     *
+     * @return array{active: int, inactive: int, trashed: int}
+     */
+    protected function countStates(
+        string $modelClass,
+        ?int $activeTotal = null,
+        ?int $inactiveTotal = null,
+        ?int $trashedTotal = null,
+    ): array {
+        return [
+            'active' => $activeTotal ?? $modelClass::query()->where('active', true)->count(),
+            'inactive' => $inactiveTotal ?? $modelClass::query()->where('active', false)->count(),
+            'trashed' => $trashedTotal ?? $modelClass::onlyTrashed()->count(),
+        ];
+    }
+
+    /**
      * Escape the LIKE wildcards and the escape character itself in a search term.
      */
     protected function searchPattern(string $search): string
