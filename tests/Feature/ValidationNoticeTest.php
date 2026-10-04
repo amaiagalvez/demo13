@@ -8,8 +8,9 @@ use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
- * The info icon next to a field label lists the validations the request applies to that field, so
- * that what the form promises and what the server asks for are the same thing.
+ * The info icon next to a field label lists what the form asks of that field: the validations the
+ * request applies, plus whatever the control itself offers, so that what the form promises and what
+ * the server asks for are the same thing.
  */
 class ValidationNoticeTest extends TestCase
 {
@@ -50,6 +51,17 @@ class ValidationNoticeTest extends TestCase
             ], false);
     }
 
+    public function test_the_project_customer_notice_explains_that_a_new_one_can_be_created(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'data-test="project-customer-info"',
+                __('Choose a customer from the list or create a new one.'),
+            ], false);
+    }
+
     public function test_every_field_with_something_to_announce_carries_its_notice(): void
     {
         $this->actingAs(User::factory()->create());
@@ -62,6 +74,7 @@ class ValidationNoticeTest extends TestCase
             'projects' => [route('projects.index'), [
                 'project-name-info',
                 'project-end-date-info',
+                'project-customer-info',
                 'project-notes-info',
             ]],
             'epics' => [route('epics.index'), [
@@ -88,15 +101,14 @@ class ValidationNoticeTest extends TestCase
     }
 
     /**
-     * A start date asked for with the asterisk, and a selector that only offers the records it
-     * accepts, have nothing left to announce, so no icon is drawn next to their labels.
+     * A start date asked for with the asterisk has nothing left to announce, so no icon is drawn
+     * next to its label.
      */
     public function test_a_field_without_anything_to_announce_carries_no_notice(): void
     {
         $this->actingAs(User::factory()->create())
             ->get(route('projects.index'))
             ->assertOk()
-            ->assertDontSee('data-test="project-start-date-info"', false)
-            ->assertDontSee('data-test="project-customer-info"', false);
+            ->assertDontSee('data-test="project-start-date-info"', false);
     }
 }

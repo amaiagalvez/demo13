@@ -35,7 +35,7 @@ class EpicCommentTest extends DuskTestCase
                 ->assertSeeIn('dialog[open]', $existingComment)
                 ->assertScript(
                     'document.querySelector(\'dialog[open] [data-test="epic-comment-body"]\').form.noValidate',
-                    true,
+                    false,
                 )
                 ->type('dialog[open] [data-test="epic-comment-body"]', $commentBody)
                 ->waitForReload(fn (Browser $browser) => $browser->click(

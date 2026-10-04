@@ -1,23 +1,19 @@
 <x-forms.tracked-resource prefix="epic" context-field="_epic_form" id-field="_epic_id">
     <flux:field>
-        <div class="flex items-center gap-1">
-            <flux:label>{{ __('Name') }} <span class="text-red-600" aria-hidden="true">*</span>
-            </flux:label>
-            <flux:tooltip toggleable :content="__('Use at least 4 characters.')">
-                <flux:button type="button" icon="information-circle" size="xs" variant="ghost"
-                    :aria-label="__('Use at least 4 characters.')"
-                    data-test="epic-name-info" />
-            </flux:tooltip>
-        </div>
+        <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="name"
+            test="epic-name-info">
+            {{ __('Name') }}
+        </x-forms.field-label>
         <flux:input name="name" x-model="form.name" minlength="4"
             maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required
             autofocus data-test="epic-name" />
         <flux:error name="name" />
     </flux:field>
     <flux:field>
-        <flux:label for="epic-project-id">{{ __('Project') }}
-            <span class="text-red-600" aria-hidden="true">*</span>
-        </flux:label>
+        <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="project_id"
+            test="epic-project-info" for="epic-project-id">
+            {{ __('Project') }}
+        </x-forms.field-label>
         <flux:select id="epic-project-id" name="project_id" x-model="form.project_id" required
             x-on:focus="searchProjects()" x-bind:aria-busy="projectOptionsLoading"
             data-test="epic-project">
@@ -38,26 +34,28 @@
             data-test="epic-project-error" />
     </flux:field>
     <flux:field>
-        <flux:label>{{ __('Start date') }}</flux:label>
+        <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="start_date"
+            test="epic-start-date-info" :labels="['end_date' => __('End date')]">
+            {{ __('Start date') }}
+        </x-forms.field-label>
         <flux:input type="date" name="start_date" x-model="form.start_date"
             x-bind:required="form.end_date !== ''" data-test="epic-start-date" />
         <flux:error name="start_date" />
     </flux:field>
     <flux:field>
-        <div class="flex items-center gap-1">
-            <flux:label for="epic-end-date">{{ __('End date') }}</flux:label>
-            <flux:tooltip toggleable :content="__('The end date requires a start date and must be after it.')">
-                <flux:button type="button" icon="information-circle" size="xs" variant="ghost"
-                    :aria-label="__('The end date requires a start date and must be after it.')"
-                    data-test="epic-end-date-info" />
-            </flux:tooltip>
-        </div>
+        <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="end_date"
+            test="epic-end-date-info" :labels="['start_date' => __('Start date')]">
+            {{ __('End date') }}
+        </x-forms.field-label>
         <flux:input id="epic-end-date" type="date" name="end_date" x-model="form.end_date"
             x-bind:min="window.addDays(form.start_date, 1)" data-test="epic-end-date" />
         <flux:error name="end_date" />
     </flux:field>
     <flux:field>
-        <flux:label>{{ __('Notes') }}</flux:label>
+        <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="notes"
+            test="epic-notes-info">
+            {{ __('Notes') }}
+        </x-forms.field-label>
         <flux:textarea name="notes" x-model="form.notes" rows="3"
             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
             data-test="epic-notes" />
@@ -71,7 +69,7 @@
                 <flux:heading size="lg" id="epic-comments-heading">{{ __('Comments') }}
                 </flux:heading>
 
-                <form method="POST" x-bind:action="form.commentAction" novalidate
+                <form method="POST" x-bind:action="form.commentAction"
                     x-data="{ isSubmitting: false, isDirty: false }"
                     x-on:form-dirty-change="isDirty = $event.detail.isDirty"
                     x-on:submit="if (!isDirty || isSubmitting) { $event.preventDefault(); return; } isSubmitting = true"
@@ -79,7 +77,10 @@
                     @csrf
                     <input type="hidden" name="_comment_epic_id" x-bind:value="form.id">
                     <flux:field>
-                        <flux:label>{{ __('New comment') }}</flux:label>
+                        <x-forms.field-label :request="\App\Http\Requests\EpicCommentRequest::class" field="body"
+                            test="epic-comment-body-info">
+                            {{ __('New comment') }}
+                        </x-forms.field-label>
                         <flux:textarea name="body" x-model="form.commentBody" rows="3"
                             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}" required
                             data-test="epic-comment-body" />
@@ -89,7 +90,10 @@
                         @enderror
                     </flux:field>
                     <flux:field>
-                        <flux:label>{{ __('Notes') }}</flux:label>
+                        <x-forms.field-label :request="\App\Http\Requests\EpicCommentRequest::class" field="notes"
+                            test="epic-comment-notes-info">
+                            {{ __('Notes') }}
+                        </x-forms.field-label>
                         <flux:textarea name="notes" x-model="form.commentNotes" rows="3"
                             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
                             data-test="epic-comment-notes" />
@@ -118,12 +122,10 @@
                     class="text-sm text-red-600" data-test="epic-comments-error"></p>
 
                 <p x-show="!form.commentsLoading && !form.commentsError && form.comments.length === 0"
-                    class="text-sm text-zinc-500"
-                    data-test="epic-comments-empty">{{ __('No comments yet.') }}</p>
+                    class="text-sm text-zinc-500" data-test="epic-comments-empty">{{ __('No comments yet.') }}</p>
 
                 <p x-show="!form.commentsLoading && !form.commentsError && form.commentsCount > form.comments.length"
-                    class="text-xs text-zinc-500"
-                    data-test="epic-comments-truncated"
+                    class="text-xs text-zinc-500" data-test="epic-comments-truncated"
                     x-text="@js(__('Showing the latest :shown of :total comments.')).replace(':shown', form.comments.length).replace(':total', form.commentsCount)">
                 </p>
 

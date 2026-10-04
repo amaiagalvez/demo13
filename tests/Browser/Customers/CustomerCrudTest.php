@@ -333,7 +333,7 @@ class CustomerCrudTest extends DuskTestCase
         $this->assertDatabaseCount('customers', 1);
     }
 
-    public function test_short_customer_name_uses_server_validation(): void
+    public function test_browser_blocks_a_customer_name_that_breaks_the_native_constraints(): void
     {
         $user = User::factory()->create();
 
@@ -344,17 +344,45 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitFor('dialog[open]')
                 ->assertScript(
                     'document.querySelector(\'dialog[open] [data-test="customer-name"]\').form.noValidate',
-                    true,
+                    false,
                 )
                 ->type('dialog[open] [data-test="customer-name"]', 'Ane')
+                ->click('dialog[open] [data-test="customer-submit"]')
+                ->waitUntil(
+                    'document.querySelector(\'dialog[open] [data-test="customer-name"]\').validity.tooShort',
+                    5,
+                )
+                ->assertPresent('dialog[open]')
+                ->assertInputValue('dialog[open] [data-test="customer-name"]', 'Ane')
+                ->assertDontSeeIn(
+                    'dialog[open]',
+                    __('validation.min.string', ['attribute' => 'name', 'min' => 4]),
+                );
+        });
+
+        $this->assertDatabaseCount('customers', 0);
+    }
+
+    public function test_whitespace_only_customer_name_still_reaches_server_validation(): void
+    {
+        $user = User::factory()->create();
+
+        $this->browse(function (Browser $browser) use ($user): void {
+            $browser->loginAs($user)
+                ->visit('/customers')
+                ->click('[data-test="customer-create-button"]')
+                ->waitFor('dialog[open]')
+                ->type('dialog[open] [data-test="customer-name"]', '    ')
                 ->waitForReload(fn (Browser $browser) => $browser->click(
                     'dialog[open] [data-test="customer-submit"]'
                 ))
                 ->assertSeeIn(
                     'dialog[open]',
-                    __('validation.min.string', ['attribute' => 'name', 'min' => 4]),
+                    __('validation.required', ['attribute' => 'name']),
                 );
         });
+
+        $this->assertDatabaseCount('customers', 0);
     }
 
     public function test_edit_validation_error_does_not_leak_into_the_create_form(): void
