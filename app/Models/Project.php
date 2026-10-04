@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Policies\ProjectPolicy;
+use App\Concerns\TracksAuditColumns;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property string|null $notes
  * @property bool $active
  * @property int $customer_id
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
  * @property-read Customer $customer
  * @property-read bool $epics_exists
  * @property-read int $epics_count
@@ -29,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, TracksAuditColumns;
 
     /**
      * @var array{active: bool}

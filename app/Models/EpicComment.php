@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Support\Carbon;
+use App\Concerns\TracksAuditColumns;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\EpicCommentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,6 +18,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int|null $user_id
  * @property string $body
  * @property string|null $notes
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -24,7 +28,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class EpicComment extends Model
 {
     /** @use HasFactory<EpicCommentFactory> */
-    use HasFactory;
+    use HasFactory, TracksAuditColumns;
 
     /**
      * @return BelongsTo<Epic, $this>

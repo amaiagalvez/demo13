@@ -3,6 +3,7 @@
 namespace Tests\Feature\Support\Database;
 
 use Tests\TestCase;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -35,6 +36,37 @@ class DatabaseHelpersTest extends TestCase
         $this->assertNull($records->where('id', $secondId)->value('notes'));
 
         Schema::drop('helper_columns');
+    }
+
+    public function test_adds_the_audit_columns_to_a_table(): void
+    {
+        Schema::dropIfExists('helper_audit_columns');
+        Schema::create('helper_audit_columns', function (Blueprint $table): void {
+            $table->id();
+
+            addAuditColumns($table);
+        });
+
+        $this->assertTrue(Schema::hasColumns('helper_audit_columns', [
+            'created_by', 'updated_by', 'deleted_by',
+        ]));
+
+        $records = DB::table('helper_audit_columns');
+        $author = User::factory()->create();
+        $id = $records->insertGetId(['created_by' => $author->id]);
+
+        // Every key is nullable, so a row written without an actor exists instead of failing.
+        $anonymousId = $records->insertGetId([]);
+
+        $this->assertSame($author->id, $records->where('id', $id)->value('created_by'));
+        $this->assertNull($records->where('id', $anonymousId)->value('created_by'));
+
+        // ON DELETE SET NULL empties the trail instead of removing or blocking the row keeping it.
+        $author->forceDelete();
+
+        $this->assertNull($records->where('id', $id)->value('created_by'));
+
+        Schema::drop('helper_audit_columns');
     }
 
     #[DataProvider('databaseDrivers')]

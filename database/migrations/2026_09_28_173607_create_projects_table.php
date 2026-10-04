@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained();
 
             addCommonColumns($table);
+            addAuditColumns($table);
         });
 
         addUniqueActiveNameIndex('projects');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Policies\EpicPolicy;
 use Database\Factories\EpicFactory;
+use App\Concerns\TracksAuditColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string|null $notes
  * @property bool $active
  * @property int $project_id
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property int|null $deleted_by
  * @property-read Project $project
  * @property-read int $comments_count
  */
@@ -26,7 +30,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Epic extends Model
 {
     /** @use HasFactory<EpicFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, TracksAuditColumns;
 
     /**
      * @var array{active: bool}

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->rememberToken();
 
             addCommonColumns($table);
+            addAuditColumns($table);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained();
 
             addCommonColumns($table);
+            addAuditColumns($table);
         });
 
         addUniqueActiveNameIndex('epics', ['project_id']);

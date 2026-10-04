@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('epic_id')->constrained();
 
             addCommonColumns($table);
+            addAuditColumns($table);
         });
     }
 

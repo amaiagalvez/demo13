@@ -1,4 +1,3 @@
-[] avisos validaciones, en el ikono info mostrar todas las validaciones, que debe ser unico, que la fecha fin debe se maryor que la de incio, y asi con todas las validaciones que ser hagan sobre ese campo
 [] crear el CRUD de usuarios
 crear un nuevo archivo de configuracion y configurar la ruta register, por defecto sera false y entonces no se podran registrar nuevos usuarios desde fuera
 [] añadir datatables
@@ -9,7 +8,6 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [] 
 [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
  [] test sin db prioridad
- [] en vez de cada modelo tener su propio texto el cliente se ha guardado correctamente o el cliente se a borrado o nuevo cliente y todos los que hay del mismo estilo, utilizar terminología genérica siempre que el usuario entienda dónde esta. Utilizar "Se ha guardado correctamente" o "se ha creado correctamete" o "no se puede eliminar" y similares. Con esto, reducimos las traducciones y tenemos más código que se podría pasar a las bases y reutilizar, lo mismo con los test. Una vez hagas el cambio, analiza el código repetido, a ver si lo podemos abstraer
  [] al filtrar no se muestrra el numero total de resultado sencontrados
 [] en vez de RESULTS_LIMIT usar PER_PAGE
 

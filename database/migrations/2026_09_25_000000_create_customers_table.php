@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('name');
 
             addCommonColumns($table);
+            addAuditColumns($table);
         });
 
         addUniqueActiveNameIndex('customers');
