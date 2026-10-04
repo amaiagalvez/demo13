@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class ProjectFactory extends Factory
 {
     use HasTrashedState;
+    use HasInactiveState;
 
     /**
      * Define the model's default state. The end date may equal the start date per ProjectRequest.
@@ -30,11 +31,4 @@ class ProjectFactory extends Factory
         ];
     }
 
-    /** Indicate that the project is inactive. */
-    public function inactive(): static
-    {
-        return $this->state([
-            'active' => false,
-        ]);
-    }
 }

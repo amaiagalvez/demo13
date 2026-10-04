@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class UserFactory extends Factory
 {
+    use HasInactiveState;
+
     /**
      * The current password being used by the factory.
      */
@@ -49,13 +51,6 @@ class UserFactory extends Factory
         ]);
     }
 
-    /** Indicate that the model is inactive. */
-    public function inactive(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'active' => false,
-        ]);
-    }
 
     /**
      * Indicate that the model has two-factor authentication configured.

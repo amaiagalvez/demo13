@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class EpicFactory extends Factory
 {
     use HasTrashedState;
+    use HasInactiveState;
 
     /**
      * Define the model's default state. The end date must be later than the start date per EpicRequest.
@@ -39,11 +40,4 @@ class EpicFactory extends Factory
         ]);
     }
 
-    /** Indicate that the epic is inactive. */
-    public function inactive(): static
-    {
-        return $this->state([
-            'active' => false,
-        ]);
-    }
 }

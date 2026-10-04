@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CustomerFactory extends Factory
 {
     use HasTrashedState;
+    use HasInactiveState;
 
     /**
      * Define the model's default state.
@@ -20,15 +21,8 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->unique()->name(),
+            'name' => fake()->unique()->sentence(3),
         ];
     }
 
-    /** Indicate that the customer is inactive. */
-    public function inactive(): static
-    {
-        return $this->state([
-            'active' => false,
-        ]);
-    }
 }
