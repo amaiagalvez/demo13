@@ -52,18 +52,13 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function store(ProjectRequest $request, ProjectListQuery $query): RedirectResponse
+    public function store(ProjectRequest $request, ProjectListQuery $query): RedirectResponse|JsonResponse
     {
         $name = $request->string('name')->toString();
         $deletedProject = $query->findTrashedByName($name);
 
         if ($deletedProject && ! $request->boolean('reuse_deleted_name')) {
-            return to_route('projects.index')
-                ->withInput()
-                ->with('deleted_project_conflict', [
-                    'id' => $deletedProject->id,
-                    'name' => $deletedProject->name,
-                ]);
+            return $this->deletedNameConflict($request, $deletedProject);
         }
 
         try {

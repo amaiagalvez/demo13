@@ -46,7 +46,7 @@ class EpicController extends Controller
         ]);
     }
 
-    public function store(EpicRequest $request, EpicListQuery $query): RedirectResponse
+    public function store(EpicRequest $request, EpicListQuery $query): RedirectResponse|JsonResponse
     {
         $deletedEpic = $query->findTrashedByName(
             $request->string('name')->toString(),
@@ -54,12 +54,7 @@ class EpicController extends Controller
         );
 
         if ($deletedEpic && ! $request->boolean('reuse_deleted_name')) {
-            return to_route('epics.index')
-                ->withInput()
-                ->with('deleted_epic_conflict', [
-                    'id' => $deletedEpic->id,
-                    'name' => $deletedEpic->name,
-                ]);
+            return $this->deletedNameConflict($request, $deletedEpic);
         }
 
         try {
