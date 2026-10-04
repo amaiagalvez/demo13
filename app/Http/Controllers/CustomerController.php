@@ -82,14 +82,9 @@ class CustomerController extends Controller
     {
         $this->authorize('delete', $customer);
 
-        $deleted = DB::transaction(static function () use ($customer): bool {
-            $lockedCustomer = Customer::query()
-                ->whereKey($customer->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            return $lockedCustomer->delete() !== false;
-        });
+        // The deleting hook holds the row lock and refuses the delete while children exist, so the
+        // controller only has to run it inside a transaction and report the outcome.
+        $deleted = DB::transaction(static fn (): bool => $customer->delete() !== false);
 
         if (! $deleted) {
             return to_route('customers.index')

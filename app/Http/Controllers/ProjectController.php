@@ -91,14 +91,9 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        $deleted = DB::transaction(static function () use ($project): bool {
-            $lockedProject = Project::query()
-                ->whereKey($project->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            return $lockedProject->delete() !== false;
-        });
+        // The deleting hook holds the row lock and refuses the delete while children exist, so the
+        // controller only has to run it inside a transaction and report the outcome.
+        $deleted = DB::transaction(static fn (): bool => $project->delete() !== false);
 
         if (! $deleted) {
             return to_route('projects.index')

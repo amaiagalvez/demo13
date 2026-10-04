@@ -31,32 +31,42 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Customer::deleting(static function (Customer $customer): bool {
-            return DB::transaction(static function () use ($customer): bool {
-                $lockedCustomer = Customer::withTrashed()
-                    ->whereKey($customer->getKey())
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                return ! $lockedCustomer->projects()->withTrashed()->exists();
-            });
-        });
-        Project::deleting(static function (Project $project): bool {
-            return DB::transaction(static function () use ($project): bool {
-                $lockedProject = Project::withTrashed()
-                    ->whereKey($project->getKey())
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                return ! $lockedProject->epics()->withTrashed()->exists();
-            });
-        });
+        $this->blockDeletionWithChildren();
 
         $this->configureDefaults();
         $this->authorizeLogViewer();
         /* @chisel-password-confirmation */
         Livewire::addPersistentMiddleware([RequirePasswordForLivewire::class]);
         /* @end-chisel-password-confirmation */
+    }
+
+    /**
+     * A customer cannot reach the trash while it has projects, and a project cannot while it has
+     * epics; trashed children count too. The row is locked inside the guard's own transaction, so a
+     * child that appears between the check and the delete makes the delete wait and then fail.
+     *
+     * The hook is what makes this safe, not the caller: it holds the guarantee for every path that
+     * soft deletes a record, including a plain `$model->delete()` outside a controller.
+     */
+    protected function blockDeletionWithChildren(): void
+    {
+        Customer::deleting(function (Customer $customer): bool {
+            $locked = DB::transaction(static fn (): Customer => Customer::withTrashed()
+                ->whereKey($customer->getKey())
+                ->lockForUpdate()
+                ->firstOrFail());
+
+            return ! $locked->projects()->withTrashed()->exists();
+        });
+
+        Project::deleting(function (Project $project): bool {
+            $locked = DB::transaction(static fn (): Project => Project::withTrashed()
+                ->whereKey($project->getKey())
+                ->lockForUpdate()
+                ->firstOrFail());
+
+            return ! $locked->epics()->withTrashed()->exists();
+        });
     }
 
     /**
