@@ -23,8 +23,7 @@ class ValidationNoticeTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder([
                 'data-test="customer-name-info"',
-                __('Use at least :min characters.', ['min' => 4]),
-                __('Use at most :max characters.', ['max' => MaxLength::string()]),
+                __('Use between :min and :max characters.', ['min' => 4, 'max' => MaxLength::string()]),
                 __('Must be unique.'),
             ], false);
     }

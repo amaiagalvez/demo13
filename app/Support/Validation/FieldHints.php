@@ -23,7 +23,8 @@ use Illuminate\Validation\ValidationRuleParser;
  * either, and is left out rather than guessed at.
  *
  * The length hints are offered for text only, since that is what min and max count characters in,
- * and every text field of these forms also carries a string rule.
+ * and every text field of these forms also carries a string rule. A field bounded at both ends is
+ * announced as one sentence naming the two numbers, not as two sentences.
  */
 final class FieldHints
 {
@@ -51,12 +52,21 @@ final class FieldHints
     public function for(string $field): array
     {
         $rules = $this->parsedRules($field);
-        $text = in_array('string', array_column($rules, 0), true);
+        $announcedLengths = false;
 
         $hints = [];
 
         foreach ($rules as [$name, $parameters]) {
-            $hint = $this->hint($name, $parameters, $text);
+            if (in_array($name, ['min', 'max'], true)) {
+                if (! $announcedLengths) {
+                    $hints = [...$hints, ...$this->lengthNotices($rules)];
+                    $announcedLengths = true;
+                }
+
+                continue;
+            }
+
+            $hint = $this->hint($name, $parameters);
 
             if ($hint !== null) {
                 $hints[] = $hint;
@@ -78,14 +88,12 @@ final class FieldHints
     /**
      * @param  array<int, string>  $parameters
      */
-    private function hint(string $name, array $parameters, bool $text): ?string
+    private function hint(string $name, array $parameters): ?string
     {
         return match ($name) {
             'required_with' => $this->say('Required when :field is filled in.', [
                 'field' => $this->label($parameters[0] ?? ''),
             ]),
-            'min' => $text ? $this->say('Use at least :min characters.', ['min' => $parameters[0] ?? '']) : null,
-            'max' => $text ? $this->say('Use at most :max characters.', ['max' => $parameters[0] ?? '']) : null,
             'after' => $this->say('Must be later than :field.', ['field' => $this->label($parameters[0] ?? '')]),
             'after_or_equal' => $this->say('Must be on or after :field.', [
                 'field' => $this->label($parameters[0] ?? ''),
@@ -93,6 +101,43 @@ final class FieldHints
             'unique' => $this->say('Must be unique.'),
             default => null,
         };
+    }
+
+    /**
+     * The length of a text field, in as many sentences as it takes. A field bounded at both ends
+     * gets one sentence naming both, so the notice reads as a single range instead of two demands
+     * with a number each.
+     *
+     * @param  list<array{0: string, 1: array<int, string>}>  $rules
+     * @return list<string>
+     */
+    private function lengthNotices(array $rules): array
+    {
+        if (! in_array('string', array_column($rules, 0), true)) {
+            return [];
+        }
+
+        $limits = [];
+
+        foreach ($rules as [$name, $parameters]) {
+            if (in_array($name, ['min', 'max'], true)) {
+                $limits[$name] = $parameters[0] ?? '';
+            }
+        }
+
+        if (isset($limits['min'], $limits['max'])) {
+            return [$this->say('Use between :min and :max characters.', $limits)];
+        }
+
+        if (isset($limits['min'])) {
+            return [$this->say('Use at least :min characters.', $limits)];
+        }
+
+        if (isset($limits['max'])) {
+            return [$this->say('Use at most :max characters.', $limits)];
+        }
+
+        return [];
     }
 
     /**

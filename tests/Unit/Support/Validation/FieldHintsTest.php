@@ -3,12 +3,14 @@
 namespace Tests\Unit\Support\Validation;
 
 use Tests\TestCase;
+use Illuminate\Validation\Rule;
 use App\Http\Requests\EpicRequest;
 use App\Http\Requests\ProjectRequest;
 use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
 use App\Support\Validation\FieldHints;
 use App\Http\Requests\EpicCommentRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 class FieldHintsTest extends TestCase
 {
@@ -17,8 +19,7 @@ class FieldHintsTest extends TestCase
         $hints = (new FieldHints(CustomerRequest::class))->for('name');
 
         $this->assertSame([
-            __('Use at least :min characters.', ['min' => 4]),
-            __('Use at most :max characters.', ['max' => MaxLength::string()]),
+            __('Use between :min and :max characters.', ['min' => 4, 'max' => MaxLength::string()]),
             __('Must be unique.'),
         ], $hints);
     }
@@ -29,6 +30,45 @@ class FieldHintsTest extends TestCase
 
         $this->assertSame([
             __('Use at most :max characters.', ['max' => MaxLength::longText()]),
+        ], $hints);
+    }
+
+    /**
+     * A field with only one of the two limits has no range to announce, so it keeps its own
+     * sentence instead of a range with a missing end.
+     */
+    public function test_a_field_bounded_at_one_end_only_announces_that_end(): void
+    {
+        $hints = new FieldHints(BoundedLengthRequest::class);
+
+        $this->assertSame([
+            __('Use at least :min characters.', ['min' => 2]),
+        ], $hints->for('code'));
+        $this->assertSame([
+            __('Use at most :max characters.', ['max' => 8]),
+        ], $hints->for('nickname'));
+    }
+
+    /**
+     * The minimum and the maximum of a field bounded at both ends are one sentence, so the notice
+     * does not read as two separate demands.
+     */
+    public function test_a_field_bounded_at_both_ends_announces_the_whole_range_once(): void
+    {
+        $hints = (new FieldHints(BoundedLengthRequest::class))->for('slug');
+
+        $this->assertSame([
+            __('Use between :min and :max characters.', ['min' => 3, 'max' => 12]),
+        ], $hints);
+    }
+
+    public function test_the_bounds_are_announced_where_the_request_declares_them(): void
+    {
+        $hints = (new FieldHints(BoundedLengthRequest::class))->for('title');
+
+        $this->assertSame([
+            __('Use between :min and :max characters.', ['min' => 5, 'max' => 20]),
+            __('Must be unique.'),
         ], $hints);
     }
 
@@ -94,5 +134,37 @@ class FieldHintsTest extends TestCase
             __('Must be on or after :field.', ['field' => 'start date']),
             $hints,
         );
+    }
+
+    /**
+     * A numeric bound counts units rather than characters, so the notice stays out of the way of a
+     * field that is not text.
+     */
+    public function test_a_field_that_is_not_text_announces_no_length(): void
+    {
+        $hints = new FieldHints(BoundedLengthRequest::class);
+
+        $this->assertSame([], $hints->for('quantity'));
+    }
+}
+
+/**
+ * The forms of length a request can declare, gathered in one place so the notice for each of them is
+ * covered without waiting for a real form to grow every shape.
+ */
+class BoundedLengthRequest extends FormRequest
+{
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public function rules(): array
+    {
+        return [
+            'slug' => ['string', 'min:3', 'max:12'],
+            'code' => ['string', 'min:2'],
+            'nickname' => ['string', 'max:8'],
+            'title' => ['string', 'min:5', 'max:20', Rule::unique('titles')],
+            'quantity' => ['integer', 'min:1', 'max:99'],
+        ];
     }
 }
