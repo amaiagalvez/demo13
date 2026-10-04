@@ -16,6 +16,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
 
     public string $name = '';
     public string $email = '';
+    public string $notes = '';
 
     /**
      * Mount the component.
@@ -24,6 +25,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
     {
         $this->name = Auth::user()->name ?? '';
         $this->email = Auth::user()->email ?? '';
+        $this->notes = Auth::user()->notes ?? '';
     }
 
     /**
@@ -92,7 +94,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
 
     <flux:heading level="2" class="sr-only">{{ __('Profile settings') }}</flux:heading>
 
-    <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name, email address and notes')">
         <form wire:submit="updateProfileInformation" x-data="{ isDirty: false }"
             x-on:form-dirty-change="isDirty = $event.detail.isDirty" data-track-changes
             class="my-6 w-full space-y-6">
@@ -125,6 +127,10 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
                 @endif
                 {{-- @end-chisel-email-verification --}}
             </div>
+
+            <flux:textarea wire:model="notes" :label="__('Notes')" rows="3"
+                maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
+                data-test="profile-notes" />
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">

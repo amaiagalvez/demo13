@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
+use App\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\TestWith;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -56,14 +57,14 @@ class EpicInputValidationTest extends TestCase
         $this->assertDatabaseCount('epics', 0);
     }
 
-    public function test_epic_name_cannot_exceed_255_characters_over_http(): void
+    public function test_epic_name_cannot_exceed_the_configured_maximum_over_http(): void
     {
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create();
 
         $this->from(route('epics.index'))
             ->post(route('epics.store'), [
-                'name' => str_repeat('a', 256),
+                'name' => str_repeat('a', MaxLength::string() + 1),
                 'project_id' => $project->id,
             ])
             ->assertRedirect(route('epics.index'))

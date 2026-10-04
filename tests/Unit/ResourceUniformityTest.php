@@ -19,6 +19,7 @@ use App\Http\Requests\EpicRequest;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Support\Facades\File;
 use App\Http\Requests\ProjectRequest;
+use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\Eloquent\Model;
@@ -54,16 +55,19 @@ class ResourceUniformityTest extends TestCase
 
         $this->assertSame(['name', 'notes', 'reuse_deleted_name'], array_keys($customerRules));
         $this->assertSame(
-            ['name', 'notes', 'start_date', 'end_date', 'customer_id', 'reuse_deleted_name'],
+            ['name', 'start_date', 'end_date', 'customer_id', 'notes', 'reuse_deleted_name'],
             array_keys($projectRules),
         );
         $this->assertSame(
-            ['name', 'notes', 'start_date', 'end_date', 'project_id', 'reuse_deleted_name'],
+            ['name', 'start_date', 'end_date', 'project_id', 'notes', 'reuse_deleted_name'],
             array_keys($epicRules),
         );
 
         foreach ([$customerRules, $projectRules, $epicRules] as $rules) {
-            $this->assertSame(['required', 'string', 'min:4', 'max:255'], array_slice($rules['name'], 0, 4));
+            $this->assertSame(
+                ['required', 'string', 'min:4', 'max:'.MaxLength::string()],
+                array_slice($rules['name'], 0, 4),
+            );
             $this->assertArrayHasKey('reuse_deleted_name', $rules);
         }
     }
@@ -103,8 +107,9 @@ class ResourceUniformityTest extends TestCase
         $this->assertTrue(Validator::make([], $rules)->passes());
         $this->assertTrue(Validator::make(['search' => 'Ane'], $rules)->passes());
         $this->assertTrue(Validator::make(['search' => ['Ane']], $rules)->fails());
-        $this->assertTrue(Validator::make(['search' => str_repeat('a', 256)], $rules)->fails());
-        $this->assertTrue(Validator::make(['search' => str_repeat('a', 255)], $rules)->passes());
+        $limit = MaxLength::string();
+        $this->assertTrue(Validator::make(['search' => str_repeat('a', $limit + 1)], $rules)->fails());
+        $this->assertTrue(Validator::make(['search' => str_repeat('a', $limit)], $rules)->passes());
     }
 
     /**

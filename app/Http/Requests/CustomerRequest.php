@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CustomerRequest extends FormRequest
@@ -36,12 +37,12 @@ class CustomerRequest extends FormRequest
                 'required',
                 'string',
                 'min:4',
-                'max:255',
+                'max:'.MaxLength::string(),
                 Rule::unique(Customer::class)
                     ->ignore($this->route('customer'))
                     ->whereNull('deleted_at'),
             ],
-            'notes' => ['nullable', 'string', 'max:5000'],
+            'notes' => ['nullable', 'string', 'max:'.MaxLength::longText()],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }

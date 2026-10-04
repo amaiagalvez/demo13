@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\EpicComment;
 use App\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCommentTest extends TestCase
@@ -159,11 +160,49 @@ class EpicCommentTest extends TestCase
         $this->assertDatabaseCount('epic_comments', 0);
     }
 
-    public function test_comment_body_accepts_5000_characters_over_http(): void
+    public function test_comment_notes_are_optional_and_saved(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
-        $body = str_repeat('x', 5000);
+
+        $this->post(route('epics.comments.store', $epic), ['body' => 'Comment without notes'])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull(EpicComment::query()->sole()->notes);
+
+        $this->post(route('epics.comments.store', $epic), [
+            'body' => 'Comment with notes',
+            'notes' => 'Mentioned in the stand-up',
+        ])->assertRedirect(route('epics.index'));
+
+        $this->assertDatabaseHas('epic_comments', [
+            'body' => 'Comment with notes',
+            'notes' => 'Mentioned in the stand-up',
+        ]);
+    }
+
+    public function test_comment_notes_longer_than_the_configured_maximum_are_rejected_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create();
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.comments.store', $epic), [
+                'body' => 'Comment with long notes',
+                'notes' => str_repeat('x', $this->longtextLimit() + 1),
+            ])
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHasErrorsIn('comment', ['notes']);
+
+        $this->assertDatabaseCount('epic_comments', 0);
+    }
+
+    public function test_comment_body_at_the_configured_maximum_is_accepted_over_http(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create();
+        $body = str_repeat('x', $this->longtextLimit());
 
         $this->from(route('epics.index'))
             ->post(route('epics.comments.store', $epic), ['body' => $body])
@@ -173,13 +212,15 @@ class EpicCommentTest extends TestCase
         $this->assertDatabaseHas('epic_comments', ['epic_id' => $epic->id, 'body' => $body]);
     }
 
-    public function test_comment_body_rejects_5001_characters_over_http(): void
+    public function test_comment_body_longer_than_the_configured_maximum_is_rejected_over_http(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
 
         $this->from(route('epics.index'))
-            ->post(route('epics.comments.store', $epic), ['body' => str_repeat('x', 5001)])
+            ->post(route('epics.comments.store', $epic), [
+                'body' => str_repeat('x', $this->longtextLimit() + 1),
+            ])
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrorsIn('comment', ['body']);
 
@@ -263,5 +304,14 @@ class EpicCommentTest extends TestCase
         }
 
         $this->assertTrue($commentEpic->is($epic));
+    }
+
+    /**
+     * Read from the config so the boundary keeps testing the limit the rules actually apply,
+     * whatever it is set to.
+     */
+    private function longtextLimit(): int
+    {
+        return MaxLength::longText();
     }
 }

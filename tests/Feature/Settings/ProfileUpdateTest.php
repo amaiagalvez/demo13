@@ -5,6 +5,7 @@ namespace Tests\Feature\Settings;
 use Tests\TestCase;
 use App\Models\User;
 use Livewire\Livewire;
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProfileUpdateTest extends TestCase
@@ -29,6 +30,30 @@ class ProfileUpdateTest extends TestCase
         $this->assertEquals('Test User', $user->name);
         $this->assertEquals('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_user_notes_are_saved_and_rejected_when_too_long(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::settings.profile')
+            ->set('name', 'Test User')
+            ->set('notes', 'Available on Fridays')
+            ->call('updateProfileInformation')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'notes' => 'Available on Fridays']);
+
+        Livewire::test('pages::settings.profile')
+            ->set('name', 'Test User')
+            ->set('notes', str_repeat('a', MaxLength::longText() + 1))
+            ->call('updateProfileInformation')
+            ->assertHasErrors(['notes']);
+
+        // The rejected notes are not written, so the stored ones survive.
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'notes' => 'Available on Fridays']);
     }
 
     public function test_email_verification_status_is_unchanged_when_email_address_is_unchanged(): void

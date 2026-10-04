@@ -16,10 +16,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $epic_id
  * @property int|null $user_id
  * @property string $body
+ * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['body'])]
+#[Fillable(['body', 'notes'])]
 class EpicComment extends Model
 {
     /** @use HasFactory<EpicCommentFactory> */

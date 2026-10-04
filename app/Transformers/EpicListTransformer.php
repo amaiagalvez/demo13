@@ -69,7 +69,7 @@ class EpicListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, notes: string|null, project: string, customer: string, startDate: string, endDate: string, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}}
+     * @return array{id: int, name: string, project: string, customer: string, startDate: string, endDate: string, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}}
      */
     private function columns(Epic $epic): array
     {

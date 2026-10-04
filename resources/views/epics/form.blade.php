@@ -9,15 +9,10 @@
                     data-test="epic-name-info" />
             </flux:tooltip>
         </div>
-        <flux:input name="name" x-model="form.name" minlength="4" maxlength="255" required
+        <flux:input name="name" x-model="form.name" minlength="4"
+            maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required
             autofocus data-test="epic-name" />
         <flux:error name="name" />
-    </flux:field>
-    <flux:field>
-        <flux:label>{{ __('Notes') }}</flux:label>
-        <flux:textarea name="notes" x-model="form.notes" rows="3" maxlength="5000"
-            data-test="epic-notes" />
-        <flux:error name="notes" />
     </flux:field>
     <flux:field>
         <flux:label for="epic-project-id">{{ __('Project') }}
@@ -61,6 +56,13 @@
             x-bind:min="window.addDays(form.start_date, 1)" data-test="epic-end-date" />
         <flux:error name="end_date" />
     </flux:field>
+    <flux:field>
+        <flux:label>{{ __('Notes') }}</flux:label>
+        <flux:textarea name="notes" x-model="form.notes" rows="3"
+            maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
+            data-test="epic-notes" />
+        <flux:error name="notes" />
+    </flux:field>
 
     <x-slot:after>
         <template x-if="form.method === 'PUT'">
@@ -79,8 +81,19 @@
                     <flux:field>
                         <flux:label>{{ __('New comment') }}</flux:label>
                         <flux:textarea name="body" x-model="form.commentBody" rows="3"
-                            maxlength="5000" required data-test="epic-comment-body" />
+                            maxlength="{{ \App\Support\Validation\MaxLength::longText() }}" required
+                            data-test="epic-comment-body" />
                         @error('body', 'comment')
+                            <flux:text class="text-sm text-red-600" role="alert">{{ $message }}
+                            </flux:text>
+                        @enderror
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>{{ __('Notes') }}</flux:label>
+                        <flux:textarea name="notes" x-model="form.commentNotes" rows="3"
+                            maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
+                            data-test="epic-comment-notes" />
+                        @error('notes', 'comment')
                             <flux:text class="text-sm text-red-600" role="alert">{{ $message }}
                             </flux:text>
                         @enderror

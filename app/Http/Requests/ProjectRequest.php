@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
+use App\Support\Validation\MaxLength;
 use Illuminate\Validation\Rules\Exists;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -38,12 +39,11 @@ class ProjectRequest extends FormRequest
                 'required',
                 'string',
                 'min:4',
-                'max:255',
+                'max:'.MaxLength::string(),
                 Rule::unique(Project::class)
                     ->ignore($this->route('project'))
                     ->whereNull('deleted_at'),
             ],
-            'notes' => ['nullable', 'string', 'max:5000'],
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'customer_id' => [
@@ -51,6 +51,7 @@ class ProjectRequest extends FormRequest
                 'integer',
                 $this->selectableCustomerRule(),
             ],
+            'notes' => ['nullable', 'string', 'max:'.MaxLength::longText()],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }

@@ -11,6 +11,7 @@ use App\Models\EpicComment;
 use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use App\Support\Validation\MaxLength;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -290,12 +291,14 @@ class CustomerCrudTest extends TestCase
         $this->assertDatabaseMissing('customers', ['name' => 'Abc']);
     }
 
-    public function test_customer_name_cannot_exceed_255_characters_over_http(): void
+    public function test_customer_name_cannot_exceed_the_configured_maximum_over_http(): void
     {
         $this->actingAs(User::factory()->create());
 
         $this->from(route('customers.index'))
-            ->post(route('customers.store'), ['name' => str_repeat('a', 256)])
+            ->post(route('customers.store'), [
+                'name' => str_repeat('a', MaxLength::string() + 1),
+            ])
             ->assertRedirect(route('customers.index'))
             ->assertSessionHasErrors(['name']);
 

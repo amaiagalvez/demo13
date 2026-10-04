@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use App\Support\Validation\MaxLength;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 trait ProfileValidationRules
@@ -18,6 +19,7 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'notes' => ['nullable', 'string', 'max:'.MaxLength::longText()],
         ];
     }
 
@@ -28,7 +30,7 @@ trait ProfileValidationRules
      */
     protected function nameRules(): array
     {
-        return ['required', 'string', 'max:255'];
+        return ['required', 'string', 'max:'.MaxLength::string()];
     }
 
     /**
@@ -42,7 +44,7 @@ trait ProfileValidationRules
             'required',
             'string',
             'email',
-            'max:255',
+            'max:'.MaxLength::string(),
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),

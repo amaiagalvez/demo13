@@ -74,7 +74,7 @@ class CustomerListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, notes: string|null, projectsCount: int, projectsUrl: string|null, epicsCount: int, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null}}
+     * @return array{id: int, name: string, projectsCount: int, projectsUrl: string|null, epicsCount: int, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null}}
      */
     private function columns(Customer $customer): array
     {

@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\EpicComment;
 use App\Http\Requests\EpicRequest;
 use App\Http\Requests\ProjectRequest;
+use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\EpicCommentRequest;
 use Illuminate\Foundation\Http\FormRequest;
@@ -87,6 +88,43 @@ class ValidationCoverageTest extends TestCase
                 }
             }
         }
+    }
+
+    /**
+     * The string length limits live in config/validation.php, reached through MaxLength, so that
+     * changing one reaches the rules, the maxlength attributes of the forms and the boundary tests
+     * at once. A rule that spells its own number is what such a change silently leaves behind, so
+     * the literal is what this test looks for.
+     */
+    public function test_string_length_limits_are_not_written_out_in_the_rules(): void
+    {
+        $literals = [];
+
+        foreach ([app_path('Http/Requests'), app_path('Concerns')] as $directory) {
+            foreach (glob($directory.'/*.php') ?: [] as $path) {
+                preg_match_all('/\'(max:\d+)\'/', (string) file_get_contents($path), $matches);
+
+                foreach ($matches[1] as $limit) {
+                    $literals[] = basename($path).' hardcodes max:'.$limit;
+                }
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $literals,
+            'A string length limit belongs in config/validation.php, read through MaxLength.',
+        );
+    }
+
+    /**
+     * MaxLength hands the limit over as an int, and it refuses a key that is missing or is not one,
+     * so reaching both of them here means every rule can be built.
+     */
+    public function test_the_config_declares_a_usable_limit_for_each_text_size(): void
+    {
+        $this->assertGreaterThan(0, MaxLength::string());
+        $this->assertGreaterThan(0, MaxLength::longText());
     }
 
     /**

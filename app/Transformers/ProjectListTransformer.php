@@ -74,7 +74,7 @@ class ProjectListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, notes: string|null, customer: string, startDate: string, endDate: string, epicsCount: int, epicsUrl: string|null, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null, start_date: string, end_date: string, customer_id: int, customer_name: string}}
+     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string, epicsCount: int, epicsUrl: string|null, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null, start_date: string, end_date: string, customer_id: int, customer_name: string}}
      */
     private function columns(Project $project): array
     {

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('epic_comments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('epic_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->text('body');
+            $table->foreignId('epic_id')->constrained();
+            $table->foreignId('user_id')->constrained();
+            $table->longText('body');
 
             addCommonColumns($table);
         });

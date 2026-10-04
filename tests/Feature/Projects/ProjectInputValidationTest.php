@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectInputValidationTest extends TestCase
@@ -43,14 +44,14 @@ class ProjectInputValidationTest extends TestCase
         $this->assertDatabaseMissing('projects', ['name' => 'Abc']);
     }
 
-    public function test_project_name_cannot_exceed_255_characters_over_http(): void
+    public function test_project_name_cannot_exceed_the_configured_maximum_over_http(): void
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
 
         $this->from(route('projects.index'))
             ->post(route('projects.store'), [
-                'name' => str_repeat('a', 256),
+                'name' => str_repeat('a', MaxLength::string() + 1),
                 'start_date' => self::START_DATE,
                 'customer_id' => $customer->id,
             ])

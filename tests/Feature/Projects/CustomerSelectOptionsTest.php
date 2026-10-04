@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Customer;
 use App\Queries\ListQueryBase;
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerSelectOptionsTest extends TestCase
@@ -74,11 +75,13 @@ class CustomerSelectOptionsTest extends TestCase
             ->assertJsonPath('results.0.text', 'Active select customer');
     }
 
-    public function test_customer_options_reject_search_terms_over_one_hundred_characters(): void
+    public function test_customer_options_reject_search_terms_over_the_configured_maximum(): void
     {
         $this->actingAs(User::factory()->create());
 
-        $this->getJson(route('customers.options', ['q' => str_repeat('a', 101)]))
+        $term = str_repeat('a', MaxLength::string() + 1);
+
+        $this->getJson(route('customers.options', ['q' => $term]))
             ->assertJsonValidationErrors('q');
     }
 

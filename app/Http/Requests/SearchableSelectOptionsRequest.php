@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -16,7 +17,7 @@ abstract class SearchableSelectOptionsRequest extends FormRequest
     final public function rules(): array
     {
         return [
-            'q' => ['nullable', 'string', 'max:100'],
+            'q' => ['nullable', 'string', 'max:'.MaxLength::string()],
         ];
     }
 

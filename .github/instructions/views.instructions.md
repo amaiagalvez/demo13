@@ -6,3 +6,4 @@ applyTo: "resources/views/**,lang/**,resources/js/**"
 - Canonical list: `resources/views/customers/list.blade.php` + `resources/views/components/list/*`; table and pagination go through `<x-list.table>`. Do not copy shared markup back into a view. Keep existing `data-test` names; row actions pass the edit payload via `data-payload`.
 - Use Flux components where one exists.
 - Any new user-facing string goes in `lang/*.json` for all 4 locales (same key and `:placeholders`); a unit test checks parity. Default locale is `eu`.
+- A `maxlength` attribute never carries a literal number either: it renders `config('validation.max_length.string')` or `config('validation.max_length.longtext')`, the same value the FormRequest validates, so the browser cannot stop the input the server would accept.

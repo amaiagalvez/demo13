@@ -9,15 +9,10 @@
                     :aria-label="__('Use at least 4 characters.')" data-test="project-name-info" />
             </flux:tooltip>
         </div>
-        <flux:input name="name" x-model="form.name" minlength="4" maxlength="255" required
+        <flux:input name="name" x-model="form.name" minlength="4"
+            maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required
             autofocus data-test="project-name" />
         <flux:error name="name" />
-    </flux:field>
-    <flux:field>
-        <flux:label>{{ __('Notes') }}</flux:label>
-        <flux:textarea name="notes" x-model="form.notes" rows="3" maxlength="5000"
-            data-test="project-notes" />
-        <flux:error name="notes" />
     </flux:field>
     <flux:field>
         <flux:label>{{ __('Start date') }} <span class="text-red-600" aria-hidden="true">*</span>
@@ -65,5 +60,12 @@
         <flux:error name="customer_id" />
         <p role="alert" x-show="form.customerCreateError" x-text="form.customerCreateError"
             class="text-sm text-red-600" data-test="project-customer-error"></p>
+    </flux:field>
+    <flux:field>
+        <flux:label>{{ __('Notes') }}</flux:label>
+        <flux:textarea name="notes" x-model="form.notes" rows="3"
+            maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
+            data-test="project-notes" />
+        <flux:error name="notes" />
     </flux:field>
 </x-forms.tracked-resource>

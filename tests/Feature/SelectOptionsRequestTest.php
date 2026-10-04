@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Queries\ListQueryBase;
+use App\Support\Validation\MaxLength;
 use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use App\Http\Requests\ProjectSelectOptionsRequest;
@@ -92,12 +93,13 @@ class SelectOptionsRequestTest extends TestCase
     public function test_an_invalid_term_is_rejected(string $routeName, string $requestClass): void
     {
         $rules = $this->rulesOf($requestClass);
+        $limit = MaxLength::string();
 
         $this->assertTrue(Validator::make([], $rules)->passes());
         $this->assertTrue(Validator::make(['q' => 'Ane'], $rules)->passes());
         $this->assertTrue(Validator::make(['q' => ['Ane']], $rules)->fails());
-        $this->assertTrue(Validator::make(['q' => str_repeat('a', 101)], $rules)->fails());
-        $this->assertTrue(Validator::make(['q' => str_repeat('a', 100)], $rules)->passes());
+        $this->assertTrue(Validator::make(['q' => str_repeat('a', $limit + 1)], $rules)->fails());
+        $this->assertTrue(Validator::make(['q' => str_repeat('a', $limit)], $rules)->passes());
     }
 
     /**

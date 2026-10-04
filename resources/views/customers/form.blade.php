@@ -9,13 +9,15 @@
                     data-test="customer-name-info" />
             </flux:tooltip>
         </div>
-        <flux:input name="name" x-model="form.name" minlength="4" maxlength="255" required autofocus
+        <flux:input name="name" x-model="form.name" minlength="4"
+            maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required autofocus
             data-test="customer-name" />
         <flux:error name="name" />
     </flux:field>
     <flux:field>
         <flux:label>{{ __('Notes') }}</flux:label>
-        <flux:textarea name="notes" x-model="form.notes" rows="3" maxlength="5000"
+        <flux:textarea name="notes" x-model="form.notes" rows="3"
+            maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
             data-test="customer-notes" />
         <flux:error name="notes" />
     </flux:field>

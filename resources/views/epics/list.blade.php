@@ -21,6 +21,7 @@
             'commentsError' => '',
             'commentAction' => $editingEpicPayload['commentAction'] ?? '',
             'commentBody' => '',
+            'commentNotes' => '',
             'context' => $editingEpic ? old('_epic_form') : 'create',
             'method' => $editingEpic ? 'PUT' : 'POST',
             'action' => $editingEpic
@@ -106,6 +107,7 @@
                 commentsError: '',
                 commentAction: '',
                 commentBody: '',
+                commentNotes: '',
                 context: 'create',
                 method: 'POST',
                 action: this.storeUrl,
@@ -114,7 +116,7 @@
                 submitLabel: @js(__('Save epic')),
             };
         },
-        editEpic(epic, commentBody = '') {
+        editEpic(epic, commentBody = '', commentNotes = '') {
             this.commentRequest?.abort();
             this.projectOptionsRequest?.abort();
             this.projectOptions = [{
@@ -131,6 +133,7 @@
                 commentsError: '',
                 project_id: String(epic.project_id),
                 commentBody,
+                commentNotes,
                 context: `edit-${epic.id}`,
                 method: 'PUT',
                 action: this.updateUrl.replace('__EPIC__', epic.id),
@@ -179,7 +182,7 @@
             }
         },
     })" @if ($commentedEpic)
-        x-init="editEpic(@js($commentedEpic), @js($hasCommentErrors ? old('body', '') : ''));
+        x-init="editEpic(@js($commentedEpic), @js($hasCommentErrors ? old('body', '') : ''), @js($hasCommentErrors ? old('notes', '') : ''));
         $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
     @elseif ($errors->any())
         x-init="@if($editingEpicPayload)

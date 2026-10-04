@@ -92,7 +92,10 @@ class ProjectCrudTest extends DuskTestCase
                     'document.querySelector("dialog[open] .select2-results")?.textContent.includes('.json_encode($customerName).')',
                     10,
                 )
-                ->click('dialog[open] .select2-results__option--selectable');
+                // The customer select is the last field of the drawer, so its list opens upwards and
+                // lands where the fields above it are; choosing the highlighted option from the
+                // keyboard is the one gesture that does not depend on where the list is painted.
+                ->keys('dialog[open] .select2-container--open .select2-search__field', '{enter}');
 
             $browser->script(<<<'JS'
                 const input = document.querySelector('dialog[open] [data-test="project-start-date"]');

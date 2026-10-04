@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
+use App\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -69,12 +70,15 @@ class ResourceNotesTest extends TestCase
     }
 
     #[DataProvider('resources')]
-    public function test_notes_longer_than_five_thousand_characters_are_rejected(string $resource, string $prefix, string $notes): void
+    public function test_notes_longer_than_the_configured_maximum_are_rejected(string $resource, string $prefix, string $notes): void
     {
         $this->actingAs(User::factory()->create());
 
         $this->from(route($resource.'.index'))
-            ->post(route($resource.'.store'), [...$this->storePayload($resource), 'notes' => str_repeat('a', 5001)])
+            ->post(route($resource.'.store'), [
+                ...$this->storePayload($resource),
+                'notes' => str_repeat('a', $this->longtextLimit() + 1),
+            ])
             ->assertRedirect(route($resource.'.index'))
             ->assertSessionHasErrors('notes');
 
@@ -103,29 +107,41 @@ class ResourceNotesTest extends TestCase
     }
 
     /**
+     * Read from the config so the boundary keeps testing the limit the rules actually apply,
+     * whatever it is set to.
+     */
+    private function longtextLimit(): int
+    {
+        return MaxLength::longText();
+    }
+
+    /**
      * The minimum input each resource needs to be stored, parent record included.
      *
      * @return array<string, mixed>
      */
     private function storePayload(string $resource): array
     {
+        $payload = ['name' => 'Notes record'];
+
         if ($resource === 'customers') {
-            return ['name' => 'Notes record'];
+            return $payload;
         }
 
         $customer = Customer::factory()->create();
 
         return match ($resource) {
             'projects' => [
-                'name' => 'Notes record',
+                ...$payload,
                 'start_date' => '2026-10-01',
                 'customer_id' => $customer->id,
             ],
             'epics' => [
-                'name' => 'Notes record',
+                ...$payload,
                 'start_date' => '2026-10-01',
                 'project_id' => Project::factory()->for($customer)->create()->id,
             ],
+            default => $payload,
         };
     }
 }

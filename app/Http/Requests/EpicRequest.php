@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Epic;
 use App\Models\Project;
 use Illuminate\Validation\Rule;
+use App\Support\Validation\MaxLength;
 use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,10 +40,9 @@ class EpicRequest extends FormRequest
                 'required',
                 'string',
                 'min:4',
-                'max:255',
+                'max:'.MaxLength::string(),
                 $this->uniqueNamePerProject(),
             ],
-            'notes' => ['nullable', 'string', 'max:5000'],
             'start_date' => ['nullable', 'required_with:end_date', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after:start_date'],
             'project_id' => [
@@ -50,6 +50,7 @@ class EpicRequest extends FormRequest
                 'integer',
                 $this->selectableProjectRule(),
             ],
+            'notes' => ['nullable', 'string', 'max:'.MaxLength::longText()],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }

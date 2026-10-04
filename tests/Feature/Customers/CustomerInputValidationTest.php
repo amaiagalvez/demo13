@@ -3,6 +3,7 @@
 namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
+use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
 
 class CustomerInputValidationTest extends TestCase
@@ -21,9 +22,10 @@ class CustomerInputValidationTest extends TestCase
         $this->assertRequestValidationFails($request, static fn (): array => $request->rules(), 'name');
     }
 
-    public function test_name_cannot_exceed_255_characters(): void
+    public function test_name_cannot_exceed_the_configured_maximum(): void
     {
-        $request = CustomerRequest::create('/', 'POST', ['name' => str_repeat('a', 256)]);
+        $name = str_repeat('a', MaxLength::string() + 1);
+        $request = CustomerRequest::create('/', 'POST', ['name' => $name]);
 
         $this->assertRequestValidationFails($request, static fn (): array => $request->rules(), 'name');
     }

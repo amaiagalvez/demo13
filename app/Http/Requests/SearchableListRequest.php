@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 abstract class SearchableListRequest extends FormRequest
@@ -12,7 +13,7 @@ abstract class SearchableListRequest extends FormRequest
     final public function rules(): array
     {
         return [
-            'search' => ['nullable', 'string', 'max:255'],
+            'search' => ['nullable', 'string', 'max:'.MaxLength::string()],
         ];
     }
 

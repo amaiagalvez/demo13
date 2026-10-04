@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Queries\ListQueryBase;
+use App\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectSelectOptionsTest extends TestCase
@@ -117,11 +118,13 @@ class ProjectSelectOptionsTest extends TestCase
             ->assertJsonPath('results.0.text', 'Active select project ('.$customer->name.')');
     }
 
-    public function test_project_options_reject_search_terms_over_one_hundred_characters(): void
+    public function test_project_options_reject_search_terms_over_the_configured_maximum(): void
     {
         $this->actingAs(User::factory()->create());
 
-        $this->getJson(route('projects.options', ['q' => str_repeat('a', 101)]))
+        $term = str_repeat('a', MaxLength::string() + 1);
+
+        $this->getJson(route('projects.options', ['q' => $term]))
             ->assertJsonValidationErrors('q');
     }
 
