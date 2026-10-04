@@ -1,8 +1,9 @@
 ---
+name: new-feature
 description: Implement a feature end to end with tests, Pint and build
+disable-model-invocation: true
 argument-hint: describe the feature
 ---
-
 # NEW FEATURE
 
 Implement the feature the user describes in this Laravel 13 · Livewire 4 · Flux · Tailwind app.

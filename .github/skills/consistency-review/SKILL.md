@@ -1,7 +1,8 @@
 ---
+name: consistency-review
 description: Audit forms, lists and resource sets for divergence from the canonical patterns
+disable-model-invocation: true
 ---
-
 # CONSISTENCY REVIEW
 
 READ-ONLY audit of pattern consistency across resources. DO NOT modify any file.

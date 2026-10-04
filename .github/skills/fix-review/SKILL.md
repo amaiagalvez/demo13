@@ -1,7 +1,8 @@
 ---
+name: fix-review
 description: Safely implement selected findings from a dated CODE-REVIEW.md report
+disable-model-invocation: true
 ---
-
 # FIX SELECTED CODE REVIEW FINDINGS
 
 Read:

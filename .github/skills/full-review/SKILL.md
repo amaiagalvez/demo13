@@ -1,9 +1,8 @@
 ---
+name: full-review
 description: Run a complete read-only Laravel technical audit and produce a dated CODE-REVIEW.md report
-agent: review-orchestrator
-subagent: true
+disable-model-invocation: true
 ---
-
 # FULL LARAVEL CODE REVIEW
 
 Perform the complete READ-ONLY audit defined in

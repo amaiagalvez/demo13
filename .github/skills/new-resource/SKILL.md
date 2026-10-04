@@ -1,8 +1,9 @@
 ---
+name: new-resource
 description: Scaffold a complete CRUD resource following the canonical Customer pattern
+disable-model-invocation: true
 argument-hint: Resource singular, StudlyCase (e.g. Invoice)
 ---
-
 # NEW RESOURCE
 
 Resource: $ARGUMENTS (ask if empty). Build the full CRUD set mirroring `Customer` — the canonical resource — never a different structure.

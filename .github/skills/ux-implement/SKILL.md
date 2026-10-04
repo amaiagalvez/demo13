@@ -1,7 +1,8 @@
 ---
+name: ux-implement
 description: Implement a selected batch of UX/UI improvements following the ux-design skill
+disable-model-invocation: true
 ---
-
 # IMPLEMENTAR MEJORAS DE UX
 
 Lee:

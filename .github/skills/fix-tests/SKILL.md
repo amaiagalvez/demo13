@@ -1,8 +1,9 @@
 ---
+name: fix-tests
 description: Run failing tests and get them green with the smallest safe change
+disable-model-invocation: true
 argument-hint: <path or --filter=name>
 ---
-
 # FIX FAILING TESTS
 
 1. Run the narrowest failing suite: `DX php artisan test --compact <path|--filter=name>` (use the argument, or ask the user for it; run the full suite only if asked).
