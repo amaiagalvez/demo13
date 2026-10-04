@@ -9,7 +9,6 @@ use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
 use App\Queries\ListQueryBase;
-use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -408,52 +407,5 @@ class EpicCrudTest extends TestCase
         $this->assertDatabaseCount('epics', 1);
         $this->assertDatabaseHas('epics', ['id' => $epic->id, 'name' => 'Existing epic']);
         $this->assertNotSoftDeleted($epic);
-    }
-
-    public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $project = Project::factory()->create();
-        $name = 'Concurrent epic';
-        RacesNameInsert::afterUniquenessSelect('epics', $name, static function () use ($project, $name): void {
-            Epic::factory()->for($project)->create(['name' => $name]);
-        });
-
-        $this->from(route('epics.index'))
-            ->post(route('epics.store'), [
-                'name' => $name,
-                'project_id' => $project->id,
-            ])
-            ->assertRedirect(route('epics.index'))
-            ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
-
-        $this->assertDatabaseCount('epics', 1);
-    }
-
-    public function test_update_converts_a_concurrent_duplicate_insert_to_validation_error(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $epic = Epic::factory()->create(['name' => 'Original epic']);
-        $name = 'Concurrent epic update';
-        $epicProject = $epic->project;
-
-        RacesNameInsert::afterUniquenessSelect('epics', $name, static function () use ($epicProject, $name): void {
-            Epic::factory()->for($epicProject)->create(['name' => $name]);
-        });
-
-        $this->from(route('epics.index'))
-            ->put(route('epics.update', $epic), [
-                'name' => $name,
-                'project_id' => $epic->project_id,
-            ])
-            ->assertRedirect(route('epics.index'))
-            ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
-
-        $this->assertDatabaseHas('epics', ['id' => $epic->id, 'name' => 'Original epic']);
-        $this->assertDatabaseHas('epics', ['name' => $name, 'deleted_at' => null]);
     }
 }

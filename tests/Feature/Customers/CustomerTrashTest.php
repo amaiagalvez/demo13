@@ -6,7 +6,6 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
-use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerTrashTest extends TestCase
@@ -119,32 +118,6 @@ class CustomerTrashTest extends TestCase
         $this->assertSoftDeleted($deletedCustomer);
         $this->assertModelExists($inactiveCustomer);
         $this->assertFalse($inactiveCustomer->active);
-    }
-
-    public function test_restore_returns_conflict_when_unique_name_is_taken_after_precheck(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $deletedCustomer = Customer::factory()->trashed()->create(['name' => 'Concurrent Restore Customer']);
-        RacesNameInsert::afterUniquenessSelect(
-            'customers',
-            'Concurrent Restore Customer',
-            static function (): void {
-                Customer::factory()->create(['name' => 'Concurrent Restore Customer']);
-            },
-        );
-
-        $this->patch(route('customers.trash.restore', $deletedCustomer->id))
-            ->assertRedirect(route('customers.trash.index'))
-            ->assertSessionHas(
-                'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
-            );
-
-        $this->assertSoftDeleted($deletedCustomer);
-        $this->assertDatabaseHas('customers', [
-            'name' => 'Concurrent Restore Customer',
-            'deleted_at' => null,
-        ]);
     }
 
     public function test_deleted_customer_can_be_permanently_deleted(): void

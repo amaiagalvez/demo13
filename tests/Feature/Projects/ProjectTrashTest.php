@@ -7,7 +7,6 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
-use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectTrashTest extends TestCase
@@ -228,31 +227,5 @@ class ProjectTrashTest extends TestCase
         $this->assertSoftDeleted($deletedProject);
         $this->assertModelExists($inactiveProject);
         $this->assertFalse($inactiveProject->active);
-    }
-
-    public function test_restore_returns_conflict_when_name_becomes_active_after_precheck(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $deletedProject = Project::factory()->trashed()->create(['name' => 'Concurrent restore project']);
-        RacesNameInsert::afterUniquenessSelect(
-            'projects',
-            'Concurrent restore project',
-            static function (): void {
-                Project::factory()->create(['name' => 'Concurrent restore project']);
-            },
-        );
-
-        $this->patch(route('projects.trash.restore', $deletedProject->id))
-            ->assertRedirect(route('projects.trash.index'))
-            ->assertSessionHas(
-                'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
-            );
-
-        $this->assertSoftDeleted($deletedProject);
-        $this->assertDatabaseHas('projects', [
-            'name' => 'Concurrent restore project',
-            'deleted_at' => null,
-        ]);
     }
 }

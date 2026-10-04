@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicTrashTest extends TestCase
@@ -220,30 +219,5 @@ class EpicTrashTest extends TestCase
 
         $this->assertDatabaseCount('epics', 1);
         $this->assertNotSoftDeleted($deletedEpic);
-    }
-
-    public function test_restore_returns_conflict_when_name_becomes_active_after_precheck(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Concurrent restore epic']);
-        $deletedProject = $deletedEpic->project;
-
-        RacesNameInsert::afterUniquenessSelect(
-            'epics',
-            'Concurrent restore epic',
-            static function () use ($deletedProject): void {
-                Epic::factory()->for($deletedProject)->create(['name' => 'Concurrent restore epic']);
-            },
-        );
-
-        $this->patch(route('epics.trash.restore', $deletedEpic->id))
-            ->assertRedirect(route('epics.trash.index'))
-            ->assertSessionHas(
-                'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
-            );
-
-        $this->assertSoftDeleted($deletedEpic);
-        $this->assertDatabaseHas('epics', ['name' => 'Concurrent restore epic', 'deleted_at' => null]);
     }
 }

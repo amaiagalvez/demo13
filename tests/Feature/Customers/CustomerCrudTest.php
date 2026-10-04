@@ -10,7 +10,6 @@ use App\Models\Customer;
 use App\Models\EpicComment;
 use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\RacesNameInsert;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Events\QueryExecuted;
@@ -361,45 +360,6 @@ class CustomerCrudTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('customers', ['name' => $name]);
-    }
-
-    public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $name = 'Concurrent Store Customer';
-        RacesNameInsert::afterUniquenessSelect('customers', $name, static function () use ($name): void {
-            Customer::factory()->create(['name' => $name]);
-        });
-
-        $this->from(route('customers.index'))
-            ->post(route('customers.store'), ['name' => $name])
-            ->assertRedirect(route('customers.index'))
-            ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
-
-        $this->assertDatabaseCount('customers', 1);
-        $this->assertDatabaseHas('customers', ['name' => $name, 'deleted_at' => null]);
-    }
-
-    public function test_update_converts_a_concurrent_duplicate_insert_to_validation_error(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $customer = Customer::factory()->create(['name' => 'Original Customer']);
-        $name = 'Concurrent Update Customer';
-        RacesNameInsert::afterUniquenessSelect('customers', $name, static function () use ($name): void {
-            Customer::factory()->create(['name' => $name]);
-        });
-
-        $this->from(route('customers.index'))
-            ->put(route('customers.update', $customer), ['name' => $name])
-            ->assertRedirect(route('customers.index'))
-            ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
-
-        $this->assertDatabaseHas('customers', ['id' => $customer->id, 'name' => 'Original Customer']);
-        $this->assertDatabaseHas('customers', ['name' => $name, 'deleted_at' => null]);
     }
 
     public function test_database_rejects_duplicate_customer_names(): void

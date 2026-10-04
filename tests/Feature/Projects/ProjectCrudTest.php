@@ -10,7 +10,6 @@ use App\Models\Customer;
 use App\Models\EpicComment;
 use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\RacesNameInsert;
 use Illuminate\Database\QueryException;
 use App\Transformers\ProjectListTransformer;
 use Illuminate\Database\Events\QueryExecuted;
@@ -169,60 +168,6 @@ class ProjectCrudTest extends TestCase
 
         $this->assertSoftDeleted($deletedProject);
         $this->assertModelExists($activeProject);
-    }
-
-    public function test_store_converts_a_concurrent_duplicate_insert_to_validation_error(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $customer = Customer::factory()->create();
-        $name = 'Concurrent project';
-        RacesNameInsert::afterUniquenessSelect('projects', $name, static function () use ($name): void {
-            Project::factory()->create(['name' => $name]);
-        });
-
-        $this->from(route('projects.index'))
-            ->post(route('projects.store'), [
-                'name' => $name,
-                'start_date' => '2026-10-01',
-                'customer_id' => $customer->id,
-            ])
-            ->assertRedirect(route('projects.index'))
-            ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
-
-        $this->assertDatabaseCount('projects', 1);
-        $this->assertDatabaseHas('projects', ['name' => $name, 'deleted_at' => null]);
-    }
-
-    public function test_update_converts_a_concurrent_duplicate_insert_to_validation_error(): void
-    {
-        $this->actingAs(User::factory()->create());
-        $project = Project::factory()->create(['name' => 'Original project']);
-        $name = 'Concurrent project update';
-        RacesNameInsert::afterUniquenessSelect('projects', $name, static function () use ($name): void {
-            Project::factory()->create(['name' => $name]);
-        });
-
-        $this->from(route('projects.index'))
-            ->put(route('projects.update', $project), [
-                'name' => $name,
-                'start_date' => '2026-10-01',
-                'customer_id' => $project->customer_id,
-            ])
-            ->assertRedirect(route('projects.index'))
-            ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
-            ]);
-
-        $this->assertDatabaseHas('projects', [
-            'id' => $project->id,
-            'name' => 'Original project',
-        ]);
-        $this->assertDatabaseHas('projects', [
-            'name' => $name,
-            'deleted_at' => null,
-        ]);
     }
 
     public function test_projects_can_be_searched_by_customer_name(): void

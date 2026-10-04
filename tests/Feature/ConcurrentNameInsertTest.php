@@ -1,0 +1,212 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use App\Models\Epic;
+use App\Models\User;
+use App\Models\Project;
+use App\Models\Customer;
+use Tests\Support\RacesNameInsert;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+/**
+ * The unique index is the last line of defence: validation runs before the write, so a name that
+ * becomes taken between the check and the insert arrives as a QueryException. Every store and
+ * update path has to turn it back into a validation error instead of a 500.
+ *
+ * These cases were copy-pasted per resource; the only thing that changes is the resource.
+ */
+class ConcurrentNameInsertTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * @return array<string, array{0: 'customer'|'project'|'epic', 1: non-empty-string}>
+     */
+    public static function resources(): array
+    {
+        return [
+            'customers' => ['customer', 'customers.index'],
+            'projects' => ['project', 'projects.index'],
+            'epics' => ['epic', 'epics.index'],
+        ];
+    }
+
+    /**
+     * @param  'customer'|'project'|'epic'  $singular
+     * @param  non-empty-string  $indexRoute
+     */
+    #[DataProvider('resources')]
+    public function test_store_converts_a_concurrent_duplicate_insert_to_a_validation_error(
+        string $singular,
+        string $indexRoute,
+    ): void {
+        $this->actingAs(User::factory()->create());
+        $name = 'Concurrent Store '.$singular;
+        $payload = $this->payloadFor($singular, $name);
+        $parentId = $this->parentIdFromPayload($payload);
+
+        RacesNameInsert::afterUniquenessSelect(
+            $singular.'s',
+            $name,
+            fn () => $this->makeRecord($singular, ['name' => $name], parentId: $parentId),
+        );
+
+        $this->from(route($indexRoute))
+            ->post(route($singular.'s.store'), $payload)
+            ->assertRedirect(route($indexRoute))
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+
+        // Only the competitor survives: the request's own insert was rejected by the index.
+        $this->assertDatabaseCount($singular.'s', 1);
+        $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);
+    }
+
+    /**
+     * @param  'customer'|'project'|'epic'  $singular
+     * @param  non-empty-string  $indexRoute
+     */
+    #[DataProvider('resources')]
+    public function test_update_converts_a_concurrent_duplicate_insert_to_a_validation_error(
+        string $singular,
+        string $indexRoute,
+    ): void {
+        $this->actingAs(User::factory()->create());
+        $existing = $this->makeRecord($singular, ['name' => 'Original '.$singular]);
+        $name = 'Concurrent Update '.$singular;
+        $payload = $this->payloadFor($singular, $name, parentId: $this->parentIdOf($existing));
+
+        RacesNameInsert::afterUniquenessSelect(
+            $singular.'s',
+            $name,
+            fn () => $this->makeRecord($singular, ['name' => $name], parentId: $this->parentIdFromPayload($payload)),
+        );
+
+        $this->from(route($indexRoute))
+            ->put(route($singular.'s.update', $existing), $payload)
+            ->assertRedirect(route($indexRoute))
+            ->assertSessionHasErrors([
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
+            ]);
+
+        $this->assertDatabaseHas($singular.'s', ['id' => $existing->id, 'name' => 'Original '.$singular]);
+        $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);
+    }
+
+    /**
+     * A restore that loses the same race must answer the conflict message, not a validation error.
+     * The race is on the name the trashed record already carries, because the restore looks that up
+     * itself; no name is sent in the body.
+     *
+     * @param  'customer'|'project'|'epic'  $singular
+     * @param  non-empty-string  $indexRoute
+     */
+    #[DataProvider('resources')]
+    public function test_restore_converts_a_concurrent_duplicate_insert_to_a_conflict(
+        string $singular,
+        string $indexRoute,
+    ): void {
+        $this->actingAs(User::factory()->create());
+        $name = 'Concurrent Restore '.$singular;
+        $deleted = $this->makeRecord($singular, ['name' => $name], trashed: true);
+
+        RacesNameInsert::afterUniquenessSelect(
+            $singular.'s',
+            $name,
+            fn () => $this->makeRecord($singular, ['name' => $name], parentId: $this->parentIdOf($deleted)),
+        );
+
+        $this->patch(route($singular.'s.trash.restore', $deleted->id))
+            ->assertRedirect(route($singular.'s.trash.index'))
+            ->assertSessionHas('error', __('Cannot be restored because another record outside the trash uses this name.'));
+
+        $this->assertSoftDeleted($deleted);
+        $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);
+    }
+
+    /**
+     * Epic names are unique per project, so a competitor must land in the same project as the
+     * record it is racing, or its name is legitimately free.
+     *
+     * @param  'customer'|'project'|'epic'  $singular
+     * @param  array<string, mixed>  $attributes
+     */
+    private function makeRecord(string $singular, array $attributes = [], bool $trashed = false, ?int $parentId = null): Customer|Project|Epic
+    {
+        return match ($singular) {
+            'customer' => $trashed
+                ? Customer::factory()->trashed()->create($attributes)
+                : Customer::factory()->create($attributes),
+            'project' => $trashed
+                ? Project::factory()->trashed()->create($attributes)
+                : Project::factory()->create($attributes),
+            // The parent may itself be trashed, so it is resolved with withTrashed(). When no parent
+            // is given, a fresh one is built, which is what an epic fixture needs on its own.
+            default => $trashed
+                ? Epic::factory()->for($this->projectFor($parentId))->trashed()->create($attributes)
+                : Epic::factory()->for($this->projectFor($parentId))->create($attributes),
+        };
+    }
+
+    /**
+     * The parent id carried by a request payload, or null when the payload names no parent.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function parentIdFromPayload(array $payload): ?int
+    {
+        $id = $payload['customer_id'] ?? $payload['project_id'] ?? null;
+
+        return is_int($id) ? $id : null;
+    }
+
+    /**
+     * The project an epic hangs from. The parent can itself be trashed, hence withTrashed(); when no
+     * id is given a fresh project is created so an epic fixture stands on its own.
+     */
+    private function projectFor(?int $parentId): Project
+    {
+        return $parentId === null
+            ? Project::factory()->create(['name' => 'Concurrent Epic Parent'])
+            : Project::withTrashed()->findOrFail($parentId);
+    }
+
+    /**
+     * The foreign key the record hangs from, or null when the record is itself the parent.
+     */
+    private function parentIdOf(Customer|Project|Epic $record): ?int
+    {
+        return match (true) {
+            $record instanceof Epic => $record->project_id,
+            $record instanceof Project => $record->customer_id,
+            default => null,
+        };
+    }
+
+    /**
+     * The parent must already exist before the request: project and epic lock it inside their
+     * transaction, so creating it lazily here would deadlock the race instead of exercising it.
+     *
+     * @param  'customer'|'project'|'epic'  $singular
+     * @return array<string, mixed>
+     */
+    private function payloadFor(string $singular, string $name, ?int $parentId = null): array
+    {
+        return match ($singular) {
+            'customer' => ['name' => $name],
+            'project' => [
+                'name' => $name,
+                'start_date' => '2045-07-09',
+                'customer_id' => $parentId ?? Customer::factory()->create()->id,
+            ],
+            default => [
+                'name' => $name,
+                'project_id' => $parentId ?? Project::factory()->create(['name' => 'Concurrent Parent'])->id,
+            ],
+        };
+    }
+}
