@@ -12,7 +12,6 @@ class ListTransformerContractTest extends TestCase
 {
     private const ACTIVE_KEYS = [
         'resource',
-        'state',
         'breadcrumbs',
         'extraDateHeading',
         'emptyMessage',

@@ -38,7 +38,6 @@ abstract class ListTransformer
     {
         return [
             'resource' => $this->resourceLabel(),
-            'state' => $state,
             'breadcrumbs' => $this->breadcrumbs($state),
             'extraDateHeading' => match ($state) {
                 'active' => __('Created at'),

@@ -67,7 +67,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('epics/{epic}/comments', [EpicCommentController::class, 'show'])
         ->whereNumber('epic')
         ->name('epics.comments.index');
-    Route::post('epics/{epic}/comments', [EpicCommentController::class, 'store'])->name('epics.comments.store');
+    Route::post('epics/{epic}/comments', [EpicCommentController::class, 'store'])
+        ->whereNumber('epic')
+        ->name('epics.comments.store');
     Route::resource('epics', EpicController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
