@@ -19,8 +19,8 @@ return [
     */
 
     'max_length' => [
-        'string' => 255,
-        'longtext' => 5000,
+        'string' => 191,
+        'longtext' => 10000,
     ],
 
 ];

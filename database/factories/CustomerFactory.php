@@ -10,8 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class CustomerFactory extends Factory
 {
-    use HasInactiveState;
-    use HasTrashedState;
+    use HasStates;
 
     /**
      * Define the model's default state.

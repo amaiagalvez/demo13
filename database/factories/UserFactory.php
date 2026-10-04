@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class UserFactory extends Factory
 {
-    use HasInactiveState;
+    use HasStates;
 
     /**
      * The current password being used by the factory.

@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProjectFactory extends Factory
 {
-    use HasInactiveState;
-    use HasTrashedState;
+    use HasStates;
 
     /**
      * Define the model's default state. The end date may equal the start date per ProjectRequest.
