@@ -5,6 +5,7 @@ namespace Tests\Feature\Projects;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Customer;
+use App\Queries\ListQueryBase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerSelectOptionsTest extends TestCase
@@ -15,7 +16,9 @@ class CustomerSelectOptionsTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        for ($index = 1; $index <= 21; $index++) {
+        $total = ListQueryBase::PER_PAGE + 1;
+
+        for ($index = 1; $index <= $total; $index++) {
             Customer::factory()->create([
                 'name' => sprintf('Option-only customer %02d', $index),
             ]);
@@ -38,11 +41,13 @@ class CustomerSelectOptionsTest extends TestCase
             ->assertSee('project-no-customer-form-button');
     }
 
-    public function test_customer_options_are_searchable_and_limited_to_twenty(): void
+    public function test_customer_options_are_searchable_and_limited_to_the_shared_page_size(): void
     {
         $this->actingAs(User::factory()->create());
 
-        for ($index = 1; $index <= 21; $index++) {
+        $total = ListQueryBase::PER_PAGE + 1;
+
+        for ($index = 1; $index <= $total; $index++) {
             Customer::factory()->create([
                 'name' => sprintf('Search result %02d', $index),
             ]);
@@ -51,9 +56,9 @@ class CustomerSelectOptionsTest extends TestCase
         $response = $this->getJson(route('customers.options', ['q' => 'Search result']));
 
         $response->assertOk()
-            ->assertJsonCount(20, 'results')
+            ->assertJsonCount(ListQueryBase::PER_PAGE, 'results')
             ->assertJsonPath('results.0.text', 'Search result 01')
-            ->assertJsonMissing(['text' => 'Search result 21']);
+            ->assertJsonMissing(['text' => sprintf('Search result %02d', $total)]);
     }
 
     public function test_customer_options_only_include_active_customers(): void

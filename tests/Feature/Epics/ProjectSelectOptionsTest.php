@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Queries\ListQueryBase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectSelectOptionsTest extends TestCase
@@ -63,7 +64,9 @@ class ProjectSelectOptionsTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
 
-        for ($index = 1; $index <= 21; $index++) {
+        $total = ListQueryBase::PER_PAGE + 1;
+
+        for ($index = 1; $index <= $total; $index++) {
             Project::factory()->for($customer)->create([
                 'name' => sprintf('Option-only project %02d', $index),
             ]);
@@ -74,12 +77,14 @@ class ProjectSelectOptionsTest extends TestCase
             ->assertDontSee('Option-only project 21');
     }
 
-    public function test_project_options_search_by_project_or_customer_and_limit_results_to_twenty(): void
+    public function test_project_options_search_by_project_or_customer_and_are_limited_to_the_shared_page_size(): void
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create(['name' => 'Shared search customer']);
 
-        for ($index = 1; $index <= 21; $index++) {
+        $total = ListQueryBase::PER_PAGE + 1;
+
+        for ($index = 1; $index <= $total; $index++) {
             Project::factory()->for($customer)->create([
                 'name' => sprintf('Project result %02d', $index),
             ]);
@@ -88,14 +93,14 @@ class ProjectSelectOptionsTest extends TestCase
         $response = $this->getJson(route('projects.options', ['q' => 'Shared search customer']));
 
         $response->assertOk()
-            ->assertJsonCount(20, 'results')
+            ->assertJsonCount(ListQueryBase::PER_PAGE, 'results')
             ->assertJsonPath('results.0.text', 'Project result 01 (Shared search customer)')
-            ->assertJsonMissing(['text' => 'Project result 21 (Shared search customer)']);
+            ->assertJsonMissing(['text' => sprintf('Project result %02d (Shared search customer)', $total)]);
 
-        $this->getJson(route('projects.options', ['q' => 'Project result 21']))
+        $this->getJson(route('projects.options', ['q' => sprintf('Project result %02d', $total)]))
             ->assertOk()
             ->assertJsonCount(1, 'results')
-            ->assertJsonPath('results.0.text', 'Project result 21 (Shared search customer)');
+            ->assertJsonPath('results.0.text', sprintf('Project result %02d (Shared search customer)', $total));
     }
 
     public function test_project_options_only_include_active_projects(): void

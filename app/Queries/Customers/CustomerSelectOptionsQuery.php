@@ -12,8 +12,6 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class CustomerSelectOptionsQuery extends ListQueryBase
 {
-    private const RESULTS_LIMIT = 20;
-
     /**
      * @return Collection<int, array{id: int, text: string}>
      */
@@ -29,7 +27,7 @@ final class CustomerSelectOptionsQuery extends ListQueryBase
             ))
             ->orderBy('customers.name')
             ->orderBy('customers.id')
-            ->limit(self::RESULTS_LIMIT)
+            ->limit(self::PER_PAGE)
             ->get(['id', 'name'])
             ->map(fn (Customer $customer): array => [
                 'id' => $customer->id,

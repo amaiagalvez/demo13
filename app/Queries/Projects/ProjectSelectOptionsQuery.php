@@ -12,8 +12,6 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class ProjectSelectOptionsQuery extends ListQueryBase
 {
-    private const RESULTS_LIMIT = 20;
-
     /**
      * @return Collection<int, array{id: int, text: string}>
      */
@@ -37,7 +35,7 @@ final class ProjectSelectOptionsQuery extends ListQueryBase
             })
             ->orderBy('projects.name')
             ->orderBy('projects.id')
-            ->limit(self::RESULTS_LIMIT)
+            ->limit(self::PER_PAGE)
             ->get(['id', 'name', 'customer_id'])
             ->map(fn (Project $project): array => [
                 'id' => $project->id,
