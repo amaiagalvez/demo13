@@ -15,7 +15,7 @@ final class CustomerSelectOptionsQuery extends ListQueryBase
     private const RESULTS_LIMIT = 20;
 
     /**
-     * @return Collection<int, array{id: int<0, max>, text: string}>
+     * @return Collection<int, array{id: int, text: string}>
      */
     public function search(string $search): Collection
     {

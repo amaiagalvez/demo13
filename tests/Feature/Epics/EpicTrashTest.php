@@ -24,9 +24,7 @@ class EpicTrashTest extends TestCase
             'end_date' => '2026-08-04',
         ]);
         $project = $epic->project;
-        $this->assertNotNull($project);
         $customer = $project->customer;
-        $this->assertNotNull($customer);
 
         EpicComment::factory()->for($epic)->create();
         $activeResponse = $this->get(route('epics.index'));
@@ -142,10 +140,6 @@ class EpicTrashTest extends TestCase
         $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Repeated epic']);
         $deletedProject = $deletedEpic->project;
 
-        if ($deletedProject === null) {
-            self::fail('The deleted epic must belong to a project.');
-        }
-
         Epic::factory()->for($deletedProject)->create(['name' => 'Repeated epic']);
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
@@ -212,10 +206,6 @@ class EpicTrashTest extends TestCase
         $this->actingAs(User::factory()->create());
         $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Concurrent restore epic']);
         $deletedProject = $deletedEpic->project;
-
-        if ($deletedProject === null) {
-            self::fail('The deleted epic must belong to a project.');
-        }
 
         RacesNameInsert::afterUniquenessSelect(
             'epics',

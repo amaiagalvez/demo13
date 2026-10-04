@@ -15,7 +15,7 @@ final class ProjectSelectOptionsQuery extends ListQueryBase
     private const RESULTS_LIMIT = 20;
 
     /**
-     * @return Collection<int, array{id: int<0, max>, text: non-falsy-string}>
+     * @return Collection<int, array{id: int, text: string}>
      */
     public function search(string $search): Collection
     {

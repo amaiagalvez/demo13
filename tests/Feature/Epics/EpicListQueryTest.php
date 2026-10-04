@@ -27,12 +27,6 @@ class EpicListQueryTest extends TestCase
             self::fail('The active list must include the epic with its trashed project.');
         }
 
-        $listedProject = $listedEpic->project;
-
-        if ($listedProject === null) {
-            self::fail('The epic must resolve its trashed project.');
-        }
-
-        $this->assertTrue($listedProject->is($project));
+        $this->assertTrue($listedEpic->project->is($project));
     }
 }

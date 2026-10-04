@@ -33,7 +33,7 @@ abstract class Controller
      * back to its list with the conflict modal open; an XHR caller (the inline customer creation of
      * the project selector) gets the conflict as a 409 it can render on the field.
      *
-     * @param  Model  $trashedRecord  the trashed record holding the name
+     * @param  Model&object{name: string}  $trashedRecord  the trashed record holding the name
      */
     protected function deletedNameConflict(Request $request, Model $trashedRecord): RedirectResponse|JsonResponse
     {

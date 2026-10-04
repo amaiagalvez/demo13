@@ -24,7 +24,6 @@ class ProjectTrashTest extends TestCase
             'end_date' => '2026-08-04',
         ]);
         $customer = $project->customer;
-        $this->assertNotNull($customer);
 
         $activeResponse = $this->get(route('projects.index'));
         $project->delete();

@@ -11,6 +11,7 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
  [] test sin db prioridad
  [] en vez de cada modelo tener su propio texto el cliente se ha guardado correctamente o el cliente se a borrado o nuevo cliente y todos los que hay del mismo estilo, utilizar terminología genérica siempre que el usuario entienda dónde esta. Utilizar "Se ha guardado correctamente" o "se ha creado correctamete" o "no se puede eliminar" y similares. Con esto, reducimos las traducciones y tenemos más código que se podría pasar a las bases y reutilizar, lo mismo con los test. Una vez hagas el cambio, analiza el código repetido, a ver si lo podemos abstraer
  [] al filtrar no se muestrra el numero total de resultado sencontrados
+[] en vez de RESULTS_LIMIT usar PER_PAGE
 
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
@@ -23,5 +24,3 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [ ] prepara un plan que cree seeders para llenar las tablas con cientos de registros y luego analice el rendimiento del listado
 [ ] Repasar los errores que da el SonarQube y buscar una posible solucion. Preguntar antes de cambiar nada
 
-------------------------
-primero analiza mi proyecto en github, los agentes, las intrucciones y todo lo relacionado con el uso de copilot y opencode, a continuación analiza todo el código. eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github/task

@@ -495,9 +495,7 @@ class ResourceActivationTest extends TestCase
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
         $project = $epic->project;
-        $this->assertNotNull($project);
         $customer = $project->customer;
-        $this->assertNotNull($customer);
 
         $this->patch(route('customers.deactivate', $customer));
         $this->patch(route('projects.deactivate', $project));
