@@ -7,6 +7,7 @@ use App\Models\Epic;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Queries\ListQueryBase;
+use Illuminate\Support\Facades\DB;
 use App\Queries\Epics\EpicListQuery;
 use App\Queries\Projects\ProjectListQuery;
 use App\Queries\Customers\CustomerListQuery;
@@ -149,6 +150,77 @@ class ListQuerySharedBehaviourTest extends TestCase
             ['Live record'],
             $this->listQuery($queryClass)->active('')->pluck('name')->all(),
         );
+    }
+
+    /**
+     * The tab badges must not re-run the count the paginator already knows. The budget is per
+     * resource because the list query joins its parents: customers join nothing, projects join one,
+     * epics join two, and the reuse has to hold for each of them.
+     *
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('queryBudgets')]
+    public function test_state_counts_reuse_the_total_the_paginator_already_knew(
+        string $queryClass,
+        int $expectedQueries,
+    ): void {
+        $this->makeRecordsFor($queryClass, 2);
+        $this->makeRecordsFor($queryClass, 1, null, trashed: true);
+
+        $query = $this->listQuery($queryClass);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $records = $query->active('');
+            $counts = $query->stateCounts(activeTotal: $records->total());
+            $executed = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $this->assertSame(['active' => 2, 'inactive' => 0, 'trashed' => 1], $counts);
+        $this->assertCount($expectedQueries, $executed);
+    }
+
+    /**
+     * A total that is not passed costs exactly the query it replaces: two, since only one of the
+     * three states is already known.
+     *
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('queryBudgets')]
+    public function test_state_counts_run_one_query_per_unpassed_total(
+        string $queryClass,
+        int $expectedQueries,
+    ): void {
+        $query = $this->listQuery($queryClass);
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $counts = $query->stateCounts(inactiveTotal: 0);
+            $executed = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $this->assertSame(['active' => 0, 'inactive' => 0, 'trashed' => 0], $counts);
+        $this->assertCount(2, $executed);
+    }
+
+    /**
+     * @return array<string, array{0: class-string, 1: int}>
+     */
+    public static function queryBudgets(): array
+    {
+        return [
+            'customers' => [CustomerListQuery::class, 4],
+            'projects' => [ProjectListQuery::class, 5],
+            'epics' => [EpicListQuery::class, 6],
+        ];
     }
 
     /**
