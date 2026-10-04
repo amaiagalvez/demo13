@@ -88,6 +88,30 @@ class EpicListTransformer extends ListTransformer
     }
 
     /**
+     * The payload the edit drawer needs for one epic, built the same way a list row builds it. The
+     * epic list uses it to rehydrate the drawer after a comment or a failed edit, which may target
+     * an epic that is not on the current page.
+     *
+     * @return array{id: int, name: string, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
+     */
+    public function payloadFor(Epic $epic): array
+    {
+        $epic->loadMissing('project.customer');
+
+        return [
+            'id' => $epic->id,
+            'name' => $epic->name,
+            'start_date' => $epic->start_date?->toDateString() ?? '',
+            'end_date' => $epic->end_date?->toDateString() ?? '',
+            'project_id' => $epic->project_id,
+            'project_label' => $epic->project->fullName(),
+            'commentAction' => route('epics.comments.store', $epic),
+            'commentsUrl' => route('epics.comments.index', $epic),
+            'commentsCount' => (int) $epic->comments_count,
+        ];
+    }
+
+    /**
      * @param  Epic  $record
      * @return array{id: int, name: string, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
      */

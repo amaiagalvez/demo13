@@ -38,12 +38,34 @@ class EpicController extends Controller
                 'id' => $selectedProject->id,
                 'text' => $selectedProject->fullName(),
             ],
+            'drawerEpic' => $this->drawerEpic($request, $transformer),
             'list' => $transformer->active(
                 $epics,
                 $search,
                 $query->stateCounts(activeTotal: $search === '' ? $epics->total() : null),
             ),
         ]);
+    }
+
+    /**
+     * The epic whose drawer has to be reopened after the request: the one just commented, or the one
+     * whose edit failed. It is resolved by id instead of being looked up among the current page, so
+     * a comment saved on a later page still reopens the right drawer.
+     *
+     * @return array{id: int, name: string, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}|null
+     */
+    private function drawerEpic(EpicListRequest $request, EpicListTransformer $transformer): ?array
+    {
+        $id = $request->session()->get('commented_epic_id')
+            ?? $request->old('_epic_id');
+
+        if (! is_numeric($id)) {
+            return null;
+        }
+
+        $epic = Epic::query()->with('project.customer')->withCount('comments')->find((int) $id);
+
+        return $epic === null ? null : $transformer->payloadFor($epic);
     }
 
     public function store(EpicRequest $request, EpicListQuery $query): RedirectResponse|JsonResponse

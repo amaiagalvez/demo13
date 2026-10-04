@@ -1,16 +1,12 @@
 @php
     $editingEpic = $list['create'] && str_starts_with(old('_epic_form', ''), 'edit-');
     $deletedEpicConflict = session('deleted_epic_conflict');
-    $findEpicPayload = fn(mixed $id): ?array => collect($list['rows'])->firstWhere('id', (int) $id)[
-        'actions'
-    ][0]['epic'] ?? null;
     $hasCommentErrors = $errors->getBag('comment')->any();
-    $commentedEpic = $list['create']
-        ? $findEpicPayload(
-            session('commented_epic_id') ?? ($hasCommentErrors ? old('_comment_epic_id') : null),
-        )
-        : null;
-    $editingEpicPayload = $editingEpic ? $findEpicPayload(old('_epic_id')) : null;
+    // The drawer payload is resolved by id in EpicController, so it also works when the epic is not
+    // on the current page.
+    $drawerEpic = $list['create'] ? ($drawerEpic ?? null) : null;
+    $commentedEpic = $drawerEpic;
+    $editingEpicPayload = $editingEpic ? $drawerEpic : null;
     $initialForm = $list['create']
         ? [
             'id' => $editingEpic ? old('_epic_id') : null,

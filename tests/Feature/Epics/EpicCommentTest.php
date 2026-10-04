@@ -5,7 +5,9 @@ namespace Tests\Feature\Epics;
 use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
+use App\Models\Project;
 use App\Models\EpicComment;
+use App\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,6 +42,38 @@ class EpicCommentTest extends TestCase
         $this->assertTrue($commentEpic->is($epic));
         $this->assertTrue($commentAuthor->is($user));
         $this->assertTrue($commentCreatedAt->equalTo(now()));
+    }
+
+    /**
+     * The drawer payload is resolved by id, so an epic outside the current page still gets it and the
+     * drawer reopens after a comment. Before this, the view looked the epic up among the rows of the
+     * page it was rendering, which silently failed for page 2 and beyond.
+     */
+    public function test_a_comment_reopens_the_drawer_for_an_epic_outside_the_first_page(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+
+        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
+            Epic::factory()->for($project)->create(['name' => sprintf('Filler epic %02d', $index)]);
+        }
+
+        $target = Epic::factory()->for($project)->create(['name' => 'Commented epic']);
+        EpicComment::factory()->for($target)->create(['body' => 'Saved on a later page']);
+
+        // The epic is on page 2, so the redirect that follows the comment lands on a list that does not
+        // contain it. The payload must still be resolved from the id in the session.
+        $this->post(route('epics.comments.store', $target), ['body' => 'Another comment'])
+            ->assertSessionHas('commented_epic_id', $target->id);
+
+        $this->followingRedirects()
+            ->post(route('epics.comments.store', $target), ['body' => 'Yet another comment'])
+            ->assertOk()
+            // The epic is not a row of the rendered page; only its drawer payload carries the name.
+            ->assertViewHas('drawerEpic', fn (mixed $payload): bool => is_array($payload)
+                && $payload['id'] === $target->id
+                && $payload['name'] === 'Commented epic'
+                && $payload['commentsCount'] === 3);
     }
 
     public function test_epic_comments_are_loaded_on_demand_with_author_and_date(): void
