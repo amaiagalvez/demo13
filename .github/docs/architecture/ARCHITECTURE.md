@@ -33,6 +33,9 @@ deleted from a trash view.
 ## Authentication / Authorization
 
 - Fortify provides authentication and account security features.
+- The `active` flag on users is read but never written by the application: nothing in `app/` sets
+  it to false. Deactivating a user is a pending capability (user CRUD, `todo.md`), so the flag can
+  only be set out of band for now. The three resources do have deactivate/reactivate endpoints.
 - Inactive users cannot authenticate with passwords, two-factor challenges, passkeys,
   or remember-me cookies. A web middleware checks persisted user activity and logs out
   existing sessions on their next request after deactivation.
