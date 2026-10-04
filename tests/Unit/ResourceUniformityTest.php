@@ -24,6 +24,7 @@ use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\ProjectListRequest;
 use App\Transformers\EpicListTransformer;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use Illuminate\Foundation\Http\FormRequest;
@@ -32,6 +33,7 @@ use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\ProjectListTransformer;
 use App\Transformers\CustomerListTransformer;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ResourceUniformityTest extends TestCase
@@ -84,6 +86,37 @@ class ResourceUniformityTest extends TestCase
                 $this->assertSame($expected, $this->normalizedSearch($requestClass, $input));
             }
         }
+    }
+
+    /**
+     * The shared rules have to actually reject what they claim to: an omitted term passes, an array
+     * and an over-long term do not. This replaces the three per-resource ListRequest test files,
+     * whose four methods were identical copies.
+     *
+     * @param  class-string<SearchableListRequest>  $requestClass
+     */
+    #[DataProvider('listRequestClasses')]
+    public function test_list_requests_reject_an_invalid_search_term(string $requestClass): void
+    {
+        $rules = $this->listRequestRules($requestClass);
+
+        $this->assertTrue(Validator::make([], $rules)->passes());
+        $this->assertTrue(Validator::make(['search' => 'Ane'], $rules)->passes());
+        $this->assertTrue(Validator::make(['search' => ['Ane']], $rules)->fails());
+        $this->assertTrue(Validator::make(['search' => str_repeat('a', 256)], $rules)->fails());
+        $this->assertTrue(Validator::make(['search' => str_repeat('a', 255)], $rules)->passes());
+    }
+
+    /**
+     * @return array<string, array{0: class-string<SearchableListRequest>}>
+     */
+    public static function listRequestClasses(): array
+    {
+        return [
+            'customers' => [CustomerListRequest::class],
+            'projects' => [ProjectListRequest::class],
+            'epics' => [EpicListRequest::class],
+        ];
     }
 
     public function test_policy_abilities_are_uniform_and_have_http_call_sites(): void
