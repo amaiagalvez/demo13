@@ -8,7 +8,7 @@
             'start_date' => old('start_date', ''),
             'end_date' => old('end_date', ''),
             'customer_id' => old('customer_id', ''),
-            'customer_name' => $selectedCustomer?->name ?? '',
+            'customer_name' => ($selectedCustomer ?? null)?->name ?? '',
             'customerCreateError' => '',
             'customerCreating' => false,
             'context' => $editingProject ? old('_project_form') : 'create',
@@ -95,7 +95,7 @@
             </x-slot:actions>
         </x-list.page-header>
 
-        @if ($list['create'] && !$hasCustomers)
+        @if ($list['create'] && ! ($hasCustomers ?? false))
             <flux:callout icon="exclamation-triangle" variant="warning">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <span>{{ __('No active customers are available. Open the customer form to create one.') }}</span>

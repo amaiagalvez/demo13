@@ -41,7 +41,7 @@
 <x-layouts::app :title="$list['resource']">
     <div x-data="{
         form: @js($initialForm),
-        projectOptions: @js($selectedProjectOption ? [$selectedProjectOption] : []),
+        projectOptions: @js(($selectedProjectOption ?? null) ? [$selectedProjectOption] : []),
         projectOptionsUrl: @js(route('projects.options', [], false)),
         projectOptionsRequest: null,
         projectOptionsLoading: false,
@@ -216,7 +216,7 @@
             </x-slot:actions>
         </x-list.page-header>
 
-        @if ($list['create'] && !$hasProjects)
+        @if ($list['create'] && ! ($hasProjects ?? false))
             <flux:callout icon="exclamation-triangle" variant="warning">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <span>{{ __('No active projects are available. Open the project form to create one.') }}</span>

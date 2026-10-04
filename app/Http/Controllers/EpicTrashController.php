@@ -27,8 +27,6 @@ class EpicTrashController extends TrashController
 
         return $this->listView($request, 'epics.list', [
             'epics' => $epics,
-            'hasProjects' => false,
-            'selectedProjectOption' => null,
             'list' => $transformer->trash(
                 $epics,
                 $search,
