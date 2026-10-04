@@ -36,7 +36,7 @@ class EpicController extends Controller
             'hasProjects' => Project::query()->where('active', true)->exists(),
             'selectedProjectOption' => $selectedProject === null ? null : [
                 'id' => $selectedProject->id,
-                'text' => $selectedProject->name.' ('.($selectedProject->customer->name ?? '—').')',
+                'text' => $selectedProject->fullName(),
             ],
             'list' => $transformer->active(
                 $epics,

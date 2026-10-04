@@ -3,7 +3,6 @@
 namespace App\Transformers;
 
 use App\Models\Epic;
-use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -79,8 +78,8 @@ class EpicListTransformer extends ListTransformer
         return [
             'id' => $epic->id,
             'name' => $epic->name,
-            'project' => $project->name ?? '—',
-            'customer' => $project->customer->name ?? '—',
+            'project' => $project->name,
+            'customer' => $project->customer->name,
             'startDate' => $epic->start_date?->format('Y-m-d') ?? '',
             'endDate' => $epic->end_date?->format('Y-m-d') ?? '',
             'commentsCount' => (int) $epic->comments_count,
@@ -109,13 +108,7 @@ class EpicListTransformer extends ListTransformer
 
     private function projectLabel(Epic $epic): string
     {
-        $project = $epic->project;
-
-        if (! $project instanceof Project) {
-            return '—';
-        }
-
-        return $project->name.' ('.($project->customer->name ?? '—').')';
+        return $epic->project->fullName();
     }
 
     protected function resourceLabel(): string

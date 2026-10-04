@@ -121,19 +121,41 @@ class EpicCrudTest extends TestCase
         $this->assertCount(2, $project->epics);
     }
 
-    public function test_epic_list_transformer_uses_fallbacks_when_parent_relations_are_missing(): void
+    public function test_epic_list_transformer_renders_the_parents_it_is_bound_to(): void
     {
-        $epic = Epic::factory()->create();
-        $epic->setRelation('project', null);
+        $customer = Customer::factory()->create(['name' => 'Bound customer']);
+        $project = Project::factory()->for($customer)->create(['name' => 'Bound project']);
+        $epic = Epic::factory()->for($project)->create();
 
         $list = app(EpicListTransformer::class)->active(
             new LengthAwarePaginator([$epic], 1, 15),
             '',
         );
 
-        $this->assertSame('—', data_get($list, 'rows.0.project'));
-        $this->assertSame('—', data_get($list, 'rows.0.customer'));
-        $this->assertSame('—', data_get($list, 'rows.0.actions.0.epic.project_label'));
+        $this->assertSame('Bound project', data_get($list, 'rows.0.project'));
+        $this->assertSame('Bound customer', data_get($list, 'rows.0.customer'));
+        $this->assertSame(
+            'Bound project (Bound customer)',
+            data_get($list, 'rows.0.actions.0.epic.project_label'),
+        );
+    }
+
+    /**
+     * An epic cannot exist without a project: the column is NOT NULL, the foreign key restricts
+     * deletion and the relation resolves soft-deleted projects, so the row always renders a name.
+     */
+    public function test_a_project_with_epics_cannot_be_permanently_deleted(): void
+    {
+        $project = Project::factory()->create();
+        $epic = Epic::factory()->for($project)->create();
+
+        $project->forceDelete();
+
+        $this->assertModelExists($epic);
+        $this->assertDatabaseHas('epics', [
+            'id' => $epic->id,
+            'project_id' => $project->id,
+        ]);
     }
 
     public function test_empty_epic_list_uses_the_shared_empty_state(): void

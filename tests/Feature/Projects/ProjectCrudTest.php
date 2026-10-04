@@ -524,18 +524,36 @@ class ProjectCrudTest extends TestCase
         $this->assertModelExists($epic);
     }
 
-    public function test_project_list_transformer_uses_a_fallback_when_customer_is_missing(): void
+    public function test_project_list_transformer_renders_the_customer_it_is_bound_to(): void
     {
-        $project = Project::factory()->create();
-        $project->setRelation('customer', null);
+        $customer = Customer::factory()->create(['name' => 'Bound customer']);
+        $project = Project::factory()->for($customer)->create();
 
         $list = app(ProjectListTransformer::class)->active(
             new LengthAwarePaginator([$project], 1, 15),
             '',
         );
 
-        $this->assertSame('—', data_get($list, 'rows.0.customer'));
-        $this->assertSame('—', data_get($list, 'rows.0.actions.0.project.customer_name'));
+        $this->assertSame('Bound customer', data_get($list, 'rows.0.customer'));
+        $this->assertSame('Bound customer', data_get($list, 'rows.0.actions.0.project.customer_name'));
+    }
+
+    /**
+     * A project cannot exist without a customer: the column is NOT NULL, the foreign key restricts
+     * deletion and the relation resolves soft-deleted customers, so the row always renders a name.
+     */
+    public function test_a_customer_with_projects_cannot_be_permanently_deleted(): void
+    {
+        $customer = Customer::factory()->create();
+        $project = Project::factory()->for($customer)->create();
+
+        $customer->forceDelete();
+
+        $this->assertModelExists($project);
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'customer_id' => $customer->id,
+        ]);
     }
 
     public function test_empty_project_list_uses_the_shared_empty_state(): void

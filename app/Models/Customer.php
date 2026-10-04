@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
+ * @property int $id
+ * @property string $name
  * @property bool $active
  * @property-read bool $projects_exists
  * @property-read int $projects_count

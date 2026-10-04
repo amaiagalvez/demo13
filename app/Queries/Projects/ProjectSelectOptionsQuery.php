@@ -41,7 +41,7 @@ final class ProjectSelectOptionsQuery extends ListQueryBase
             ->get(['id', 'name', 'customer_id'])
             ->map(fn (Project $project): array => [
                 'id' => $project->id,
-                'text' => $project->name.' ('.($project->customer->name ?? '—').')',
+                'text' => $project->fullName(),
             ]);
     }
 }

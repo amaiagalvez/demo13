@@ -83,7 +83,7 @@ class ProjectListTransformer extends ListTransformer
         return [
             'id' => $project->id,
             'name' => $project->name,
-            'customer' => $project->customer->name ?? '—',
+            'customer' => $project->customer->name,
             'startDate' => $project->start_date->format('Y-m-d'),
             'endDate' => $project->end_date?->format('Y-m-d') ?? '',
             'epicsCount' => $epicsCount,
@@ -108,7 +108,7 @@ class ProjectListTransformer extends ListTransformer
             'start_date' => $record->start_date->toDateString(),
             'end_date' => $record->end_date?->toDateString() ?? '',
             'customer_id' => $record->customer_id,
-            'customer_name' => $record->customer->name ?? '—',
+            'customer_name' => $record->customer->name,
         ];
     }
 

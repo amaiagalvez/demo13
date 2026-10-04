@@ -14,7 +14,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
+ * @property int $id
+ * @property string $name
  * @property bool $active
+ * @property int $customer_id
+ * @property-read Customer $customer
  * @property-read bool $epics_exists
  * @property-read int $epics_count
  * @property-read int $comments_count
@@ -69,5 +73,18 @@ class Project extends Model
     public function comments(): HasManyThrough
     {
         return $this->hasManyThrough(EpicComment::class, Epic::class, 'project_id', 'epic_id');
+    }
+
+    /**
+     * How a project is named wherever it is picked: in the epic form selector, in the option the
+     * epic list rehydrates after a validation error, and in the epic edit payload. Built once here
+     * so those three surfaces cannot drift apart.
+     *
+     * `name` and `customer` cannot be empty: the column is NOT NULL and the foreign key restricts
+     * deletion, so no fallback is needed or wanted.
+     */
+    public function fullName(): string
+    {
+        return $this->name.' ('.$this->customer->name.')';
     }
 }
