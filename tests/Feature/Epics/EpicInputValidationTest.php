@@ -282,6 +282,53 @@ class EpicInputValidationTest extends TestCase
         ]);
     }
 
+    /**
+     * Epic names are unique per project, so a name already used in another project is free. Without a
+     * project_id the rule falls back to global uniqueness, which still reports the name when it is
+     * taken anywhere: it cannot claim the name is free inside a project that was never named.
+     */
+    public function test_a_missing_project_falls_back_to_global_uniqueness(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->create(['name' => 'Existing epic name']);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), ['name' => 'Existing epic name'])
+            ->assertSessionHasErrors(['project_id', 'name']);
+    }
+
+    /**
+     * A project_id that is not a number is rejected on its own, and the name is checked globally
+     * rather than against a project that does not exist.
+     */
+    public function test_a_non_numeric_project_falls_back_to_global_uniqueness(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->create(['name' => 'Existing epic name']);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), ['name' => 'Existing epic name', 'project_id' => 'not-a-number'])
+            ->assertSessionHasErrors(['project_id', 'name']);
+    }
+
+    /**
+     * The name of a trashed epic is free again, so it must not be reported as taken even when the
+     * project is missing.
+     */
+    public function test_a_missing_project_does_not_conflict_with_a_trashed_epic_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        Epic::factory()->for($project)->trashed()->create(['name' => 'Trashed epic name']);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), ['name' => 'Trashed epic name'])
+            ->assertSessionHasErrors(['project_id'])
+            ->assertSessionDoesntHaveErrors(['name']);
+    }
+
     public function test_epic_cannot_belong_to_a_deleted_project(): void
     {
         $this->actingAs(User::factory()->create());

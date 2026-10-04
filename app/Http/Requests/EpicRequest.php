@@ -6,6 +6,7 @@ use App\Models\Epic;
 use App\Models\Project;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
+use Illuminate\Validation\Rules\Unique;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EpicRequest extends FormRequest
@@ -39,10 +40,7 @@ class EpicRequest extends FormRequest
                 'string',
                 'min:4',
                 'max:255',
-                Rule::unique(Epic::class)
-                    ->ignore($this->route('epic'))
-                    ->where('project_id', $this->integer('project_id'))
-                    ->whereNull('deleted_at'),
+                $this->uniqueNamePerProject(),
             ],
             'start_date' => ['nullable', 'required_with:end_date', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after:start_date'],
@@ -53,6 +51,24 @@ class EpicRequest extends FormRequest
             ],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
+    }
+
+    /**
+     * Epic names are unique inside their project, not globally. Scoping the rule needs a usable
+     * project_id: integer() returns 0 for an absent or non-numeric value, and a uniqueness check
+     * against project 0 reports a duplicate name for a field the project_id rule has already
+     * rejected. So the scope is only applied when the id is there; when it is not, the rule falls
+     * back to global uniqueness, which never lets a duplicate name through.
+     */
+    protected function uniqueNamePerProject(): Unique
+    {
+        $rule = Rule::unique(Epic::class)
+            ->ignore($this->route('epic'))
+            ->whereNull('deleted_at');
+
+        $projectId = $this->integer('project_id');
+
+        return $projectId > 0 ? $rule->where('project_id', $projectId) : $rule;
     }
 
     /**
