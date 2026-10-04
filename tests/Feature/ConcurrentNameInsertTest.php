@@ -58,7 +58,9 @@ class ConcurrentNameInsertTest extends TestCase
             ->post(route($singular.'s.store'), $payload)
             ->assertRedirect(route($indexRoute))
             ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
+                'name' => __('validation.unique', [
+                    'attribute' => __('validation.attributes')['name'],
+                ]),
             ]);
 
         // Only the competitor survives: the request's own insert was rejected by the index.
@@ -90,7 +92,9 @@ class ConcurrentNameInsertTest extends TestCase
             ->put(route($singular.'s.update', $existing), $payload)
             ->assertRedirect(route($indexRoute))
             ->assertSessionHasErrors([
-                'name' => __('validation.unique', ['attribute' => __('Name')]),
+                'name' => __('validation.unique', [
+                    'attribute' => __('validation.attributes')['name'],
+                ]),
             ]);
 
         $this->assertDatabaseHas($singular.'s', ['id' => $existing->id, 'name' => 'Original '.$singular]);

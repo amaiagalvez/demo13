@@ -286,7 +286,10 @@ class CustomerCrudTest extends TestCase
                 'name' => 'Abc',
             ])
             ->assertOk()
-            ->assertSee(__('validation.min.string', ['attribute' => 'name', 'min' => 4]));
+            ->assertSee(__('validation.min.string', [
+                'attribute' => __('validation.attributes')['name'],
+                'min' => 4,
+            ]));
 
         $this->assertDatabaseMissing('customers', ['name' => 'Abc']);
     }

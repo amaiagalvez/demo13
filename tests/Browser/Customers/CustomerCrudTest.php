@@ -313,7 +313,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertPresent('dialog[open]')
                 ->assertSeeIn(
                     'dialog[open]',
-                    __('validation.unique', ['attribute' => 'name']),
+                    __('validation.unique', ['attribute' => __('validation.attributes')['name']]),
                 )
                 ->click('dialog[open] [data-test="customer-cancel"]')
                 ->waitUntilMissing('dialog[open]')
@@ -322,7 +322,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertInputValue('dialog[open] [data-test="customer-name"]', '')
                 ->assertDontSeeIn(
                     'dialog[open]',
-                    __('validation.unique', ['attribute' => 'name']),
+                    __('validation.unique', ['attribute' => __('validation.attributes')['name']]),
                 )
                 ->assertScript(
                     'document.querySelector(\'dialog[open] [data-test="customer-name"]\').hasAttribute(\'data-invalid\')',
@@ -356,7 +356,10 @@ class CustomerCrudTest extends DuskTestCase
                 ->assertInputValue('dialog[open] [data-test="customer-name"]', 'Ane')
                 ->assertDontSeeIn(
                     'dialog[open]',
-                    __('validation.min.string', ['attribute' => 'name', 'min' => 4]),
+                    __('validation.min.string', [
+                        'attribute' => __('validation.attributes')['name'],
+                        'min' => 4,
+                    ]),
                 );
         });
 
@@ -378,7 +381,7 @@ class CustomerCrudTest extends DuskTestCase
                 ))
                 ->assertSeeIn(
                     'dialog[open]',
-                    __('validation.required', ['attribute' => 'name']),
+                    __('validation.required', ['attribute' => __('validation.attributes')['name']]),
                 );
         });
 
@@ -403,7 +406,7 @@ class CustomerCrudTest extends DuskTestCase
                 ))
                 ->assertSeeIn(
                     'dialog[open]',
-                    __('validation.unique', ['attribute' => 'name']),
+                    __('validation.unique', ['attribute' => __('validation.attributes')['name']]),
                 )
                 ->click('dialog[open] [data-test="customer-cancel"]')
                 ->waitUntilMissing('dialog[open]')
@@ -411,7 +414,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitFor('dialog[open]')
                 ->assertDontSeeIn(
                     'dialog[open]',
-                    __('validation.unique', ['attribute' => 'name']),
+                    __('validation.unique', ['attribute' => __('validation.attributes')['name']]),
                 )
                 ->assertScript(
                     'document.querySelector(\'dialog[open] [data-test="customer-name"]\').hasAttribute(\'data-invalid\')',

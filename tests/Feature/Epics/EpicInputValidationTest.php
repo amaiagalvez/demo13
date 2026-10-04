@@ -51,7 +51,10 @@ class EpicInputValidationTest extends TestCase
         $this->from(route('epics.index'))
             ->post(route('epics.store'), ['name' => 'Abc', 'project_id' => $project->id])
             ->assertSessionHasErrors([
-                'name' => __('validation.min.string', ['attribute' => 'name', 'min' => 4]),
+                'name' => __('validation.min.string', [
+                    'attribute' => __('validation.attributes')['name'],
+                    'min' => 4,
+                ]),
             ]);
 
         $this->assertDatabaseCount('epics', 0);

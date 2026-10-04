@@ -15,7 +15,12 @@ class TranslationFilesTest extends TestCase
      *
      * @var list<string>
      */
-    private const FRAMEWORK_KEYS = ['validation.required', 'validation.string'];
+    private const FRAMEWORK_KEYS = [
+        'validation.required',
+        'validation.string',
+        'validation.unique',
+        'validation.attributes',
+    ];
 
     /**
      * Customers, projects and epics share the outcome wording of their lifecycle actions, so a
@@ -47,6 +52,12 @@ class TranslationFilesTest extends TestCase
         foreach ($this->locales() as $locale) {
             foreach ($this->translations($locale) as $key => $value) {
                 preg_match_all('/:[a-z_]+/', $key, $keyPlaceholders);
+
+                if ($keyPlaceholders[0] === []) {
+                    continue;
+                }
+
+                $this->assertIsString($value, "lang/{$locale}.json \"{$key}\" must be a string.");
 
                 foreach ($keyPlaceholders[0] as $placeholder) {
                     $this->assertStringContainsString(
@@ -169,7 +180,7 @@ class TranslationFilesTest extends TestCase
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     private function translations(string $locale): array
     {

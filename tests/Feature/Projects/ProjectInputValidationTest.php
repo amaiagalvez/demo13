@@ -39,7 +39,10 @@ class ProjectInputValidationTest extends TestCase
                 'start_date' => self::START_DATE,
                 'customer_id' => $customer->id,
             ])
-            ->assertSee(__('validation.min.string', ['attribute' => 'name', 'min' => 4]));
+            ->assertSee(__('validation.min.string', [
+                'attribute' => __('validation.attributes')['name'],
+                'min' => 4,
+            ]));
 
         $this->assertDatabaseMissing('projects', ['name' => 'Abc']);
     }
@@ -301,8 +304,8 @@ class ProjectInputValidationTest extends TestCase
                 'customer_id' => $customer->id,
             ])
             ->assertSee(__('validation.after_or_equal', [
-                'attribute' => 'end date',
-                'date' => 'start date',
+                'attribute' => __('validation.attributes')['end_date'],
+                'date' => __('validation.attributes')['start_date'],
             ]));
     }
 
