@@ -73,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
                 return is_array($allowedEmails) && in_array($user->email, $allowedEmails, true);
             },
         );
-        Gate::define('downloadLogFile', fn (): bool => true);
+        Gate::define('downloadLogFile', fn (): bool => false);
         Gate::define('downloadLogFolder', fn (): bool => false);
         Gate::define('deleteLogFile', fn (): bool => false);
         Gate::define('deleteLogFolder', fn (): bool => false);

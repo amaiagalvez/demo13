@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use App\Http\Middleware\EnsureUserIsActive;
 
 class LogViewerAccessTest extends TestCase
@@ -64,5 +65,24 @@ class LogViewerAccessTest extends TestCase
             ->actingAs(User::factory()->make()->forceFill(['id' => 1]))
             ->getJson(self::LOG_VIEWER_API_PATH)
             ->assertForbidden();
+    }
+
+    /**
+     * Reading entries is the only operation the viewer allows. The package authorizes downloads,
+     * folder downloads and deletions through gates it resolves before acting, so each one stays
+     * closed even for an allowed user.
+     */
+    public function test_allowed_users_cannot_download_or_delete_logs(): void
+    {
+        $user = User::factory()->make(['email' => self::ALLOWED_EMAIL])->forceFill(['id' => 1]);
+
+        foreach (['downloadLogFile', 'downloadLogFolder', 'deleteLogFile', 'deleteLogFolder'] as $ability) {
+            $this->assertFalse(
+                Gate::forUser($user)->allows($ability),
+                "[{$ability}] must stay closed to every user.",
+            );
+        }
+
+        $this->assertTrue(Gate::forUser($user)->allows('viewLogViewer'));
     }
 }
