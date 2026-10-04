@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProjectRequest extends FormRequest
@@ -47,9 +48,29 @@ class ProjectRequest extends FormRequest
             'customer_id' => [
                 'required',
                 'integer',
-                Rule::exists(Customer::class, 'id')->whereNull('deleted_at'),
+                $this->selectableCustomerRule(),
             ],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
+    }
+
+    /**
+     * A project may only hang from an active customer, which is what the selector offers. While
+     * editing, the customer the project already belongs to stays valid even after it has been
+     * deactivated, so a form that does not change it can still be saved.
+     *
+     * @return Exists
+     */
+    protected function selectableCustomerRule(): Exists
+    {
+        $current = $this->route('project');
+
+        if ($current instanceof Project && $current->customer_id === $this->integer('customer_id')) {
+            return Rule::exists(Customer::class, 'id')->whereNull('deleted_at');
+        }
+
+        return Rule::exists(Customer::class, 'id')
+            ->whereNull('deleted_at')
+            ->where('active', true);
     }
 }

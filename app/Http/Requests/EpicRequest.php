@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Epic;
 use App\Models\Project;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EpicRequest extends FormRequest
@@ -48,9 +49,29 @@ class EpicRequest extends FormRequest
             'project_id' => [
                 'required',
                 'integer',
-                Rule::exists(Project::class, 'id')->whereNull('deleted_at'),
+                $this->selectableProjectRule(),
             ],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
+    }
+
+    /**
+     * An epic may only hang from an active project, which is what the selector offers. While
+     * editing, the project the epic already belongs to stays valid even after it has been
+     * deactivated, so a form that does not change it can still be saved.
+     *
+     * @return Exists
+     */
+    protected function selectableProjectRule(): Exists
+    {
+        $current = $this->route('epic');
+
+        if ($current instanceof Epic && $current->project_id === $this->integer('project_id')) {
+            return Rule::exists(Project::class, 'id')->whereNull('deleted_at');
+        }
+
+        return Rule::exists(Project::class, 'id')
+            ->whereNull('deleted_at')
+            ->where('active', true);
     }
 }
