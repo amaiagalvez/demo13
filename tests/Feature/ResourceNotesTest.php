@@ -1,0 +1,131 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use App\Models\User;
+use App\Models\Project;
+use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class ResourceNotesTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * @return array<string, array{string, string, string}>
+     */
+    public static function resources(): array
+    {
+        return [
+            'customers' => ['customers', 'customer', 'Customer notes'],
+            'projects' => ['projects', 'project', 'Project notes'],
+            'epics' => ['epics', 'epic', 'Epic notes'],
+        ];
+    }
+
+    #[DataProvider('resources')]
+    public function test_notes_are_saved_and_replaced_on_update(string $resource, string $prefix, string $notes): void
+    {
+        $this->actingAs(User::factory()->create());
+        $payload = $this->storePayload($resource);
+
+        $this->post(route($resource.'.store'), [...$payload, 'notes' => $notes])
+            ->assertRedirect(route($resource.'.index'));
+
+        $id = DB::table($resource)->where('name', 'Notes record')->value('id');
+        $this->assertSame($notes, DB::table($resource)->where('id', $id)->value('notes'));
+
+        $this->put(route($resource.'.update', $id), [...$payload, 'notes' => 'Rewritten notes'])
+            ->assertRedirect(route($resource.'.index'));
+
+        $this->assertSame('Rewritten notes', DB::table($resource)->where('id', $id)->value('notes'));
+    }
+
+    /**
+     * The column is nullable, so a record created without notes exists instead of failing on a
+     * missing value, and submitting an empty field clears the notes it had.
+     */
+    #[DataProvider('resources')]
+    public function test_notes_are_optional_and_can_be_cleared(string $resource, string $prefix, string $notes): void
+    {
+        $this->actingAs(User::factory()->create());
+        $payload = $this->storePayload($resource);
+
+        $this->post(route($resource.'.store'), $payload)
+            ->assertRedirect(route($resource.'.index'))
+            ->assertSessionHasNoErrors();
+
+        $id = DB::table($resource)->where('name', 'Notes record')->value('id');
+        $this->assertNull(DB::table($resource)->where('id', $id)->value('notes'));
+
+        $this->put(route($resource.'.update', $id), [...$payload, 'notes' => $notes]);
+        $this->put(route($resource.'.update', $id), [...$payload, 'notes' => ''])
+            ->assertRedirect(route($resource.'.index'));
+
+        $this->assertNull(DB::table($resource)->where('id', $id)->value('notes'));
+    }
+
+    #[DataProvider('resources')]
+    public function test_notes_longer_than_five_thousand_characters_are_rejected(string $resource, string $prefix, string $notes): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->from(route($resource.'.index'))
+            ->post(route($resource.'.store'), [...$this->storePayload($resource), 'notes' => str_repeat('a', 5001)])
+            ->assertRedirect(route($resource.'.index'))
+            ->assertSessionHasErrors('notes');
+
+        $this->assertDatabaseCount($resource, 0);
+    }
+
+    /**
+     * The drawer is fed by the row edit payload, so notes nothing carries would empty the field
+     * every time the form is opened.
+     */
+    #[DataProvider('resources')]
+    public function test_the_edit_form_is_bound_to_the_saved_notes(string $resource, string $prefix, string $notes): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->post(route($resource.'.store'), [...$this->storePayload($resource), 'notes' => $notes]);
+
+        $this->get(route($resource.'.index'))
+            ->assertOk()
+            ->assertSee('x-model="form.notes"', false)
+            ->assertSee('data-test="'.$prefix.'-notes"', false)
+            ->assertViewHas('list', function (mixed $list) use ($notes): bool {
+                /** @var array{rows: list<array{editPayload: array{notes: string|null}}>} $list */
+                return $list['rows'][0]['editPayload']['notes'] === $notes;
+            });
+    }
+
+    /**
+     * The minimum input each resource needs to be stored, parent record included.
+     *
+     * @return array<string, mixed>
+     */
+    private function storePayload(string $resource): array
+    {
+        if ($resource === 'customers') {
+            return ['name' => 'Notes record'];
+        }
+
+        $customer = Customer::factory()->create();
+
+        return match ($resource) {
+            'projects' => [
+                'name' => 'Notes record',
+                'start_date' => '2026-10-01',
+                'customer_id' => $customer->id,
+            ],
+            'epics' => [
+                'name' => 'Notes record',
+                'start_date' => '2026-10-01',
+                'project_id' => Project::factory()->for($customer)->create()->id,
+            ],
+        };
+    }
+}

@@ -15,12 +15,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property int $id
  * @property string $name
+ * @property string|null $notes
  * @property bool $active
  * @property int $project_id
  * @property-read Project $project
  * @property-read int $comments_count
  */
-#[Fillable(['name', 'start_date', 'end_date', 'project_id'])]
+#[Fillable(['name', 'notes', 'start_date', 'end_date', 'project_id'])]
 #[UsePolicy(EpicPolicy::class)]
 class Epic extends Model
 {

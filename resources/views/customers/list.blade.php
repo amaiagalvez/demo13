@@ -5,6 +5,7 @@
         ? [
             'id' => $editingCustomer ? old('_customer_id') : null,
             'name' => old('name', ''),
+            'notes' => old('notes', ''),
             'context' => $editingCustomer ? old('_customer_form') : 'create',
             'method' => $editingCustomer ? 'PUT' : 'POST',
             'action' => $editingCustomer
@@ -28,6 +29,7 @@
             this.form = {
                 id: null,
                 name: '',
+                notes: '',
                 context: 'create',
                 method: 'POST',
                 action: this.storeUrl,

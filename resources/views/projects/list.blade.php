@@ -5,6 +5,7 @@
         ? [
             'id' => $editingProject ? old('_project_id') : null,
             'name' => old('name', ''),
+            'notes' => old('notes', ''),
             'start_date' => old('start_date', ''),
             'end_date' => old('end_date', ''),
             'customer_id' => old('customer_id', ''),
@@ -34,6 +35,7 @@
             this.form = {
                 id: null,
                 name: '',
+                notes: '',
                 start_date: '',
                 end_date: '',
                 customer_id: '',

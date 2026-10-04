@@ -11,6 +11,7 @@
         ? [
             'id' => $editingEpic ? old('_epic_id') : null,
             'name' => old('name', ''),
+            'notes' => old('notes', ''),
             'start_date' => old('start_date', ''),
             'end_date' => old('end_date', ''),
             'project_id' => old('project_id', ''),
@@ -95,6 +96,7 @@
             this.form = {
                 id: null,
                 name: '',
+                notes: '',
                 start_date: '',
                 end_date: '',
                 project_id: '',

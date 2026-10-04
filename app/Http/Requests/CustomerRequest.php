@@ -41,6 +41,7 @@ class CustomerRequest extends FormRequest
                     ->ignore($this->route('customer'))
                     ->whereNull('deleted_at'),
             ],
+            'notes' => ['nullable', 'string', 'max:5000'],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
     }

@@ -69,7 +69,7 @@ class EpicListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, project: string, customer: string, startDate: string, endDate: string, commentsCount: int, editPayload: array{id: int, name: string, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}}
+     * @return array{id: int, name: string, notes: string|null, project: string, customer: string, startDate: string, endDate: string, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}}
      */
     private function columns(Epic $epic): array
     {
@@ -92,7 +92,7 @@ class EpicListTransformer extends ListTransformer
      * epic list uses it to rehydrate the drawer after a comment or a failed edit, which may target
      * an epic that is not on the current page.
      *
-     * @return array{id: int, name: string, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
+     * @return array{id: int, name: string, notes: string|null, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
      */
     public function payloadFor(Epic $epic): array
     {
@@ -101,6 +101,7 @@ class EpicListTransformer extends ListTransformer
         return [
             'id' => $epic->id,
             'name' => $epic->name,
+            'notes' => $epic->notes,
             'start_date' => $epic->start_date?->toDateString() ?? '',
             'end_date' => $epic->end_date?->toDateString() ?? '',
             'project_id' => $epic->project_id,
@@ -113,13 +114,14 @@ class EpicListTransformer extends ListTransformer
 
     /**
      * @param  Epic  $record
-     * @return array{id: int, name: string, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
+     * @return array{id: int, name: string, notes: string|null, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
      */
     protected function editPayload(Model $record): array
     {
         return [
             'id' => $record->id,
             'name' => $record->name,
+            'notes' => $record->notes,
             'start_date' => $record->start_date?->toDateString() ?? '',
             'end_date' => $record->end_date?->toDateString() ?? '',
             'project_id' => $record->project_id,

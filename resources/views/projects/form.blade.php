@@ -14,6 +14,12 @@
         <flux:error name="name" />
     </flux:field>
     <flux:field>
+        <flux:label>{{ __('Notes') }}</flux:label>
+        <flux:textarea name="notes" x-model="form.notes" rows="3" maxlength="5000"
+            data-test="project-notes" />
+        <flux:error name="notes" />
+    </flux:field>
+    <flux:field>
         <flux:label>{{ __('Start date') }} <span class="text-red-600" aria-hidden="true">*</span>
         </flux:label>
         <flux:input type="date" name="start_date" x-model="form.start_date" required

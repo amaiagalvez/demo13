@@ -74,7 +74,7 @@ class ProjectListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{id: int, name: string, customer: string, startDate: string, endDate: string, epicsCount: int, epicsUrl: string|null, commentsCount: int, editPayload: array{id: int, name: string, start_date: string, end_date: string, customer_id: int, customer_name: string}}
+     * @return array{id: int, name: string, notes: string|null, customer: string, startDate: string, endDate: string, epicsCount: int, epicsUrl: string|null, commentsCount: int, editPayload: array{id: int, name: string, notes: string|null, start_date: string, end_date: string, customer_id: int, customer_name: string}}
      */
     private function columns(Project $project): array
     {
@@ -98,13 +98,14 @@ class ProjectListTransformer extends ListTransformer
 
     /**
      * @param  Project  $record
-     * @return array{id: int, name: string, start_date: string, end_date: string, customer_id: int, customer_name: string}
+     * @return array{id: int, name: string, notes: string|null, start_date: string, end_date: string, customer_id: int, customer_name: string}
      */
     protected function editPayload(Model $record): array
     {
         return [
             'id' => $record->id,
             'name' => $record->name,
+            'notes' => $record->notes,
             'start_date' => $record->start_date->toDateString(),
             'end_date' => $record->end_date?->toDateString() ?? '',
             'customer_id' => $record->customer_id,

@@ -42,6 +42,7 @@ class EpicRequest extends FormRequest
                 'max:255',
                 $this->uniqueNamePerProject(),
             ],
+            'notes' => ['nullable', 'string', 'max:5000'],
             'start_date' => ['nullable', 'required_with:end_date', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after:start_date'],
             'project_id' => [

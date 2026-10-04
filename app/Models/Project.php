@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 /**
  * @property int $id
  * @property string $name
+ * @property string|null $notes
  * @property bool $active
  * @property int $customer_id
  * @property-read Customer $customer
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property-read int $epics_count
  * @property-read int $comments_count
  */
-#[Fillable(['name', 'start_date', 'end_date', 'customer_id'])]
+#[Fillable(['name', 'notes', 'start_date', 'end_date', 'customer_id'])]
 #[UsePolicy(ProjectPolicy::class)]
 class Project extends Model
 {

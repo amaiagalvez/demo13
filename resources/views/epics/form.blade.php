@@ -14,6 +14,12 @@
         <flux:error name="name" />
     </flux:field>
     <flux:field>
+        <flux:label>{{ __('Notes') }}</flux:label>
+        <flux:textarea name="notes" x-model="form.notes" rows="3" maxlength="5000"
+            data-test="epic-notes" />
+        <flux:error name="notes" />
+    </flux:field>
+    <flux:field>
         <flux:label for="epic-project-id">{{ __('Project') }}
             <span class="text-red-600" aria-hidden="true">*</span>
         </flux:label>

@@ -13,4 +13,10 @@
             data-test="customer-name" />
         <flux:error name="name" />
     </flux:field>
+    <flux:field>
+        <flux:label>{{ __('Notes') }}</flux:label>
+        <flux:textarea name="notes" x-model="form.notes" rows="3" maxlength="5000"
+            data-test="customer-notes" />
+        <flux:error name="notes" />
+    </flux:field>
 </x-forms.tracked-resource>

@@ -16,9 +16,8 @@ return new class extends Migration
             $table->foreignId('epic_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->text('body');
-            $table->timestamps();
-            $table->softDeletes();
-            $table->boolean('active')->default(true);
+
+            addCommonColumns($table);
         });
     }
 

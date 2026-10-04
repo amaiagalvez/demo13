@@ -52,13 +52,13 @@ class ResourceUniformityTest extends TestCase
         $projectRules = $this->requestRules($projectRequest, static fn (): array => $projectRequest->rules());
         $epicRules = $this->requestRules($epicRequest, static fn (): array => $epicRequest->rules());
 
-        $this->assertSame(['name', 'reuse_deleted_name'], array_keys($customerRules));
+        $this->assertSame(['name', 'notes', 'reuse_deleted_name'], array_keys($customerRules));
         $this->assertSame(
-            ['name', 'start_date', 'end_date', 'customer_id', 'reuse_deleted_name'],
+            ['name', 'notes', 'start_date', 'end_date', 'customer_id', 'reuse_deleted_name'],
             array_keys($projectRules),
         );
         $this->assertSame(
-            ['name', 'start_date', 'end_date', 'project_id', 'reuse_deleted_name'],
+            ['name', 'notes', 'start_date', 'end_date', 'project_id', 'reuse_deleted_name'],
             array_keys($epicRules),
         );
 
@@ -268,10 +268,11 @@ class ResourceUniformityTest extends TestCase
         /** @var list<array{actions: list<array<string, mixed>>}> $epicRows */
         $epicRows = $epicList['rows'];
 
-        $this->assertRowActionContract($customerRows[0], 'customer', ['id', 'name']);
+        $this->assertRowActionContract($customerRows[0], 'customer', ['id', 'name', 'notes']);
         $this->assertRowActionContract($projectRows[0], 'project', [
             'id',
             'name',
+            'notes',
             'start_date',
             'end_date',
             'customer_id',
@@ -280,6 +281,7 @@ class ResourceUniformityTest extends TestCase
         $this->assertRowActionContract($epicRows[0], 'epic', [
             'id',
             'name',
+            'notes',
             'start_date',
             'end_date',
             'project_id',

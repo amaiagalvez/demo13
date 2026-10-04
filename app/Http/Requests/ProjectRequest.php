@@ -43,6 +43,7 @@ class ProjectRequest extends FormRequest
                     ->ignore($this->route('project'))
                     ->whereNull('deleted_at'),
             ],
+            'notes' => ['nullable', 'string', 'max:5000'],
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'customer_id' => [
