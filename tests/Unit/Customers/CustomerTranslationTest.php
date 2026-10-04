@@ -9,8 +9,8 @@ class CustomerTranslationTest extends TestCase
     public function test_customer_labels_are_available_in_all_supported_locales(): void
     {
         $expected = [
-            'eu' => ['Bezeroak', 'Bezero berria', 'Editatu bezeroa', ':attribute eremua nahitaezkoa da.', ':attribute dagoeneko hartua izan da.'],
-            'es' => ['Clientes', 'Nuevo cliente', 'Editar cliente', 'El campo :attribute es obligatorio.', 'El campo :attribute ya ha sido registrado.'],
+            'eu' => ['Bezeroak', 'Bezero berria', 'Editatu bezeroa', ':Attribute eremua nahitaezkoa da.', ':Attribute dagoeneko hartua izan da.'],
+            'es' => ['Clientes', 'Nuevo cliente', 'Editar cliente', 'El campo :attribute es obligatorio.', 'El campo :attribute ya está en uso.'],
             'fr' => ['Clients', 'Nouveau client', 'Modifier le client', 'Le champ :attribute est obligatoire.', 'Le champ :attribute a déjà été pris.'],
             'en' => ['Customers', 'New customer', 'Edit customer', 'The :attribute field is required.', 'The :attribute has already been taken.'],
         ];
