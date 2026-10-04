@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
+use App\Models\Customer;
 use App\Models\EpicComment;
 use Tests\Support\RacesNameInsert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,6 +83,26 @@ class EpicTrashTest extends TestCase
             ->assertOk()
             ->assertSee($matchingEpic->name)
             ->assertDontSee($otherEpic->name);
+    }
+
+    /**
+     * The trash query searches the project and customer names too, so a trashed epic is reachable
+     * from either parent.
+     */
+    public function test_trash_can_be_searched_by_project_and_customer_names(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Archived epic customer']);
+        $project = Project::factory()->for($customer)->create(['name' => 'Archived epic project']);
+        $matchingEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'First archived epic']);
+        $otherEpic = Epic::factory()->trashed()->create(['name' => 'Second archived epic']);
+
+        foreach (['Archived epic customer', 'Archived epic project'] as $search) {
+            $this->get(route('epics.trash.index', ['search' => $search]))
+                ->assertOk()
+                ->assertSee($matchingEpic->name)
+                ->assertDontSee($otherEpic->name);
+        }
     }
 
     public function test_deleted_epics_can_be_restored_or_permanently_deleted(): void

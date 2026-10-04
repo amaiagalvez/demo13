@@ -4,7 +4,6 @@ namespace Tests\Feature\Customers;
 
 use Tests\TestCase;
 use App\Models\Customer;
-use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
 use App\Queries\Customers\CustomerListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -150,72 +149,5 @@ class CustomerListQueryTest extends TestCase
             [$newerCustomer->id, $tiedCustomer->id, $olderCustomer->id],
             $customers->pluck('id')->all(),
         );
-    }
-
-    public function test_lists_can_be_filtered_and_keep_the_search_in_pagination_urls(): void
-    {
-        Customer::factory()->create(['name' => 'Ane Bezeroa']);
-        Customer::factory()->create(['name' => 'Jon Bezeroa']);
-
-        $customers = app(CustomerListQuery::class)->active('Ane');
-
-        $this->assertSame(['Ane Bezeroa'], $customers->pluck('name')->all());
-        $this->assertStringContainsString('search=Ane', $customers->url(2));
-    }
-
-    public function test_search_treats_percent_as_a_literal_character(): void
-    {
-        Customer::factory()->create(['name' => 'Customer 100%']);
-        Customer::factory()->create(['name' => 'Customer 1000']);
-
-        $customers = app(CustomerListQuery::class)->active('%');
-
-        $this->assertSame(['Customer 100%'], $customers->pluck('name')->all());
-    }
-
-    public function test_search_treats_underscore_as_a_literal_character(): void
-    {
-        Customer::factory()->create(['name' => 'Ane_One']);
-        Customer::factory()->create(['name' => 'AneXOne']);
-
-        $customers = app(CustomerListQuery::class)->active('_');
-
-        $this->assertSame(['Ane_One'], $customers->pluck('name')->all());
-    }
-
-    public function test_search_treats_backslash_as_a_literal_character(): void
-    {
-        Customer::factory()->create(['name' => 'Ane\\One']);
-        Customer::factory()->create(['name' => 'AneOne']);
-
-        $customers = app(CustomerListQuery::class)->active('\\');
-
-        $this->assertSame(['Ane\\One'], $customers->pluck('name')->all());
-    }
-
-    public function test_lists_are_paginated_by_the_shared_page_size(): void
-    {
-        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
-            Customer::factory()->create();
-        }
-
-        $customers = app(CustomerListQuery::class)->active('');
-
-        $this->assertSame(ListQueryBase::PER_PAGE, $customers->perPage());
-        $this->assertSame(ListQueryBase::PER_PAGE + 1, $customers->total());
-        $this->assertSame(2, $customers->lastPage());
-    }
-
-    public function test_trashed_lists_are_paginated_by_the_shared_page_size(): void
-    {
-        for ($index = 1; $index <= ListQueryBase::PER_PAGE + 1; $index++) {
-            Customer::factory()->trashed()->create();
-        }
-
-        $customers = app(CustomerListQuery::class)->trashed('');
-
-        $this->assertSame(ListQueryBase::PER_PAGE, $customers->perPage());
-        $this->assertSame(ListQueryBase::PER_PAGE + 1, $customers->total());
-        $this->assertSame(2, $customers->lastPage());
     }
 }

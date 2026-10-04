@@ -1,0 +1,205 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use App\Models\Epic;
+use App\Models\Project;
+use App\Models\Customer;
+use App\Queries\ListQueryBase;
+use App\Queries\Epics\EpicListQuery;
+use App\Queries\Projects\ProjectListQuery;
+use App\Queries\Customers\CustomerListQuery;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+/**
+ * Behaviour that comes from ListQueryBase, so it must hold for every resource that extends it.
+ *
+ * These cases lived only in CustomerListQueryTest, which left the shared LIKE escaping and page
+ * size verified for one resource out of three. Epic names are only unique inside their project, so
+ * every epic here belongs to its own project.
+ */
+class ListQuerySharedBehaviourTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * @return array<string, array{0: class-string}>
+     */
+    public static function resources(): array
+    {
+        return [
+            'customers' => [CustomerListQuery::class],
+            'projects' => [ProjectListQuery::class],
+            'epics' => [EpicListQuery::class],
+        ];
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_active_lists_are_paginated_by_the_shared_page_size(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, ListQueryBase::PER_PAGE + 1);
+
+        $records = $this->listQuery($queryClass)->active('');
+
+        $this->assertSame(ListQueryBase::PER_PAGE, $records->perPage());
+        $this->assertSame(ListQueryBase::PER_PAGE + 1, $records->total());
+        $this->assertSame(2, $records->lastPage());
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_trashed_lists_are_paginated_by_the_shared_page_size(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, ListQueryBase::PER_PAGE + 1, trashed: true);
+
+        $records = $this->listQuery($queryClass)->trashed('');
+
+        $this->assertSame(ListQueryBase::PER_PAGE, $records->perPage());
+        $this->assertSame(ListQueryBase::PER_PAGE + 1, $records->total());
+        $this->assertSame(2, $records->lastPage());
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_search_keeps_the_term_in_the_pagination_urls(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, 2, ['Alpha shared', 'Beta shared']);
+
+        $records = $this->listQuery($queryClass)->active('Alpha');
+
+        $this->assertSame(['Alpha shared'], $records->pluck('name')->all());
+        $this->assertStringContainsString('search=Alpha', $records->url(2));
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_search_treats_percent_as_a_literal_character(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, 2, ['Record 100%', 'Record 1000']);
+
+        $this->assertSame(
+            ['Record 100%'],
+            $this->listQuery($queryClass)->active('%')->pluck('name')->all(),
+        );
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_search_treats_underscore_as_a_literal_character(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, 2, ['Alpha_One', 'AlphaXOne']);
+
+        $this->assertSame(
+            ['Alpha_One'],
+            $this->listQuery($queryClass)->active('_')->pluck('name')->all(),
+        );
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_search_treats_backslash_as_a_literal_character(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, 2, ['Alpha\\One', 'AlphaOne']);
+
+        $this->assertSame(
+            ['Alpha\\One'],
+            $this->listQuery($queryClass)->active('\\')->pluck('name')->all(),
+        );
+    }
+
+    /**
+     * An empty term must not narrow the list, and a term no record matches must return none.
+     *
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_an_empty_search_returns_everything(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, 3);
+
+        $this->assertCount(3, $this->listQuery($queryClass)->active(''));
+        $this->assertCount(0, $this->listQuery($queryClass)->active('nothing matches this'));
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    #[DataProvider('resources')]
+    public function test_active_lists_exclude_trashed_records(string $queryClass): void
+    {
+        $this->makeRecordsFor($queryClass, 1, ['Live record']);
+        $this->makeRecordsFor($queryClass, 1, ['Deleted record'], trashed: true);
+
+        $this->assertSame(
+            ['Live record'],
+            $this->listQuery($queryClass)->active('')->pluck('name')->all(),
+        );
+    }
+
+    /**
+     * Creates records of the resource under test. Epic names are unique per project, so a factory
+     * builds a project of its own for each epic.
+     *
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     * @param  list<string>|null  $names
+     * @return array<int, Customer|Project|Epic>
+     */
+    private function makeRecordsFor(string $queryClass, int $count, ?array $names = null, bool $trashed = false): array
+    {
+        $records = [];
+
+        for ($index = 1; $index <= $count; $index++) {
+            $records[] = $this->makeRecord($queryClass, $names === null ? [] : ['name' => $names[$index - 1]], $trashed);
+        }
+
+        return $records;
+    }
+
+    /**
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     * @param  array<string, mixed>  $attributes
+     */
+    private function makeRecord(string $queryClass, array $attributes, bool $trashed): Customer|Project|Epic
+    {
+        return match ($queryClass) {
+            CustomerListQuery::class => $trashed
+                ? Customer::factory()->trashed()->create($attributes)
+                : Customer::factory()->create($attributes),
+            ProjectListQuery::class => $trashed
+                ? Project::factory()->trashed()->create($attributes)
+                : Project::factory()->create($attributes),
+            default => $trashed
+                ? Epic::factory()->trashed()->create($attributes)
+                : Epic::factory()->create($attributes),
+        };
+    }
+
+    /**
+     * The concrete query for the resource under test, so PHPStan sees active() and trashed().
+     *
+     * @param  class-string<CustomerListQuery|ProjectListQuery|EpicListQuery>  $queryClass
+     */
+    private function listQuery(string $queryClass): CustomerListQuery|ProjectListQuery|EpicListQuery
+    {
+        return match ($queryClass) {
+            CustomerListQuery::class => app(CustomerListQuery::class),
+            ProjectListQuery::class => app(ProjectListQuery::class),
+            default => app(EpicListQuery::class),
+        };
+    }
+}

@@ -412,6 +412,24 @@ class ResourceActivationTest extends TestCase
     }
 
     /**
+     * The inactive list of every resource appends the last modification date and lets the user
+     * search it; epics had only their parent names covered.
+     */
+    public function test_inactive_epics_are_searchable_by_update_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->travelTo('2026-03-01 10:00:00');
+        $updatedEpic = Epic::factory()->inactive()->create(['name' => 'Alpha Dormant']);
+        Epic::factory()->inactive()->create(['name' => 'Beta Dormant']);
+        $this->travelTo('2026-07-15 10:00:00');
+        $updatedEpic->touch();
+
+        $this->get(route('epics.inactive.index', ['search' => '2026-07-15']))
+            ->assertSee('Alpha Dormant')
+            ->assertDontSee('Beta Dormant');
+    }
+
+    /**
      * @param  class-string<Customer|Project|Epic>  $model
      */
     #[DataProvider('resources')]

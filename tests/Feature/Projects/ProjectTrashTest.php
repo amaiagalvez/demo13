@@ -168,6 +168,23 @@ class ProjectTrashTest extends TestCase
             ->assertDontSee($otherProject->name);
     }
 
+    /**
+     * The trash query searches the customer name too, so a trashed project is reachable from its
+     * customer even when its own name does not match.
+     */
+    public function test_trash_can_be_searched_by_customer_name(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->create(['name' => 'Archived customer match']);
+        $matchingProject = Project::factory()->for($customer)->trashed()->create(['name' => 'First archived project']);
+        $otherProject = Project::factory()->trashed()->create(['name' => 'Second archived project']);
+
+        $this->get(route('projects.trash.index', ['search' => 'Archived customer match']))
+            ->assertOk()
+            ->assertSee($matchingProject->name)
+            ->assertDontSee($otherProject->name);
+    }
+
     public function test_project_cannot_be_restored_when_an_active_project_uses_its_name(): void
     {
         $this->actingAs(User::factory()->create());

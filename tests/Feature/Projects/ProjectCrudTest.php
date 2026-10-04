@@ -455,6 +455,20 @@ class ProjectCrudTest extends TestCase
             ->assertSee('data-test="project-delete-'.$lonelyProject->id.'"', false);
     }
 
+    public function test_project_with_an_active_epic_cannot_be_deleted(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create();
+        $epic = Epic::factory()->for($project)->create();
+
+        $this->delete(route('projects.destroy', $project))
+            ->assertRedirect(route('projects.index'))
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
+
+        $this->assertNotSoftDeleted($project);
+        $this->assertModelExists($epic);
+    }
+
     public function test_project_with_epics_cannot_be_deleted(): void
     {
         $this->actingAs(User::factory()->create());
