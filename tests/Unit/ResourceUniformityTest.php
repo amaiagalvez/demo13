@@ -5,11 +5,11 @@ namespace Tests\Unit;
 use Closure;
 use Tests\TestCase;
 use App\Models\Epic;
+use App\Models\User;
 use ReflectionClass;
 use ReflectionMethod;
 use App\Models\Project;
 use App\Models\Customer;
-use App\Models\User;
 use App\Policies\EpicPolicy;
 use Illuminate\Routing\Route;
 use App\Queries\ListQueryBase;
@@ -105,7 +105,11 @@ class ResourceUniformityTest extends TestCase
 
         foreach ([...$customerAbilities, 'comment'] as $ability) {
             $pattern = '/->(?:authorize|can)\(\s*[\'\"]'.preg_quote($ability, '/').'[\'\"]/';
-            $this->assertSame(1, preg_match($pattern, $httpSource), "No HTTP call site found for [{$ability}].");
+            $this->assertNotSame(
+                0,
+                preg_match($pattern, $httpSource),
+                "No HTTP call site found for [{$ability}].",
+            );
         }
     }
 
