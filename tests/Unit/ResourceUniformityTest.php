@@ -9,6 +9,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Models\User;
 use App\Policies\EpicPolicy;
 use Illuminate\Routing\Route;
 use App\Queries\ListQueryBase;
@@ -119,6 +120,25 @@ class ResourceUniformityTest extends TestCase
 
         $this->assertNull($epic->start_date);
         $this->assertNull($epic->end_date);
+    }
+
+    /**
+     * Every model whose table carries the active flag must cast it and offer the factory state, so
+     * the three resources and the user cannot drift apart on activation.
+     */
+    public function test_every_model_with_an_active_flag_offers_the_inactive_state(): void
+    {
+        foreach ([Customer::class, Project::class, Epic::class, User::class] as $modelClass) {
+            $this->assertArrayHasKey(
+                'active',
+                (new $modelClass)->getCasts(),
+                "{$modelClass} has an active flag and must declare it in casts()",
+            );
+            $this->assertTrue(
+                method_exists($modelClass::factory(), 'inactive'),
+                "{$modelClass} has an active flag and must offer the inactive() factory state",
+            );
+        }
     }
 
     public function test_resource_factories_generate_unique_names(): void

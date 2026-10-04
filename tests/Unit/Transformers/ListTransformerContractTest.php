@@ -3,14 +3,25 @@
 namespace Tests\Unit\Transformers;
 
 use Tests\TestCase;
+use App\Models\Epic;
+use App\Models\Project;
+use App\Models\Customer;
 use App\Transformers\EpicListTransformer;
 use App\Transformers\ProjectListTransformer;
 use App\Transformers\CustomerListTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ListTransformerContractTest extends TestCase
 {
-    private const ACTIVE_KEYS = [
+    use RefreshDatabase;
+
+    /**
+     * Every resource answers the three list states with the same envelope, so the shared list
+     * components can rely on it whichever resource and state they render.
+     */
+    private const ENVELOPE_KEYS = [
         'resource',
         'breadcrumbs',
         'extraDateHeading',
@@ -21,50 +32,268 @@ class ListTransformerContractTest extends TestCase
         'rows',
     ];
 
-    public function test_customer_active_payload_has_the_expected_keys(): void
-    {
-        $list = app(CustomerListTransformer::class)->active(new LengthAwarePaginator([], 0, 15), '');
+    private const COUNTED_TABS = ['active' => 2, 'inactive' => 1, 'trashed' => 3];
 
-        $this->assertSame(self::ACTIVE_KEYS, array_keys($list));
-        $this->assertSame(__('Created at'), $list['extraDateHeading']);
+    /**
+     * @return list<array{0: class-string, 1: 'active'|'inactive'|'trash'}>
+     */
+    public static function listStates(): array
+    {
+        $cases = [];
+
+        foreach (self::transformerClasses() as $transformer) {
+            foreach (['active', 'inactive', 'trash'] as $state) {
+                $cases[] = [$transformer, $state];
+            }
+        }
+
+        return $cases;
     }
 
-    public function test_project_active_payload_has_the_expected_keys(): void
+    /**
+     * @return list<array{0: class-string}>
+     */
+    public static function transformers(): array
     {
-        $list = app(ProjectListTransformer::class)->active(new LengthAwarePaginator([], 0, 15), '');
-
-        $this->assertSame(self::ACTIVE_KEYS, array_keys($list));
-        $this->assertSame(__('Created at'), $list['extraDateHeading']);
+        return array_map(static fn (string $class): array => [$class], self::transformerClasses());
     }
 
-    public function test_epic_active_payload_has_the_expected_keys(): void
+    /**
+     * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
+     * @param  'active'|'inactive'|'trash'  $state
+     */
+    #[DataProvider('listStates')]
+    public function test_every_state_payload_has_the_expected_keys(string $transformerClass, string $state): void
     {
-        $list = app(EpicListTransformer::class)->active(new LengthAwarePaginator([], 0, 15), '');
+        $list = $this->payload($transformerClass, $state);
 
-        $this->assertSame(self::ACTIVE_KEYS, array_keys($list));
-        $this->assertSame(__('Created at'), $list['extraDateHeading']);
+        $this->assertSame(self::ENVELOPE_KEYS, array_keys($list));
+        $this->assertSame($state === 'active', $list['create']);
+        $this->assertSame(
+            match ($state) {
+                'active' => __('Created at'),
+                'inactive' => __('Updated at'),
+                'trash' => __('Deleted at'),
+            },
+            $list['extraDateHeading'],
+        );
     }
 
-    public function test_state_tabs_count_records_only_when_counts_are_given(): void
+    /**
+     * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
+     */
+    #[DataProvider('transformers')]
+    public function test_state_tabs_count_records_only_when_counts_are_given(string $transformerClass): void
     {
-        $transformer = app(CustomerListTransformer::class);
-        $paginator = new LengthAwarePaginator([], 0, 15);
-
         /** @var array<string, mixed> $withoutCounts */
-        $withoutCounts = $transformer->active($paginator, '');
+        $withoutCounts = $this->payload($transformerClass, 'active');
+
         /** @var array<string, mixed> $withCounts */
-        $withCounts = $transformer->active($paginator, '', [
-            'active' => 2,
-            'inactive' => 1,
-            'trashed' => 3,
-        ]);
+        $withCounts = $this->payload($transformerClass, 'active', self::COUNTED_TABS);
 
         /** @var list<array{count: int|null}> $tabsWithoutCounts */
         $tabsWithoutCounts = $withoutCounts['tabs'];
+
         /** @var list<array{count: int|null}> $tabsWithCounts */
         $tabsWithCounts = $withCounts['tabs'];
 
         $this->assertSame([null, null, null], array_column($tabsWithoutCounts, 'count'));
         $this->assertSame([2, 1, 3], array_column($tabsWithCounts, 'count'));
+    }
+
+    /**
+     * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
+     */
+    #[DataProvider('transformers')]
+    public function test_each_state_marks_only_its_own_tab_as_current(string $transformerClass): void
+    {
+        foreach (['active', 'inactive', 'trash'] as $state) {
+            /** @var array<string, mixed> $list */
+            $list = $this->payload($transformerClass, $state);
+
+            /** @var list<array{current: bool}> $tabs */
+            $tabs = $list['tabs'];
+
+            $this->assertSame(
+                [$state === 'active', $state === 'inactive', $state === 'trash'],
+                array_column($tabs, 'current'),
+                "{$transformerClass}: only the tab of [{$state}] may be current",
+            );
+        }
+    }
+
+    /**
+     * A row exposes the same action envelope in every state.
+     *
+     * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
+     * @param  'active'|'inactive'|'trash'  $state
+     */
+    #[DataProvider('listStates')]
+    public function test_rows_carry_the_shared_action_envelope_in_every_state(string $transformerClass, string $state): void
+    {
+        /** @var array<string, mixed> $list */
+        $list = $this->payloadWithOneRecord($transformerClass, $state);
+
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $list['rows'];
+
+        $this->assertCount(1, $rows);
+        $this->assertArrayHasKey('actions', $rows[0]);
+        $this->assertNotEmpty($rows[0]['actions']);
+
+        /** @var list<array<string, mixed>> $actions */
+        $actions = $rows[0]['actions'];
+
+        foreach ($actions as $action) {
+            $this->assertArrayHasKey('type', $action);
+            $this->assertArrayHasKey('label', $action);
+            $this->assertArrayHasKey('test', $action);
+        }
+    }
+
+    /**
+     * @return list<class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>>
+     */
+    private static function transformerClasses(): array
+    {
+        return [
+            CustomerListTransformer::class,
+            ProjectListTransformer::class,
+            EpicListTransformer::class,
+        ];
+    }
+
+    /** @return LengthAwarePaginator<int, Customer> */
+    private function customers(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator([], 0, 15);
+    }
+
+    /** @return LengthAwarePaginator<int, Project> */
+    private function projects(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator([], 0, 15);
+    }
+
+    /** @return LengthAwarePaginator<int, Epic> */
+    private function epics(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator([], 0, 15);
+    }
+
+    /**
+     * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
+     * @param  'active'|'inactive'|'trash'  $state
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @return array<string, mixed>
+     */
+    private function payload(string $transformerClass, string $state, ?array $counts = null): array
+    {
+        return match (true) {
+            $transformerClass === CustomerListTransformer::class => $this->customerState(
+                app(CustomerListTransformer::class), $this->customers(), $state, '', $counts,
+            ),
+            $transformerClass === ProjectListTransformer::class => $this->projectState(
+                app(ProjectListTransformer::class), $this->projects(), $state, '', $counts,
+            ),
+            default => $this->epicState(
+                app(EpicListTransformer::class), $this->epics(), $state, '', $counts,
+            ),
+        };
+    }
+
+    /**
+     * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
+     * @param  'active'|'inactive'|'trash'  $state
+     * @return array<string, mixed>
+     */
+    private function payloadWithOneRecord(string $transformerClass, string $state): array
+    {
+        return match (true) {
+            $transformerClass === CustomerListTransformer::class => $this->customerState(
+                app(CustomerListTransformer::class),
+                new LengthAwarePaginator([Customer::factory()->create()], 1, 15),
+                $state, '',
+            ),
+            $transformerClass === ProjectListTransformer::class => $this->projectState(
+                app(ProjectListTransformer::class),
+                new LengthAwarePaginator([Project::factory()->create()], 1, 15),
+                $state, '',
+            ),
+            default => $this->epicState(
+                app(EpicListTransformer::class),
+                new LengthAwarePaginator([Epic::factory()->create()], 1, 15),
+                $state, '',
+            ),
+        };
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Customer>  $paginator
+     * @param  'active'|'inactive'|'trash'  $state
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @return array<string, mixed>
+     */
+    private function customerState(
+        CustomerListTransformer $transformer,
+        LengthAwarePaginator $paginator,
+        string $state,
+        string $search,
+        ?array $counts = null,
+    ): array {
+        /** @var array<string, mixed> $list */
+        $list = match ($state) {
+            'active' => $transformer->active($paginator, $search, $counts),
+            'inactive' => $transformer->inactive($paginator, $search, $counts),
+            default => $transformer->trash($paginator, $search, $counts),
+        };
+
+        return $list;
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Project>  $paginator
+     * @param  'active'|'inactive'|'trash'  $state
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @return array<string, mixed>
+     */
+    private function projectState(
+        ProjectListTransformer $transformer,
+        LengthAwarePaginator $paginator,
+        string $state,
+        string $search,
+        ?array $counts = null,
+    ): array {
+        /** @var array<string, mixed> $list */
+        $list = match ($state) {
+            'active' => $transformer->active($paginator, $search, $counts),
+            'inactive' => $transformer->inactive($paginator, $search, $counts),
+            default => $transformer->trash($paginator, $search, $counts),
+        };
+
+        return $list;
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, Epic>  $paginator
+     * @param  'active'|'inactive'|'trash'  $state
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @return array<string, mixed>
+     */
+    private function epicState(
+        EpicListTransformer $transformer,
+        LengthAwarePaginator $paginator,
+        string $state,
+        string $search,
+        ?array $counts = null,
+    ): array {
+        /** @var array<string, mixed> $list */
+        $list = match ($state) {
+            'active' => $transformer->active($paginator, $search, $counts),
+            'inactive' => $transformer->inactive($paginator, $search, $counts),
+            default => $transformer->trash($paginator, $search, $counts),
+        };
+
+        return $list;
     }
 }
