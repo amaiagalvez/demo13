@@ -1,4 +1,3 @@
-[] demasiado espacio a la izquierda en la pantalla del protatil
 [] avisos validaciones, en el ikono info mostrar todas las validaciones, que debe ser unico, que la fecha fin debe se maryor que la de incio, y asi con todas las validaciones que ser hagan sobre ese campo
 [] crear el CRUD de usuarios
 crear un nuevo archivo de configuracion y configurar la ruta register, por defecto sera false y entonces no se podran registrar nuevos usuarios desde fuera
@@ -19,10 +18,10 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
 [x] ahora busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github → 10.model-divergence-review.md
 [x] /full-review del proyecto → 10.model-divergence-review.md (el refactor en curso del working tree también está revisado en su sección 2)
-[ ] /fix-review 06.model-consistency-audit.md antes de modificar pide confirmación y al terminar marca la tarea como realizada
+[ ] /fix-review .github/tasks/10.model-divergence-review antes de modificar pide confirmación y al terminar marca la tarea como realizada
 [ ] repasa la configuración de los AGENTES y analiza si hay alguna manera de ahorrar tokens y de mejorar la forma de trabajar.
 [ ] prepara un plan que cree seeders para llenar las tablas con cientos de registros y luego analice el rendimiento del listado
 [ ] Repasar los errores que da el SonarQube y buscar una posible solucion. Preguntar antes de cambiar nada
 
 ------------------------
-analiza mi proyecto en github, los agentes, las intrucciones y todo lo relacionado con el uso de copilot y opencode, a continuación 
+primero analiza mi proyecto en github, los agentes, las intrucciones y todo lo relacionado con el uso de copilot y opencode, a continuación analiza todo el código. eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github/task

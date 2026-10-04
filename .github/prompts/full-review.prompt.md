@@ -18,4 +18,6 @@ In Copilot, launch each specialist as a subagent by its `#agent-id` (the file na
 5. Challenge every finding with `.github/agents/devil-advocate.agent.md` and drop unsupported, duplicated or stylistic ones.
 6. Write only `.github/reviews/YYYY-MM-DD/CODE-REVIEW.md` (never at the repository root) with the sections and finding format of the orchestrator, stable IDs (SEC-001, BUG-001, DB-001...) and an action plan ordered by impact with no purely aesthetic suggestions.
 
+Avoid overengineering: recommend the simplest solution that addresses a demonstrated problem, reuse existing patterns, and do not propose speculative abstractions, extra layers or dependencies without a concrete need.
+
 DO NOT modify application code.
