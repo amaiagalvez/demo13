@@ -12,9 +12,6 @@
                 ? route('customers.update', old('_customer_id'))
                 : route('customers.store'),
             'title' => $editingCustomer ? __('Edit customer') : __('New customer'),
-            'subtitle' => $editingCustomer
-                ? __('Update the customer details.')
-                : __('Add a customer to your records.'),
             'submitLabel' => $editingCustomer ? __('Update customer') : __('Save customer'),
         ]
         : null;
@@ -34,7 +31,6 @@
                 method: 'POST',
                 action: this.storeUrl,
                 title: @js(__('New customer')),
-                subtitle: @js(__('Add a customer to your records.')),
                 submitLabel: @js(__('Save customer')),
             };
         },
@@ -45,7 +41,6 @@
                 method: 'PUT',
                 action: this.updateUrl.replace('__CUSTOMER__', customer.id),
                 title: @js(__('Edit customer')),
-                subtitle: @js(__('Update the customer details.')),
                 submitLabel: @js(__('Update customer')),
             };
         },

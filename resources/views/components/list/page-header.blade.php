@@ -11,7 +11,7 @@
     <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div
             class="-mx-6 -mt-6 mb-2 w-[calc(100%+3rem)] border-b border-zinc-200 bg-zinc-50 pb-5 dark:border-zinc-700 dark:bg-zinc-900 lg:-mx-8 lg:-mt-8 lg:w-[calc(100%+4rem)]">
-            <flux:breadcrumbs class="translate-y-1 ps-3 text-sm text-zinc-500 dark:text-zinc-400"
+            <flux:breadcrumbs class="translate-y-2 ps-3 text-sm text-zinc-500 dark:text-zinc-400"
                 :data-test="$prefix.
                 '-breadcrumbs'">
                 @foreach ($list['breadcrumbs'] as $breadcrumb)

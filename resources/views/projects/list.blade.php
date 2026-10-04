@@ -18,9 +18,6 @@
                 ? route('projects.update', old('_project_id'))
                 : route('projects.store'),
             'title' => $editingProject ? __('Edit project') : __('New project'),
-            'subtitle' => $editingProject
-                ? __('Update the project details.')
-                : __('Add a project to your records.'),
             'submitLabel' => $editingProject ? __('Update project') : __('Save project'),
         ]
         : null;
@@ -46,7 +43,6 @@
                 method: 'POST',
                 action: this.storeUrl,
                 title: @js(__('New project')),
-                subtitle: @js(__('Add a project to your records.')),
                 submitLabel: @js(__('Save project')),
             };
         },
@@ -59,7 +55,6 @@
                 method: 'PUT',
                 action: this.updateUrl.replace('__PROJECT__', project.id),
                 title: @js(__('Edit project')),
-                subtitle: @js(__('Update the project details.')),
                 submitLabel: @js(__('Update project')),
             };
         },

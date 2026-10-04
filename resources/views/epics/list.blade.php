@@ -28,9 +28,6 @@
                 ? route('epics.update', old('_epic_id'))
                 : route('epics.store'),
             'title' => $editingEpic ? __('Edit epic') : __('New epic'),
-            'subtitle' => $editingEpic
-                ? __('Update the epic details.')
-                : __('Add an epic to a project.'),
             'submitLabel' => $editingEpic ? __('Update epic') : __('Save epic'),
         ]
         : null;
@@ -112,7 +109,6 @@
                 method: 'POST',
                 action: this.storeUrl,
                 title: @js(__('New epic')),
-                subtitle: @js(__('Add an epic to a project.')),
                 submitLabel: @js(__('Save epic')),
             };
         },
@@ -138,7 +134,6 @@
                 method: 'PUT',
                 action: this.updateUrl.replace('__EPIC__', epic.id),
                 title: @js(__('Edit epic')),
-                subtitle: @js(__('Update the epic details.')),
                 submitLabel: @js(__('Update epic')),
             };
             this.loadEpicComments();

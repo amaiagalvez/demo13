@@ -6,10 +6,7 @@
 ])
 
 <div {{ $attributes->merge(['class' => 'mx-auto flex w-full max-w-xl flex-col gap-6']) }}>
-    <div>
-        <flux:heading :id="$prefix.'-form-heading'" level="2" size="xl" x-text="form.title"></flux:heading>
-        <flux:subheading x-text="form.subtitle"></flux:subheading>
-    </div>
+    <flux:heading :id="$prefix.'-form-heading'" level="2" size="xl" x-text="form.title"></flux:heading>
 
     <form method="POST" x-bind:action="form.action"
         x-data="{ isSubmitting: false, isDirty: false }"
