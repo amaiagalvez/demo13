@@ -58,8 +58,6 @@ class ProjectRequest extends FormRequest
      * A project may only hang from an active customer, which is what the selector offers. While
      * editing, the customer the project already belongs to stays valid even after it has been
      * deactivated, so a form that does not change it can still be saved.
-     *
-     * @return Exists
      */
     protected function selectableCustomerRule(): Exists
     {

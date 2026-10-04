@@ -9,8 +9,8 @@ use App\Models\Customer;
 use App\Transformers\EpicListTransformer;
 use App\Transformers\ProjectListTransformer;
 use App\Transformers\CustomerListTransformer;
-use Illuminate\Pagination\LengthAwarePaginator;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ListTransformerContractTest extends TestCase

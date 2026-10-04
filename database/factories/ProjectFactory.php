@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProjectFactory extends Factory
 {
-    use HasTrashedState;
     use HasInactiveState;
+    use HasTrashedState;
 
     /**
      * Define the model's default state. The end date may equal the start date per ProjectRequest.
@@ -30,5 +30,4 @@ class ProjectFactory extends Factory
             'customer_id' => Customer::factory(),
         ];
     }
-
 }

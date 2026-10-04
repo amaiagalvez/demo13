@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class CustomerFactory extends Factory
 {
-    use HasTrashedState;
     use HasInactiveState;
+    use HasTrashedState;
 
     /**
      * Define the model's default state.
@@ -24,5 +24,4 @@ class CustomerFactory extends Factory
             'name' => fake()->unique()->sentence(3),
         ];
     }
-
 }

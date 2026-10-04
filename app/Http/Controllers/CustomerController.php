@@ -67,7 +67,6 @@ class CustomerController extends Controller
         return to_route('customers.index')->with('status', __('Record created successfully.'));
     }
 
-
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse
     {
         try {
