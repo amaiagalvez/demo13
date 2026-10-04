@@ -13,8 +13,6 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
-use App\Http\Requests\ProjectSelectOptionsRequest;
-use App\Queries\Projects\ProjectSelectOptionsQuery;
 use App\Support\Database\UniqueConstraintViolation;
 
 class EpicController extends Controller
@@ -45,15 +43,6 @@ class EpicController extends Controller
                 $search,
                 $query->stateCounts(activeTotal: $search === '' ? $epics->total() : null),
             ),
-        ]);
-    }
-
-    public function selectOptions(
-        ProjectSelectOptionsRequest $request,
-        ProjectSelectOptionsQuery $query,
-    ): JsonResponse {
-        return response()->json([
-            'results' => $query->search($request->search()),
         ]);
     }
 
