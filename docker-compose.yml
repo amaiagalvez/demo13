@@ -93,6 +93,19 @@ services:
         networks:
             - frontend
 
+    laravel13-review:
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        profiles: ["review"]
+        volumes:
+            - ./:/docker
+        working_dir: /docker
+        environment:
+            WEB_DOCUMENT_ROOT: /docker/public
+        command: bash -c "
+            ./vendor/bin/phpstan analyse --memory-limit=1G"
+        networks:
+            - frontend
+
     laravel13-npm-all:
         image: node:${DC_NODE:-24-bullseye}
         profiles: ["npm-all"]
