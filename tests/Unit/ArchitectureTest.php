@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Models\EpicComment;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Http\FormRequest;
@@ -95,6 +96,46 @@ class ArchitectureTest extends TestCase
                 "{$class} must declare #[UsePolicy] because it uses SoftDeletes",
             );
         }
+    }
+
+    /**
+     * A soft-deletable model without a policy is only allowed while it has no route of its own,
+     * which is the case of a record written through its parent. Naming the exception here stops it
+     * from spreading silently: a new soft-deletable model without a policy fails the test above.
+     */
+    public function test_the_soft_deletable_model_without_a_policy_is_the_named_exception(): void
+    {
+        $withoutPolicy = [];
+
+        foreach (glob(app_path('Models/*.php')) ?: [] as $file) {
+            $class = 'App\\Models\\'.basename($file, '.php');
+
+            if (
+                ! class_exists($class)
+                || ! in_array(SoftDeletes::class, class_uses_recursive($class), true)
+            ) {
+                continue;
+            }
+
+            if ((new ReflectionClass($class))->getAttributes(UsePolicy::class) === []) {
+                $withoutPolicy[] = $class;
+            }
+        }
+
+        $this->assertSame([], $withoutPolicy, 'Every soft-deletable model declares #[UsePolicy].');
+    }
+
+    /**
+     * epic_comments keeps deleted_at and active columns that no model uses: EpicComment declares
+     * neither SoftDeletes nor the flag. They are reserved, so this test records the fact and will
+     * fail if a model starts relying on them without this being revisited.
+     */
+    public function test_epic_comments_columns_are_reserved_and_unused(): void
+    {
+        $comment = new EpicComment;
+
+        $this->assertNotContains(SoftDeletes::class, class_uses_recursive($comment));
+        $this->assertArrayNotHasKey('active', $comment->getCasts());
     }
 
     public function test_controllers_stay_thin_and_free_of_raw_input(): void
