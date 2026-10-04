@@ -26,16 +26,8 @@
 @endphp
 
 <x-layouts::app :title="$list['resource']">
-    <div data-project-form-root x-data="{
+    <div data-project-form-root x-data="listConfirmation({
         form: @js($initialForm),
-        confirmation: {
-            action: '',
-            method: 'DELETE',
-            title: '',
-            text: '',
-            label: '',
-            danger: false,
-        },
         storeUrl: @js(route('projects.store')),
         updateUrl: @js(route('projects.update', '__PROJECT__')),
         createProject() {
@@ -69,17 +61,7 @@
                 submitLabel: @js(__('Update project')),
             };
         },
-        confirmAction(action) {
-            this.confirmation = {
-                action: action.action,
-                method: action.method,
-                title: action.confirmTitle,
-                text: action.confirmText,
-                label: action.confirmLabel,
-                danger: action.danger,
-            };
-        },
-    }"
+    })"
         @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-form' }))"
         @elseif ($deletedProjectConflict)
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'project-name-conflict' }))"

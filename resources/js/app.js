@@ -493,6 +493,34 @@ window.clearForm = clearForm;
 window.addDays = addDays;
 
 document.addEventListener('alpine:init', () => {
+    // State and handler behind <x-list.confirm-modal>. It lives here because it is the same for
+    // every list: the modal only reads confirmation.*, and x-list.row-actions fills it. The list
+    // passes its own local state in, so the three views keep declaring their forms and URLs here
+    // instead of each repeating this block.
+    window.Alpine.data('listConfirmation', (local = {}) => ({
+        confirmation: {
+            action: '',
+            method: 'DELETE',
+            title: '',
+            text: '',
+            label: '',
+            danger: false,
+        },
+
+        confirmAction(action) {
+            this.confirmation = {
+                action: action.action,
+                method: action.method,
+                title: action.confirmTitle,
+                text: action.confirmText,
+                label: action.confirmLabel,
+                danger: action.danger,
+            };
+        },
+
+        ...local,
+    }));
+
     window.Alpine.data('listSearch', (initialSearch) => ({
         currentSearch: initialSearch,
         requestController: null,

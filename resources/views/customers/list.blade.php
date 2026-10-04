@@ -20,16 +20,8 @@
 @endphp
 
 <x-layouts::app :title="$list['resource']">
-    <div x-data="{
+    <div x-data="listConfirmation({
         form: @js($initialForm),
-        confirmation: {
-            action: '',
-            method: 'DELETE',
-            title: '',
-            text: '',
-            label: '',
-            danger: false,
-        },
         storeUrl: @js(route('customers.store')),
         updateUrl: @js(route('customers.update', '__CUSTOMER__')),
         createCustomer() {
@@ -55,17 +47,7 @@
                 submitLabel: @js(__('Update customer')),
             };
         },
-        confirmAction(action) {
-            this.confirmation = {
-                action: action.action,
-                method: action.method,
-                title: action.confirmTitle,
-                text: action.confirmText,
-                label: action.confirmLabel,
-                danger: action.danger,
-            };
-        },
-    }"
+    })"
         @if ($errors->any()) x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-form' }))"
         @elseif ($deletedCustomerConflict)
             x-init="$nextTick(() => $dispatch('modal-show', { name: 'customer-name-conflict' }))"

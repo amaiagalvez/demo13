@@ -35,7 +35,7 @@
 @endphp
 
 <x-layouts::app :title="$list['resource']">
-    <div x-data="{
+    <div x-data="listConfirmation({
         form: @js($initialForm),
         projectOptions: @js(($selectedProjectOption ?? null) ? [$selectedProjectOption] : []),
         projectOptionsUrl: @js(route('projects.options', [], false)),
@@ -44,14 +44,6 @@
         projectOptionsSearched: false,
         projectOptionsResultCount: 0,
         projectOptionsError: '',
-        confirmation: {
-            action: '',
-            method: 'DELETE',
-            title: '',
-            text: '',
-            label: '',
-            danger: false,
-        },
         storeUrl: @js(route('epics.store')),
         updateUrl: @js(route('epics.update', '__EPIC__')),
         async searchProjects() {
@@ -184,17 +176,7 @@
                 }
             }
         },
-        confirmAction(action) {
-            this.confirmation = {
-                action: action.action,
-                method: action.method,
-                title: action.confirmTitle,
-                text: action.confirmText,
-                label: action.confirmLabel,
-                danger: action.danger,
-            };
-        },
-    }" @if ($commentedEpic)
+    })" @if ($commentedEpic)
         x-init="editEpic(@js($commentedEpic), @js($hasCommentErrors ? old('body', '') : ''));
         $nextTick(() => $dispatch('modal-show', { name: 'epic-form' }))"
     @elseif ($errors->any())
