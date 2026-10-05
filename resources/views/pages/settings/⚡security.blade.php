@@ -249,9 +249,11 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
                             </flux:text>
 
                             <div class="flex justify-start">
-                                <flux:button variant="danger" wire:click="disable">
-                                    {{ __('Disable 2FA') }}
-                                </flux:button>
+                                <flux:modal.trigger name="disable-2fa-modal">
+                                    <flux:button variant="danger" data-test="disable-2fa-button">
+                                        {{ __('Disable 2FA') }}
+                                    </flux:button>
+                                </flux:modal.trigger>
                             </div>
 
                             <livewire:pages::settings.two-factor.recovery-codes
@@ -276,6 +278,31 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
                 </div>
             </section>
         @endif
+
+        <flux:modal name="disable-2fa-modal" aria-labelledby="disable-2fa-modal-heading"
+            class="max-w-md md:min-w-md">
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <flux:heading id="disable-2fa-modal-heading" level="2" size="lg">
+                        {{ __('Disable 2FA') }}
+                    </flux:heading>
+                    <flux:text>
+                        {{ __('You will no longer be asked for a pin when signing in. You can enable it again at any time.') }}
+                    </flux:text>
+                </div>
+
+                <div class="flex gap-3 justify-end">
+                    <flux:modal.close>
+                        <flux:button variant="outline">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:modal.close>
+                        <flux:button variant="danger" wire:click="disable" data-test="disable-2fa-confirm">
+                            {{ __('Disable 2FA') }}
+                        </flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
         {{-- @end-chisel-2fa --}}
 
         {{-- @chisel-passkeys --}}

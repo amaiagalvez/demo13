@@ -7,6 +7,7 @@
 @endif
 
 @if (session('error'))
-    <flux:callout class="rounded-xl" icon="exclamation-triangle" variant="danger" :data-test="$prefix.'-error'">
+    <flux:callout class="rounded-xl" icon="exclamation-triangle" variant="danger" role="alert"
+        :data-test="$prefix.'-error'">
         {{ session('error') }}</flux:callout>
 @endif

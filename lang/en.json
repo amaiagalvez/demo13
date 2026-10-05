@@ -368,5 +368,6 @@
     "You can restore it from the trash.": "You can restore it from the trash.",
     "You have unsaved changes. Leave without saving?": "You have unsaved changes. Leave without saving?",
     "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.": "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.",
+    "You will no longer be asked for a pin when signing in. You can enable it again at any time.": "You will no longer be asked for a pin when signing in. You can enable it again at any time.",
     "Your email address is unverified.": "Your email address is unverified."
 }

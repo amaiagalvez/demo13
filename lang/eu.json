@@ -368,5 +368,6 @@
     "You can restore it from the trash.": "Zakarrontzitik berreskura dezakezu.",
     "You have unsaved changes. Leave without saving?": "Gorde gabeko aldaketak dituzu. Irten nahi duzu gorde gabe?",
     "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.": "Saioa hastean ausazko pin seguru bat eskatuko zaizu, zure telefonoko TOTP-ek onartzen duen aplikaziotik berreskura dezakezuna.",
+    "You will no longer be asked for a pin when signing in. You can enable it again at any time.": "Saioa hastean ez dizute gehiago PINik eskatuko. Nahi bezala berriro gaituko duzu edozein momentutan.",
     "Your email address is unverified.": "Zure helbide elektronikoa egiaztatu gabe dago."
 }

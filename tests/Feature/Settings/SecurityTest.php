@@ -103,6 +103,30 @@ class SecurityTest extends TestCase
     }
 
     /* @chisel-2fa */
+    public function test_two_factor_authentication_can_be_disabled_from_the_settings_page(): void
+    {
+        $user = User::factory()->create();
+
+        $user->forceFill([
+            'two_factor_secret' => encrypt('test-secret'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
+            'two_factor_confirmed_at' => now(),
+        ])->save();
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::settings.security')
+            ->assertSet('twoFactorEnabled', true)
+            ->call('disable')
+            ->assertSet('twoFactorEnabled', false);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+        ]);
+    }
+
     public function test_clients_cannot_change_two_factor_management_flag(): void
     {
         $this->actingAs(User::factory()->create());

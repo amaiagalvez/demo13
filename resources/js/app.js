@@ -562,10 +562,14 @@ document.addEventListener('alpine:init', () => {
             const form = event.target.closest('[data-list-search]');
             const query = form.elements.search.value.trim();
 
+            // A term too short to fetch is left to the native form submit, so the search the
+            // server accepts is also the search the browser gets without this script.
             if ((query.length > 0 && query.length <= 3)
                 || (query.length === 0 && this.currentSearch === '')) {
                 return;
             }
+
+            event.preventDefault();
 
             this.search(query);
         },

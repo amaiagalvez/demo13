@@ -368,5 +368,6 @@
     "You can restore it from the trash.": "Puedes restaurarlo desde la papelera.",
     "You have unsaved changes. Leave without saving?": "Tienes cambios sin guardar. ¿Quieres salir sin guardar los cambios?",
     "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.": "Durante el inicio de sesión, se le pedirá que introduzca un PIN seguro y aleatorio, que podrá obtener desde la aplicación compatible con TOTP en su teléfono.",
+    "You will no longer be asked for a pin when signing in. You can enable it again at any time.": "Ya no se le solicitará un PIN al iniciar sesión. Puede volver a habilitarlo en cualquier momento.",
     "Your email address is unverified.": "Su dirección de correo electrónico no está verificada."
 }
