@@ -51,9 +51,10 @@ jobs:
       DB_CONNECTION: mysql
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
-      DB_DATABASE: laravel
+      DB_DATABASE: laravel_test
       DB_USERNAME: laravel
       DB_PASSWORD: laravel
+      MARIADB_ROOT_PASSWORD: tormenta
 
     services:
       db:
@@ -100,14 +101,26 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
+          cache: 'npm'
 
+      # @vite renders on every page, so the manifest has to exist before the PHP suite runs.
+      - name: Install node dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      # composer setup migrates, so this step alone targets the application schema.
       - name: Setup Application
+        env:
+          DB_DATABASE: laravel
         run: composer setup
 
       - name: Create test database
         run: >-
-          php -r '$pdo = new PDO("mysql:host=127.0.0.1;dbname=laravel", "laravel", "laravel");
-          $pdo->exec("CREATE DATABASE IF NOT EXISTS laravel_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");'
+          mysql -h 127.0.0.1 -uroot -p"$MARIADB_ROOT_PASSWORD" -e
+          "CREATE DATABASE IF NOT EXISTS laravel_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+          GRANT ALL PRIVILEGES ON laravel_test.* TO 'laravel'@'%';"
 
       - name: Run CI Checks
         env:
@@ -138,6 +151,7 @@ jobs:
       DB_PASSWORD: laravel
       DUSK_BASE_URL: http://127.0.0.1:8000
       DUSK_CHROME_BINARY: /usr/bin/google-chrome
+      MARIADB_ROOT_PASSWORD: tormenta
 
     services:
       db:
@@ -199,8 +213,9 @@ jobs:
 
       - name: Create Dusk database
         run: >-
-          php -r '$pdo = new PDO("mysql:host=127.0.0.1;dbname=laravel", "laravel", "laravel");
-          $pdo->exec("CREATE DATABASE IF NOT EXISTS laravel_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");'
+          mysql -h 127.0.0.1 -uroot -p"$MARIADB_ROOT_PASSWORD" -e
+          "CREATE DATABASE IF NOT EXISTS laravel_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+          GRANT ALL PRIVILEGES ON laravel_test.* TO 'laravel'@'%';"
 
       - name: Prepare ChromeDriver
         run: php artisan dusk:chrome-driver --detect

@@ -1,9 +1,6 @@
 services:
     laravel13:
-        build:
-            context: .
-            dockerfile: Dockerfile.dusk
-        image: demo13-laravel13
+        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/docker
@@ -32,6 +29,9 @@ services:
             - frontend
 
     laravel13-dusk:
+        build:
+            context: .
+            dockerfile: Dockerfile.dusk
         image: demo13-laravel13-dusk
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
