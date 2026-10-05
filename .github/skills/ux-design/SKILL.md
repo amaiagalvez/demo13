@@ -1,6 +1,6 @@
 ---
 name: ux-design
-description: "Use when designing, reviewing or changing UI/UX in this app: Blade, Livewire and Flux views for lists, forms, drawers, modals, toasts, navigation, empty states, Tailwind v4 classes, accessibility and Basque (eu) interface copy. Do not use for backend-only changes."
+description: "Apply before creating or changing any view, Blade component or style in this app. Covers lists, forms, drawers, modals, navigation, empty states, Tailwind v4 and the Basque (eu) copy. Not for backend-only changes."
 ---
 
 # UX y diseño de interfaz

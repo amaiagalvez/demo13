@@ -1,6 +1,6 @@
 ---
 name: consistency-review
-description: Audit forms, lists and resource sets for divergence from the canonical patterns
+description: Audit forms, lists and resource sets for divergence from the canonical ones
 disable-model-invocation: true
 ---
 # CONSISTENCY REVIEW

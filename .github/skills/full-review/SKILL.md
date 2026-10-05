@@ -1,6 +1,6 @@
 ---
 name: full-review
-description: Run a complete read-only Laravel technical audit and produce a dated CODE-REVIEW.md report
+description: Run the complete read-only Laravel audit and save a dated CODE-REVIEW.md
 disable-model-invocation: true
 ---
 # FULL LARAVEL CODE REVIEW

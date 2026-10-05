@@ -2,13 +2,12 @@
 
 Laravel 13 · PHP 8.4 · Livewire 4 · Flux (free) · Tailwind 4 · PHPUnit · Dusk · Pint.
 Be concise. Create docs only if explicitly asked. Follow sibling files' structure, naming and conventions; reuse existing components. Do not add base folders or change dependencies without approval. Use descriptive names.
+No speculative architecture: no repository, DTO, interface, service or domain layer, no new abstraction and no extra indirection without a concrete need; reuse what the resources already have. Ask before any of those. Full list in `.github/docs/review-rules.md` and `ARCHITECTURE.md`.
 
 ## Commands
 Everything runs in Docker. `DX` = `docker compose exec -e XDEBUG_MODE=off laravel13`.
-- Start: `docker compose up -d laravel13`
+- Start: `docker compose up -d laravel13`. If `docker compose exec laravel13 ...` fails because the container will not stay up (a cron in the base image cannot drop privileges), run the command in a throwaway container instead: `docker compose run --rm --no-deps -e XDEBUG_MODE=off --entrypoint ./vendor/bin/phpunit laravel13 --testsuite Unit`.
 - Artisan/Composer/PHPUnit: `DX php artisan ...`, `DX composer ...`. Always pass `--no-interaction`; create files with `DX php artisan make:*`.
-- Dusk: `docker compose exec -e XDEBUG_MODE=off laravel13-dusk php artisan dusk [tests/Browser/...php]`. Run Dusk in its dedicated service so both the test runner and browser server use `laravel_test` and an isolated config cache.
-- npm: `docker compose run --rm --no-deps --entrypoint npm laravel13-npm <cmd>` (e.g. `run build`). Vite error "Unable to locate file in Vite manifest" or UI not updating: run build, or ask the user to start dev (`-p 5173:5173 ... run dev -- --host 0.0.0.0`).
 - Package versions: `DX composer show --direct`, or package.json. Use APIs of the installed major version.
 
 ## Project map
@@ -29,6 +28,7 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 - Activate the matching skill in `.github/skills` for its domain. No verification scripts/tinker when tests cover it.
 
 ## PHP
+- Chisel: `chisel.php` / `chisel-paths.php` strip unused code marked with `/* @chisel-... */` … `/* @end-chisel-... */`. Those markers are machine-read: never remove or reformat them, and never regenerate `chisel.php` unless asked.
 - Curly braces always; constructor property promotion; explicit return and parameter types; Enum keys TitleCase.
 - PHPDoc over inline comments (array shapes in PHPDoc).
 - Named routes with `route()`. Models get factories (use existing states). Faker: follow existing style.
@@ -41,5 +41,6 @@ State server-side; validate and authorize in actions. Alpine is already bundled.
 - Add/update tests for behavior changes (not for copy/styling). Cover the change and its key failures only. Read the `testing-best-practices` skill first.
 - Create: `DX php artisan make:test --phpunit Name` (feature; `--unit` for unit; no suite dir in name).
 - Run the narrowest: `DX php artisan test --compact <path|--filter=name>`; add `--parallel` for local speed (never in CI — shared DB) with flags before the path: `DX php artisan test --parallel --compact <path>`. Rerun after each fix.
+- Before you call a change done, run the 4 architecture tests: `DX php artisan test --compact tests/Unit/ArchitectureTest tests/Unit/ValidationCoverageTest tests/Unit/ModelSchemaParityTest tests/Unit/ResourceUniformityTest`. They guard the per-resource set, validated input, model↔schema parity and cross-resource uniformity.
 - CI enforces at least 80% total code coverage and uploads a Clover report; run `docker compose run --rm laravel13-phpunit` locally to check the same threshold.
 - Static analysis: run `DX ./vendor/bin/phpstan analyse` (level 9).

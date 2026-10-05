@@ -6,6 +6,7 @@ applyTo: "resources/views/**,lang/**,resources/js/**"
 - Canonical form: `resources/views/customers/form.blade.php`. Every resource form MUST wrap its content in `<x-forms.tracked-resource>` (`resources/views/components/forms/tracked-resource.blade.php`): header, CSRF, `_method`, dirty tracking, double-submit guard and the cancel/submit footer with `{prefix}-cancel`/`{prefix}-submit` data-tests live only there. Field markup stays local per resource but always follows the same pattern: `flux:field` → `flux:label` (red `*` when required) → control with `data-test` → `flux:error`.
 - Canonical list: `resources/views/customers/list.blade.php` + `resources/views/components/list/*`; table and pagination go through `<x-list.table>`. Do not copy shared markup back into a view. Keep existing `data-test` names; row actions pass the edit payload via `data-payload`.
 - Use Flux components where one exists; reuse `x-list.*` before creating new components.
+- Assets: `docker compose run --rm --no-deps --entrypoint npm laravel13-npm <cmd>` (e.g. `run build`). After editing CSS/JS run the build; if the UI does not refresh, ask the user to start dev (`-p 5173:5173 ... run dev -- --host 0.0.0.0`).
 - One primary action with text, the H1 and the search field live in the header.
 - Nothing destructive without an undo or a proper confirmation.
 - Any new user-facing string goes in `lang/*.json` for all 4 locales (same key and `:placeholders`), in sentence case; a unit test checks parity. Default locale is `eu`.

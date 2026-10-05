@@ -39,6 +39,7 @@
     { "action": "shell", "resource": "docker compose exec *vendor/bin/pint --dirty --format agent", "effect": "allow" },
     { "action": "shell", "resource": "docker compose exec *vendor/bin/phpstan analyse*", "effect": "allow" },
     { "action": "shell", "resource": "docker compose run --rm laravel13-phpunit", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose run *--entrypoint ./vendor/bin/phpunit laravel13*", "effect": "allow" },
     { "action": "shell", "resource": "docker compose run *npm run build", "effect": "allow" },
     { "action": "shell", "resource": "docker compose up -d laravel13", "effect": "allow" },
     { "action": "shell", "resource": "docker compose exec * composer ci:check", "effect": "allow" },

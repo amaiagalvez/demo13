@@ -1,6 +1,6 @@
 ---
 name: new-resource
-description: Scaffold a complete CRUD resource following the canonical Customer pattern
+description: Scaffold a full CRUD resource following the canonical Customer pattern
 disable-model-invocation: true
 argument-hint: Resource singular, StudlyCase (e.g. Invoice)
 ---
