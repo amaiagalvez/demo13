@@ -37,15 +37,15 @@ Contains specialized reviewers:
 
 Runs the complete audit.
 
-### Prompts
+### Guided flows (skills, not slash commands)
 
-.github/prompts/full-review.prompt.md
+.github/skills/
 
-Runs the complete audit workflow.
+- full-review — runs the complete audit workflow
+- fix-review — fixes selected findings only
+- fix-tests, new-feature, new-resource, consistency-review, ux-implement
 
-.github/prompts/fix-review.prompt.md
-
-Fixes selected findings only.
+They are skills: activate them by name, there is no `/command` for them.
 
 ---
 
@@ -58,7 +58,7 @@ Fixes selected findings only.
 5. Inspect `.github/reviews/YYYY-MM-DD/CODE-REVIEW.md`.
 6. Select findings.
 7. Start a new Copilot Agent session.
-8. Use fix-review.prompt.md.
+8. Activate the fix-review skill.
 9. Specify finding IDs.
 10. Run tests again.
 11. Review the diff.

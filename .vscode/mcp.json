@@ -6,6 +6,8 @@
                 "compose",
                 "exec",
                 "-T",
+                "-e",
+                "XDEBUG_MODE=off",
                 "laravel13",
                 "php",
                 "artisan",

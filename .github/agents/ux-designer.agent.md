@@ -58,4 +58,4 @@ Every finding must include:
 - recommendation
 - confidence
 
-Termina con una lista priorizada (P0–P3) de cambios, agrupados en tandas que puedan aplicarse con `.github/prompts/ux-implement.prompt.md`.
+Termina con una lista priorizada (P0–P3) de cambios, agrupados en tandas que puedan aplicarse con la skill `ux-implement` (`.github/skills/ux-implement/SKILL.md`).

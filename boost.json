@@ -16,6 +16,14 @@
         "testing-best-practices",
         "fluxui-development",
         "livewire-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "new-feature",
+        "new-resource",
+        "full-review",
+        "fix-review",
+        "fix-tests",
+        "consistency-review",
+        "ux-design",
+        "ux-implement"
     ]
 }

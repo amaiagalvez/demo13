@@ -81,7 +81,10 @@ deleted. Epic comments are removed when their epic is permanently deleted and ke
 a null author when the user is deleted.
 
 Important transactions: no multi-step business transaction or queued write flow exists
-currently.
+currently. The one transaction boundary that does exist is the delete guard: each
+`deleting` hook in `AppServiceProvider::blockDeletionWithChildren()` locks the row with
+`lockForUpdate()` inside its own `DB::transaction()`, so a child created between the
+check and the delete makes the delete wait and then fail.
 
 ---
 

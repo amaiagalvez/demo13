@@ -12,8 +12,8 @@ Everything runs in Docker. `DX` = `docker compose exec -e XDEBUG_MODE=off larave
 - Package versions: `DX composer show --direct`, or package.json. Use APIs of the installed major version.
 
 ## Project map
-Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, restore, force delete. Names unique among active records (DB-enforced).
-- Per resource: `XController` + `XTrashController`, `app/Http/Requests`, `app/Policies`, `app/Queries/*/XListQuery`, `app/Transformers`.
+Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, restore, force delete. `active` flag with its own list plus deactivate/reactivate. Names unique among active records (DB-enforced).
+- Per resource: `XController` + `XTrashController` + `XInactiveController` (extends the shared `InactiveController`), `app/Http/Requests`, `app/Policies`, `app/Queries/*/XListQuery`, `app/Transformers`.
 - Views: `resources/views/{customers,projects,epics}/{list,form}.blade.php`; shared parts in `resources/views/components/list/`.
 - Duplicate-name races: `App\Support\Database\UniqueConstraintViolation`.
 - i18n: `lang/*.json`, 4 locales, parity checked by a unit test.
@@ -23,8 +23,9 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 ## Boost / docs
 - Prefer Boost MCP tools over shell: `database-query` (read-only), `database-schema`, `get-absolute-url`, `browser-logs`, `search-docs`.
 - `search-docs` before version-specific Laravel-ecosystem APIs (skip for copy/styling). Broad topic queries, no package names in the query, scope with `packages`. Reuse earlier results.
-- Zone rules live in `.github/instructions/*.instructions.md` (`views`, `http`, `models`, `tests`): Copilot injects them automatically by `applyTo`; any other agent reads the one matching the paths it edits before touching them.
-- Prompts and agents have a single copy in `.github/{prompts,agents}/`; `.opencode/{commands,agents}/` are gitignored symlinks to them. Edit the source, never the symlink. Never add a `tools:` key there (OpenCode drops the whole file). Rebuild the links with `docker/link-opencode-assets.sh`.
+- Zone rules live in `.github/instructions/*.instructions.md` (`models`, `http`, `views`, `tests`): Copilot injects them automatically by `applyTo`; any other agent reads the one matching the paths it edits before touching them.
+- Reviewer agents have a single copy in `.github/agents/`; `.opencode/agents/` are gitignored symlinks to them. Edit the source, never the symlink. Never add a `tools:` key there (OpenCode drops the whole file). Rebuild the links with `docker/link-opencode-assets.sh`.
+- Guided flows (new-feature, new-resource, full-review, fix-review, fix-tests, consistency-review, ux-implement) are skills in `.github/skills/<name>/SKILL.md`, not `/commands`: activate them by skill, not with a slash command.
 - Activate the matching skill in `.github/skills` for its domain. No verification scripts/tinker when tests cover it.
 
 ## PHP

@@ -15,6 +15,8 @@
           "compose",
           "exec",
           "-T",
+          "-e",
+          "XDEBUG_MODE=off",
           "laravel13",
           "php",
           "artisan",
@@ -29,11 +31,14 @@
   // wildcards (no regex): no hay alternancia, así que los 4 scripts de composer van
   // por separado. Acaba en `*` (no en ` *`) para que el patrón también case con el
   // comando sin argumentos (`git push`, `php artisan test` a secas).
+  // phpstan y el job de cobertura están porque AGENTS.md los manda ejecutar tal cual.
   "permissions": [
     { "action": "shell", "resource": "*", "effect": "ask" },
     { "action": "shell", "resource": "docker compose exec * php artisan test*", "effect": "allow" },
     { "action": "shell", "resource": "docker compose exec * php artisan make:*", "effect": "allow" },
     { "action": "shell", "resource": "docker compose exec *vendor/bin/pint --dirty --format agent", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose exec *vendor/bin/phpstan analyse*", "effect": "allow" },
+    { "action": "shell", "resource": "docker compose run --rm laravel13-phpunit", "effect": "allow" },
     { "action": "shell", "resource": "docker compose run *npm run build", "effect": "allow" },
     { "action": "shell", "resource": "docker compose up -d laravel13", "effect": "allow" },
     { "action": "shell", "resource": "docker compose exec * composer ci:check", "effect": "allow" },
