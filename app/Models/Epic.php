@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string|null $notes
  * @property bool $active
  * @property int $project_id
+ * @property Carbon|null $start_date
+ * @property Carbon|null $end_date
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by

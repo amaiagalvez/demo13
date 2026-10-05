@@ -13,6 +13,8 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------
+
+# REVIEWS
 [ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
 [ ] ahora busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github
 [ ] skill full-review del proyecto

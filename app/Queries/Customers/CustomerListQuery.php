@@ -21,7 +21,9 @@ final class CustomerListQuery extends ListQueryBase
     {
         return $this->paginate(
             $this->withActiveCounts(
-                Customer::query()->where('active', true)->orderBy('name'),
+                // Unique names among non-deleted customers keep the ordering total on its own; the id
+                // is here so this list breaks ties the same way the inactive and trash lists do.
+                Customer::query()->where('active', true)->orderBy('name')->orderBy('id'),
             )->withExists(['projects' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)]),
             $search,
             searchColumns: ['name'],

@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property string|null $notes
  * @property bool $active
  * @property int $customer_id
+ * @property Carbon $start_date
+ * @property Carbon|null $end_date
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by

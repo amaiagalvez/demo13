@@ -11,6 +11,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 abstract class ListQueryBase
 {
+    /**
+     * Rows per list page. The remote select-options queries cap their result set at the same number
+     * on purpose, so both limits move together; give the selects their own constant if they ever
+     * need to differ, since no test covers that cap.
+     */
     public const PER_PAGE = 25;
 
     /**

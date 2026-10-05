@@ -100,7 +100,9 @@ check and the delete makes the delete wait and then fail.
 Blade / Livewire / Vue / Inertia:
 
 - Blade with Livewire and Flux components, bundled by Vite Plus and Tailwind CSS.
-- Customer CRUD UI behavior is covered by Laravel Dusk tests.
+- Laravel Dusk covers the customer CRUD end to end. Projects and epics have Dusk coverage of
+  their CRUD and of the parent selector, but not of their trash, inactive lists or drawer;
+  those flows are covered by feature tests only.
 
 ---
 

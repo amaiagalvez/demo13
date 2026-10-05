@@ -100,9 +100,12 @@ class EpicListTransformer extends ListTransformer
     }
 
     /**
-     * The payload the edit drawer needs for one epic, built the same way a list row builds it. The
-     * epic list uses it to rehydrate the drawer after a comment or a failed edit, which may target
-     * an epic that is not on the current page.
+     * The payload the edit drawer needs for one epic. The epic list uses it to rehydrate the drawer
+     * after a comment or a failed edit, which may target an epic that is not on the current page,
+     * so it loads the relations the payload needs instead of relying on a query that did it.
+     *
+     * The payload itself is `editPayload()`: a drawer reopened from here and a drawer opened from a
+     * row carry the very same fields, so they are built in one place.
      *
      * @return array{id: int, name: string, notes: string|null, start_date: string, end_date: string, project_id: int, project_label: string, commentAction: string, commentsUrl: string, commentsCount: int}
      */
@@ -110,18 +113,7 @@ class EpicListTransformer extends ListTransformer
     {
         $epic->loadMissing('project.customer');
 
-        return [
-            'id' => $epic->id,
-            'name' => $epic->name,
-            'notes' => $epic->notes,
-            'start_date' => $epic->start_date?->toDateString() ?? '',
-            'end_date' => $epic->end_date?->toDateString() ?? '',
-            'project_id' => $epic->project_id,
-            'project_label' => $epic->project->fullName(),
-            'commentAction' => route('epics.comments.store', $epic),
-            'commentsUrl' => route('epics.comments.index', $epic),
-            'commentsCount' => (int) $epic->comments_count,
-        ];
+        return $this->editPayload($epic);
     }
 
     /**

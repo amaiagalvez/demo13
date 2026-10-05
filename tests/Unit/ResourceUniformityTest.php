@@ -151,9 +151,13 @@ class ResourceUniformityTest extends TestCase
         }
     }
 
+    /**
+     * Every soft-deleting model must offer the trashed factory state, which is what the test suites
+     * build a trash record with. The user is soft deletable too, so it belongs in the list.
+     */
     public function test_soft_deletable_factories_share_trashed_and_optional_date_states(): void
     {
-        foreach ([Customer::class, Project::class, Epic::class] as $modelClass) {
+        foreach ([Customer::class, Project::class, Epic::class, User::class] as $modelClass) {
             $this->assertContains(SoftDeletes::class, class_uses_recursive($modelClass));
             $this->assertTrue(method_exists($modelClass::factory(), 'trashed'));
         }

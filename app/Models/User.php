@@ -34,6 +34,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property int|null $deleted_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 #[Fillable(['name', 'email', 'password', 'notes'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
@@ -52,13 +53,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     /**
      * Get the attributes that should be cast.
      *
-     * @return array<string, string>
+     * @return array{active: 'boolean', email_verified_at: 'datetime', two_factor_confirmed_at: 'datetime', password: 'hashed'}
      */
     protected function casts(): array
     {
         return [
             'active' => 'boolean',
             'email_verified_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
