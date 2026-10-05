@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: Implement a feature end to end with tests, Pint and build
+description: Implement a feature end to end with tests, Pint and build. Use for behavior that is not a whole CRUD resource (a new action, filter, column or email). For a complete resource with model, migration, controller, policy, views and tests, use new-resource instead.
 disable-model-invocation: true
 argument-hint: describe the feature
 ---

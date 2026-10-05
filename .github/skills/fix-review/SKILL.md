@@ -75,22 +75,22 @@ Follow the project's existing PHPUnit conventions.
 
 ## 7. Validation
 
-Run relevant checks.
+Run relevant checks. `DX` is defined in `AGENTS.md`.
 
 Examples:
 
-docker compose exec -e XDEBUG_MODE=off laravel13 php artisan test --compact <test-path>
+DX php artisan test --compact <test-path>
 
-docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/phpstan analyse
+DX ./vendor/bin/phpstan analyse
 
-docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/pint --dirty --format agent
+DX ./vendor/bin/pint --dirty --format agent
 
-docker compose exec -e XDEBUG_MODE=off laravel13 composer ci:check --no-interaction
+DX composer ci:check --no-interaction
 
 docker compose run --rm --no-deps --entrypoint npm laravel13-npm run build
 
 Only run commands appropriate to the project.
-Prefer the narrowest relevant tests; use `composer ci:check` for the full gate.
+Prefer the narrowest relevant tests; use `composer ci:check` for the full gate. It runs `pint --test` inside its `test:prepare` step, which is fine here because it checks without rewriting.
 
 ## 8. Final report
 

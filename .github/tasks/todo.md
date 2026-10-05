@@ -20,9 +20,8 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 
 [ ] Repasar los errores que da el SonarQube y buscar una posible solucion. Preguntar antes de cambiar nada
 
-
 # PERFORMANCE
-[ ] prepara un plan que cree seeders para llenar las tablas con cientos de registros y luego analice el rendimiento del listado
+[ ] prepara un plan o acualiza el que ya existe que cree seeders para llenar las tablas con cientos de registros y luego analice el rendimiento del listado
 
 # AGENTS
 [ ] busca incongruencias entre lo que hay en el código y lo que hay dentro de la carpeta .github. muestrame una lista y vete preguntandome una por una, dame una posible solución y pide confirmación atnes de hacer nada 

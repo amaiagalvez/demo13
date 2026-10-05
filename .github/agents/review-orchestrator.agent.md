@@ -13,6 +13,11 @@ permissions:
     - action: subagent
       resource: "*"
       effect: allow
+permission:
+    edit:
+        "*": deny
+        ".github/reviews/**": allow
+    task: allow
 ---
 
 # Laravel Code Review Orchestrator
@@ -63,14 +68,14 @@ Never assume technologies.
 
 # STEP 3 — VALIDATE
 
-Run safe checks that already exist.
+Run safe checks that already exist. `DX` is defined here as `docker compose exec -e XDEBUG_MODE=off laravel13`, because this agent runs in a child session and does not load `AGENTS.md`.
 
 Possible commands:
 
-docker compose exec -e XDEBUG_MODE=off laravel13 php artisan test --compact <test-path>
-docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/phpstan analyse
-docker compose exec -e XDEBUG_MODE=off laravel13 ./vendor/bin/pint --test
-docker compose exec -e XDEBUG_MODE=off laravel13 composer audit --no-interaction
+DX php artisan test --compact <test-path>
+DX ./vendor/bin/phpstan analyse
+DX ./vendor/bin/pint --test
+DX composer audit --no-interaction
 docker compose run --rm --no-deps --entrypoint npm laravel13-npm run build
 
 Only execute appropriate commands.

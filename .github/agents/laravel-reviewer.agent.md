@@ -10,6 +10,9 @@ permissions:
   - action: shell
     resource: "*"
     effect: deny
+permission:
+  edit: deny
+  bash: deny
 ---
 
 # Laravel Reviewer
@@ -60,4 +63,4 @@ Do not treat alternative valid Laravel styles as defects.
 
 ---
 
-Always follow `.github/docs/review-rules.md`: READ-ONLY (never modify code) and never invent evidence. Every finding must include ID, severity, category, file, line, problem, evidence, impact, recommendation and confidence.
+Follow `.github/docs/review-rules.md`: it defines READ-ONLY, the evidence rules and the finding format.

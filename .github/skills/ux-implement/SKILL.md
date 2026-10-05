@@ -59,13 +59,13 @@ Aplica la misma tanda a clientes, proyectos y épicas reutilizando los component
 
 Ejecuta solo lo que sea apropiado:
 
-docker compose exec laravel13 ./vendor/bin/pint --dirty --format agent
+DX ./vendor/bin/pint --dirty --format agent
 
-docker compose exec laravel13 php artisan test --compact
+DX php artisan test --compact
 
 docker compose run --rm --no-deps --entrypoint npm laravel13-npm run build
 
-Dusk afectado, por ejemplo: docker compose exec laravel13 php artisan dusk tests/Browser/Customers
+Dusk afectado, por ejemplo: docker compose exec -e XDEBUG_MODE=off laravel13-dusk php artisan dusk tests/Browser/Customers (nunca en `laravel13`: ver `tests.instructions.md`)
 
 Nota: existe un fallo previo en Dusk (`ProjectCustomerSelectTest` espera inglés con `APP_LOCALE=eu`); no lo atribuyas a tus cambios.
 

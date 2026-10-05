@@ -32,7 +32,7 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 - Curly braces always; constructor property promotion; explicit return and parameter types; Enum keys TitleCase.
 - PHPDoc over inline comments (array shapes in PHPDoc).
 - Named routes with `route()`. Models get factories (use existing states). Faker: follow existing style.
-- After editing PHP: `DX ./vendor/bin/pint --dirty --format agent` (never `--test`).
+- After editing PHP: `DX ./vendor/bin/pint --dirty --format agent`. Never `--test` while writing code: it only reports. A read-only review may use `--test`, which is the correct check there because it must not rewrite files.
 
 ## Livewire
 State server-side; validate and authorize in actions. Alpine is already bundled.

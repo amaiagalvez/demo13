@@ -8,14 +8,20 @@
 
 Nada está duplicado: los agentes viven **una sola vez** en `.github/agents/` (los que Copilot ya leía) y OpenCode los lee a través de symlinks en `.opencode/agents/`, así que corriges un agente en un único sitio y los dos clientes lo toman.
 
-* `.github/agents/*.agent.md` → symlink en `.opencode/agents/*.md` (los 18 subagentes, solo lectura)
+* `.github/agents/*.agent.md` → symlink en `.opencode/agents/*.md` (18 agentes: 17 revisores de solo lectura + `review-orchestrator`, que sí escribe reports en `.github/reviews/**`)
 * `.github/skills/<nombre>/SKILL.md` → sin symlink: `"skills": [".github/skills"]` ya los carga, en ambos clientes. **No hay comandos `/`**: los antiguos prompts se convertieron en skills, así que se activan por nombre (skill tool), no escribiéndolos con `/`
 * `.github/instructions/*` → también sin symlink; OpenCode no resuelve `applyTo`, así que su router es AGENTS.md (ver abajo)
 * `opencode.jsonc` en la raíz: MCP de Boost y permisos (espejo de `chat.tools.terminal.autoApprove`)
 
 Los 7 flujos guiados son: `new-feature`, `new-resource`, `full-review`, `fix-review`, `fix-tests`, `consistency-review` y `ux-implement`.
 
-El frontmatter de los agentes es compartido: las keys de Copilot (`name`, `argument-hint`) OpenCode las ignora, y `mode`/`permissions` las usa para el modo subagente y los permisos de solo lectura. Lo único que **no** se puede mezclar es `tools:` — OpenCode descarta el fichero entero si la ve, así que no la uses en `.github/agents/`.
+El frontmatter de los agentes es compartido, y **cada cliente lee una key distinta para lo mismo**:
+
+* `mode: subagent` → la usan los dos (sin ella OpenCode registra el agente como `primary` y te aparece en el ciclo del Tab).
+* `permissions:` (array `action`/`resource`/`effect`) → **solo Copilot**. OpenCode la ignora y se la manda al provider como parámetro muerto.
+* `permission:` (objeto, en singular) → **solo OpenCode**. Es la que aplica de verdad: `edit: deny`, `bash: deny`.
+
+Por eso los agentes llevan las dos keys: si quitas una, el revisor pierde el solo lectura en uno de los dos clientes. Verifícalo con `opencode debug agents`: cada revisor debe salir con `edit deny` y `shell * deny`. No uses `tools:`; la docs la marca como *deprecated* y su sustituta es `permission`.
 
 Lo único que cambia en el flujo: no hay `applyTo`, así que el agente tiene que abrir a mano el `.instructions.md` de la zona que toca antes de editar. Y la skill `full-review` corre en sesión hija con el agente `review-orchestrator`, que lanza a los especialistas.
 
@@ -44,10 +50,10 @@ skill new-feature — CRUD de facturas: listado con búsqueda, formulario, papel
 3. Supervisa los puntos de control, no el proceso:
    * El plan inicial: ¿querías eso o algo distinto?
    * Los lang/*.json en los 4 locales y los data-test si hay UI.
-4. Verificación final: corre tú el test estrecho (DX php artisan test --compact <ruta>). Si hay UI, build ya hecho (auto-aprobado) o levanta dev (-p 5173:5173 ... run dev).
+4. Verificación final: el agente ya ha corrido los tests y los 4 tests de arquitectura (los de `AGENTS.md`) y te ha dado su resultado real. Tú comprueba que cuadra con el diff y, si tocaba UI, que el build se hizo (auto-aprobado) o levanta dev (-p 5173:5173 ... run dev).
 5. Revisa el diff y commitea tú.
 
-Sin skill también funciona: describe la feature y el agente acabará en lo mismo, pero la skill le obliga a planear y a no montar abstracciones de más.
+Sin skill también funciona: describe la feature y el agente acabará en lo mismo. La skill ya no aporta la regla de no montar abstracciones de más (eso vive ahora en `AGENTS.md`, siempre activo); lo que aporta es el guion fijo: plan antes de escribir, TDD, los 4 tests de arquitectura al final y el informe.
 
 Si lo que quieres es un **recurso CRUD entero** (modelo + migración + vistas), usa la skill `new-resource` y pásale el nombre: `skill new-resource — Invoice`. Monta el set completo calcado a Customer (XController + XTrashController, XRequest/XListRequest/XRestoreRequest, policy, XListQuery, XListTransformer, vistas con x-list.table y x-forms.tracked-resource, lang en 4 locales) siguiendo TDD, y termina exigiendo pint, PHPStan y los tests de arquitectura en verde. `new-feature` sigue siendo lo indicado para features que no son un recurso completo.
 
