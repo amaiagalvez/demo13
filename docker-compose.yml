@@ -3,7 +3,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dusk
-        image: demo13-laravel13-dusk
+        image: demo13-laravel13
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/docker
