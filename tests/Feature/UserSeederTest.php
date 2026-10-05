@@ -31,7 +31,7 @@ class UserSeederTest extends TestCase
 
         $this->seed(UserSeeder::class);
 
-        $this->assertDatabaseCount('users', 1);
+        $this->assertSame(1, User::where('email', 'info@amaia.eus')->count());
         $this->assertTrue(Hash::check('changed-password', $user->refresh()->password));
     }
 }

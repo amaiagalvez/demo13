@@ -108,7 +108,14 @@ class EpicController extends Controller
     public function destroy(Epic $epic): RedirectResponse
     {
         $this->authorize('delete', $epic);
-        $epic->delete();
+
+        // The deleting hook locks the epic and refuses deletion while comments exist.
+        $deleted = DB::transaction(static fn (): bool => $epic->delete() !== false);
+
+        if (! $deleted) {
+            return to_route('epics.index')
+                ->with('error', __('Cannot be deleted while it has related records.'));
+        }
 
         return to_route('epics.index')->with('status', __('Record moved to trash.'));
     }

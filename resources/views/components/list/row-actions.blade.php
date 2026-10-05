@@ -19,6 +19,13 @@
                         :data-test="$action['test']" />
                 </flux:tooltip>
             </flux:modal.trigger>
+        @elseif ($action['type'] === 'blocked')
+            <flux:tooltip :content="$action['hint']">
+                <span tabindex="0" class="inline-flex" :aria-label="$action['hint']">
+                    <flux:button size="xs" square variant="ghost" :icon="$action['icon']"
+                        :aria-label="$action['label']" disabled :data-test="$action['test']" />
+                </span>
+            </flux:tooltip>
         @else
             <flux:modal.trigger :name="$prefix.'-confirm'">
                 <flux:tooltip :content="$blockedHint ?? $action['label']">

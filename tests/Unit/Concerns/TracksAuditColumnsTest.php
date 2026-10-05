@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use Illuminate\Database\QueryException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -177,21 +178,25 @@ class TracksAuditColumnsTest extends TestCase
     }
 
     /**
-     * The trail has to outlive its author: the keys empty themselves instead of removing or
-     * blocking the rows they point at.
+     * User deletion is restricted while an audit record still references that user.
      */
-    public function test_deleting_the_actor_keeps_the_record_and_empties_its_audit_columns(): void
+    public function test_deleting_the_actor_is_restricted_while_audit_records_reference_them(): void
     {
         $actor = User::factory()->create();
 
         $this->actingAs($actor);
         $record = Customer::factory()->create();
 
-        $actor->forceDelete();
+        try {
+            $actor->forceDelete();
+            self::fail('A user with audit references must not be force deleted.');
+        } catch (QueryException) {
+            $this->assertDatabaseHas('users', ['id' => $actor->id]);
+        }
 
         $record->refresh();
-        $this->assertNull($record->created_by);
-        $this->assertNull($record->updated_by);
+        $this->assertSame($actor->id, $record->created_by);
+        $this->assertSame($actor->id, $record->updated_by);
     }
 
     /**

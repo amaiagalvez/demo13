@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
 use App\Policies\ProjectPolicy;
 use App\Concerns\TracksAuditColumns;
 use Database\Factories\ProjectFactory;
@@ -23,6 +24,9 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Customer $customer
  * @property-read bool $epics_exists
  * @property-read int $epics_count

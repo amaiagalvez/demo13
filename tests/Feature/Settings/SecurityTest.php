@@ -46,16 +46,16 @@ class SecurityTest extends TestCase
         $response->assertOk();
 
         /* @chisel-passkeys */
-        $response->assertSee('Passkeys')
+        $response->assertSee(__('Passkeys'))
             ->assertSee('aria-labelledby="delete-passkey-modal-heading"', false)
             ->assertSee('id="delete-passkey-modal-heading"', false);
-        $response->assertSee('No passkeys yet');
+        $response->assertSee(__('No passkeys yet'));
         /* @end-chisel-passkeys */
         /* @chisel-2fa */
-        $response->assertSee('Two-factor authentication')
+        $response->assertSee(__('Two-factor authentication'))
             ->assertSee('aria-labelledby="two-factor-setup-modal-heading"', false)
             ->assertSee('id="two-factor-setup-modal-heading"', false);
-        $response->assertSee('Enable 2FA');
+        $response->assertSee(__('Enable 2FA'));
         /* @end-chisel-2fa */
     }
 
@@ -71,10 +71,10 @@ class SecurityTest extends TestCase
             /* @end-chisel-password-confirmation */
             ->get(route('security.edit'))
             ->assertOk()
-            ->assertSee('Update password')
-            ->assertDontSee('Manage your passkeys for passwordless sign-in')
-            ->assertDontSee('Add a passkey to sign in without a password')
-            ->assertDontSee('Two-factor authentication');
+            ->assertSee(__('Update password'))
+            ->assertDontSee(__('Manage your passkeys for passwordless sign-in'))
+            ->assertDontSee(__('Add a passkey to sign in without a password'))
+            ->assertDontSee(__('Two-factor authentication'));
     }
 
     public function test_two_factor_authentication_disabled_when_confirmation_abandoned_between_requests(): void

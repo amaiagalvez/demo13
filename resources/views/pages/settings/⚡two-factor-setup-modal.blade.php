@@ -63,7 +63,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
 
             $this->manualSetupKey = $manualSetupKey;
         } catch (Exception) {
-            $this->addError('setupData', 'Failed to fetch setup data.');
+            $this->addError('setupData', __('Failed to fetch setup data.'));
 
             $this->reset('qrCodeSvg', 'manualSetupKey');
         }
@@ -192,7 +192,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
             <div class="space-y-6">
                 <div class="flex flex-col items-center space-y-3 justify-center" x-data
                     x-init="$nextTick(() => $el.querySelector('input')?.focus())">
-                    <flux:otp name="code" wire:model="code" length="6" label="OTP Code"
+                    <flux:otp name="code" wire:model="code" length="6" label="{{ __('OTP Code') }}"
                         label:sr-only class="mx-auto" />
                 </div>
 

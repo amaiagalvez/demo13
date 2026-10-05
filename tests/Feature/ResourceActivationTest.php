@@ -7,6 +7,7 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use App\Models\EpicComment;
 use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -342,7 +343,7 @@ class ResourceActivationTest extends TestCase
             ->assertDontSee('data-test="project-delete-'.$project->id.'"', false);
     }
 
-    public function test_epics_always_offer_deletion(): void
+    public function test_epics_without_comments_offer_deletion(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
@@ -350,6 +351,30 @@ class ResourceActivationTest extends TestCase
         $this->get(route('epics.index'))
             ->assertSee('data-test="epic-delete-'.$epic->id.'"', false)
             ->assertDontSee('data-test="epic-deactivate-'.$epic->id.'"', false);
+    }
+
+    public function test_epics_with_comments_offer_deactivation_instead_of_deletion(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $epic = Epic::factory()->create();
+        $comment = EpicComment::factory()->for($epic)->create();
+
+        $this->get(route('epics.index'))
+            ->assertSee('data-test="epic-deactivate-'.$epic->id.'"', false)
+            ->assertDontSee('data-test="epic-delete-'.$epic->id.'"', false)
+            ->assertSee(__('Cannot be deleted while it has related records.'));
+
+        $this->delete(route('epics.destroy', $epic))
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
+
+        $this->patch(route('epics.deactivate', $epic))
+            ->assertRedirect(route('epics.index'))
+            ->assertSessionHas('status', __('Record deactivated successfully.'));
+
+        $this->assertFalse($epic->refresh()->active);
+        $this->assertModelExists($epic);
+        $this->assertModelExists($comment);
     }
 
     public function test_inactive_customers_are_searchable_by_name_and_update_date(): void
@@ -424,9 +449,17 @@ class ResourceActivationTest extends TestCase
         $this->travelTo('2026-07-15 10:00:00');
         $updatedEpic->touch();
 
-        $this->get(route('epics.inactive.index', ['search' => '2026-07-15']))
-            ->assertSee('Alpha Dormant')
-            ->assertDontSee('Beta Dormant');
+        $response = $this->get(route('epics.inactive.index', ['search' => '2026-07-15']))
+            ->assertOk()
+            ->assertSee('Alpha Dormant');
+
+        $list = $response->viewData('list');
+        $this->assertIsArray($list);
+        $rows = $list['rows'] ?? null;
+        $this->assertIsArray($rows);
+
+        /** @var array<int, array{name: string}> $rows */
+        $this->assertSame(['Alpha Dormant'], array_column($rows, 'name'));
     }
 
     /**

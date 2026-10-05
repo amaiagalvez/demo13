@@ -74,7 +74,7 @@ class TranslationFilesTest extends TestCase
     {
         $sources = [];
 
-        $sources = $this->applicationSources();
+        $sources = $this->translationSources();
         $unusedKeys = [];
 
         foreach (array_keys($this->translations('en')) as $key) {
@@ -115,14 +115,30 @@ class TranslationFilesTest extends TestCase
     /**
      * @return list<string>
      */
-    private function applicationSources(): array
+    private function translationSources(): array
     {
         $sources = [];
         $root = dirname(__DIR__, 3);
+        $directories = [
+            'app',
+            'resources',
+            'vendor/laravel/framework/src',
+            'vendor/laravel/fortify/src',
+            'vendor/laravel/passkeys/src',
+            'vendor/livewire/livewire/src',
+            'vendor/livewire/flux/src',
+            'vendor/opcodesio/log-viewer/src',
+        ];
 
-        foreach (['app', 'resources'] as $directory) {
+        foreach ($directories as $directory) {
+            $path = "{$root}/{$directory}";
+
+            if (! is_dir($path)) {
+                continue;
+            }
+
             $files = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator("{$root}/{$directory}", FilesystemIterator::SKIP_DOTS),
+                new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
             );
 
             foreach ($files as $file) {

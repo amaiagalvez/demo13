@@ -46,7 +46,7 @@ class ListCreateDeepLinkTest extends TestCase
         $this->get(route($indexRoute, ['create' => 1]))
             ->assertOk()
             ->assertSee("modal-show', { name: '{$formName}'", escape: false)
-            ->assertSee($heading, escape: false);
+            ->assertSee(__($heading), escape: false);
     }
 
     /**
@@ -61,8 +61,8 @@ class ListCreateDeepLinkTest extends TestCase
     public function test_the_drawer_opens_once_the_parent_exists(string $indexRoute, string $formName, string $heading): void
     {
         $customer = Customer::factory()->create();
-        Project::factory()->for($customer)->create();
-        Epic::factory()->create(['project_id' => Project::first()->id]);
+        $project = Project::factory()->for($customer)->create();
+        Epic::factory()->for($project)->create();
 
         $this->actingAs(User::factory()->create())
             ->get(route($indexRoute, ['create' => 1]))

@@ -240,6 +240,20 @@ abstract class ListTransformer
     }
 
     /**
+     * @return array{type: string, label: string, icon: string, test: string, hint: string}
+     */
+    final protected function blockedAction(string $label, string $icon, string $test, string $hint): array
+    {
+        return [
+            'type' => 'blocked',
+            'label' => $label,
+            'icon' => $icon,
+            'test' => $test,
+            'hint' => $hint,
+        ];
+    }
+
+    /**
      * @param  TRecord  $record
      * @return array{type: string, label: string, icon: string, test: string, danger: bool, action: string, method: string, confirmTitle: string, confirmText: string, confirmLabel: string}
      */

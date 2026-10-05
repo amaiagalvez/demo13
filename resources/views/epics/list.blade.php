@@ -275,7 +275,8 @@
                                 <flux:table.cell align="end" sticky
                                     class="bg-white dark:bg-zinc-900">
                                     <x-list.row-actions :actions="$row['actions']" prefix="epic"
-                                        payload-key="epic" edit-handler="editEpic" />
+                                        payload-key="epic" edit-handler="editEpic"
+                                        :blocked-hint="$row['actionHint'] ?? null" />
                                 </flux:table.cell>
                             </flux:table.row>
                         @empty

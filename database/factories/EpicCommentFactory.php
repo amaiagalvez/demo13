@@ -25,12 +25,4 @@ class EpicCommentFactory extends Factory
             'body' => fake()->paragraph(),
         ];
     }
-
-    /** Indicate that the comment has no author. */
-    public function withoutAuthor(): static
-    {
-        return $this->state([
-            'user_id' => null,
-        ]);
-    }
 }

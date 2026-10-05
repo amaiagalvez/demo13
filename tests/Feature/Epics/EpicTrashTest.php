@@ -26,7 +26,6 @@ class EpicTrashTest extends TestCase
         $project = $epic->project;
         $customer = $project->customer;
 
-        EpicComment::factory()->for($epic)->create();
         $activeResponse = $this->get(route('epics.index'));
         $epic->delete();
 
@@ -51,7 +50,7 @@ class EpicTrashTest extends TestCase
             '2026-08-04',
             '2026-10-02',
         ]);
-        $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"', false);
+        $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"></span>', false);
     }
 
     public function test_trash_orders_by_deletion_timestamp_descending_then_id_ascending(): void
@@ -143,15 +142,22 @@ class EpicTrashTest extends TestCase
         $this->assertModelExists($epic);
     }
 
-    public function test_permanently_deleting_an_epic_removes_its_comments(): void
+    public function test_permanently_deleting_an_epic_with_comments_is_refused(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->trashed()->create();
         $comment = EpicComment::factory()->for($epic)->create();
 
-        $this->delete(route('epics.trash.destroy', $epic->id));
+        $this->get(route('epics.trash.index'))
+            ->assertSee('data-test="epic-force-delete-blocked-'.$epic->id.'"', false)
+            ->assertSee(__('Cannot be permanently deleted while it has related records.'));
 
-        $this->assertModelMissing($comment);
+        $this->delete(route('epics.trash.destroy', $epic->id))
+            ->assertRedirect(route('epics.trash.index'))
+            ->assertSessionHas('error', __('Cannot be permanently deleted while it has related records.'));
+
+        $this->assertModelExists($epic);
+        $this->assertModelExists($comment);
     }
 
     public function test_epic_cannot_be_restored_when_an_active_epic_in_the_same_project_uses_its_name(): void

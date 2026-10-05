@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="kMAxzI_vO5s-TBHl5hHA" name="Page-1">
-        <mxGraphModel dx="2449" dy="2034" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="4580" dy="3280" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -192,7 +192,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="bVhgHFEWyMF6Z6gIAu31" name="PINTXO">
-        <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="3337" dy="2553" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="mAJiBhmsFqUoIj1_78gD-0"/>
                 <mxCell id="mAJiBhmsFqUoIj1_78gD-1" parent="mAJiBhmsFqUoIj1_78gD-0"/>
@@ -377,7 +377,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="z2dD1ZDD-eCw0JU8UefP" name="DATU BASEA">
-        <mxGraphModel dx="1969" dy="654" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2249" dy="818" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="rPtZ0TYt1Pr_qsuhwTrF-0"/>
                 <mxCell id="rPtZ0TYt1Pr_qsuhwTrF-1" parent="rPtZ0TYt1Pr_qsuhwTrF-0"/>

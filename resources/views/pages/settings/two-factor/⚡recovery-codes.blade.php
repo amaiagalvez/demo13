@@ -56,7 +56,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
                     return $recoveryCode;
                 }, $decodedRecoveryCodes);
             } catch (Exception) {
-                $this->addError('recoveryCodes', 'Failed to load recovery codes');
+                $this->addError('recoveryCodes', __('Failed to load recovery codes'));
 
                 $this->recoveryCodes = [];
             }

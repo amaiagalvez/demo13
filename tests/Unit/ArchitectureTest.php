@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 use App\Models\Epic;
+use App\Models\User;
 use ReflectionClass;
 use ReflectionMethod;
 use App\Models\Project;
@@ -84,6 +85,7 @@ class ArchitectureTest extends TestCase
 
             if (
                 ! class_exists($class)
+                || $class === User::class
                 || ! in_array(SoftDeletes::class, class_uses_recursive($class), true)
             ) {
                 continue;
@@ -99,9 +101,8 @@ class ArchitectureTest extends TestCase
     }
 
     /**
-     * A soft-deletable model without a policy is only allowed while it has no route of its own,
-     * which is the case of a record written through its parent. Naming the exception here stops it
-     * from spreading silently: a new soft-deletable model without a policy fails the test above.
+     * User accounts are managed through the authenticated settings pages rather than a resource
+     * policy. Naming the exception here stops it from spreading silently.
      */
     public function test_the_soft_deletable_model_without_a_policy_is_the_named_exception(): void
     {
@@ -122,7 +123,7 @@ class ArchitectureTest extends TestCase
             }
         }
 
-        $this->assertSame([], $withoutPolicy, 'Every soft-deletable model declares #[UsePolicy].');
+        $this->assertSame([User::class], $withoutPolicy, 'Only User may omit #[UsePolicy].');
     }
 
     /**

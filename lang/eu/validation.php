@@ -13,9 +13,9 @@ return [
     'alpha_num' => ':Attribute hizkiak eta zenbakiak besterik ezin ditu izan.',
     'any_of' => ':Attribute eremua baliogabea da.',
     'array' => ':Attribute bilduma izan behar da.',
-    'array_keys' => 'The :attribute field must only contain the following keys: :values.',
+    'array_keys' => ':Attribute eremuak ondorengo gako hauek besterik ezin ditu izan: :values.',
     'ascii' => ':Attributeak byte bakarreko karaktere alfanumeriko eta ikurrak soilik izan behar ditu.',
-    'base64' => 'The :attribute field must be a valid Base64 string.',
+    'base64' => ':Attribute eremuak Base64 kate baliozkoa izan behar du.',
     'before' => ':Attribute :date aurreko data izan behar da.',
     'before_or_equal' => ':Attribute :date aurreko data edo data bera izan behar da.',
     'between' => [

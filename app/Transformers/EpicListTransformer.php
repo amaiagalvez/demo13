@@ -23,9 +23,14 @@ class EpicListTransformer extends ListTransformer
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'extraDate' => $epic->created_at?->toIso8601String(),
+                'actionHint' => $epic->comments_count > 0
+                    ? __('Cannot be deleted while it has related records.')
+                    : null,
                 'actions' => [
                     $this->editAction($epic),
-                    $this->deleteAction($epic),
+                    $epic->comments_count > 0
+                        ? $this->deactivateAction($epic)
+                        : $this->deleteAction($epic),
                 ],
             ])->all(),
         ];
@@ -62,7 +67,14 @@ class EpicListTransformer extends ListTransformer
                 'extraDate' => $epic->deleted_at?->toIso8601String(),
                 'actions' => [
                     $this->restoreAction($epic, $epic->active),
-                    $this->forceDeleteAction($epic),
+                    $epic->comments_count > 0
+                        ? $this->blockedAction(
+                            __('Delete permanently'),
+                            'lock-closed',
+                            'epic-force-delete-blocked-'.$epic->id,
+                            __('Cannot be permanently deleted while it has related records.'),
+                        )
+                        : $this->forceDeleteAction($epic),
                 ],
             ])->all(),
         ];

@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -51,20 +52,29 @@ class DatabaseHelpersTest extends TestCase
             'created_by', 'updated_by', 'deleted_by',
         ]));
 
-        $records = DB::table('helper_audit_columns');
         $author = User::factory()->create();
-        $id = $records->insertGetId(['created_by' => $author->id]);
+        $id = DB::table('helper_audit_columns')->insertGetId(['created_by' => $author->id]);
 
         // Every key is nullable, so a row written without an actor exists instead of failing.
-        $anonymousId = $records->insertGetId([]);
+        $anonymousId = DB::table('helper_audit_columns')->insertGetId([]);
 
-        $this->assertSame($author->id, $records->where('id', $id)->value('created_by'));
-        $this->assertNull($records->where('id', $anonymousId)->value('created_by'));
+        $this->assertSame(
+            $author->id,
+            DB::table('helper_audit_columns')->where('id', $id)->value('created_by'),
+        );
+        $this->assertNull(DB::table('helper_audit_columns')->where('id', $anonymousId)->value('created_by'));
 
-        // ON DELETE SET NULL empties the trail instead of removing or blocking the row keeping it.
-        $author->forceDelete();
+        try {
+            $author->forceDelete();
+            self::fail('A user with audit references must not be force deleted.');
+        } catch (QueryException) {
+            $this->assertDatabaseHas('users', ['id' => $author->id]);
+        }
 
-        $this->assertNull($records->where('id', $id)->value('created_by'));
+        $this->assertSame(
+            $author->id,
+            DB::table('helper_audit_columns')->where('id', $id)->value('created_by'),
+        );
 
         Schema::drop('helper_audit_columns');
     }
@@ -72,17 +82,27 @@ class DatabaseHelpersTest extends TestCase
     #[DataProvider('databaseDrivers')]
     public function test_detects_sqlite_or_pgsql_on_the_default_connection(string $driver, bool $expected): void
     {
-        config([
-            'database.default' => 'helper-test',
-            'database.connections.helper-test' => [
-                'driver' => $driver,
-                'database' => ':memory:',
-            ],
-        ]);
+        $originalDefault = config('database.default');
+        $originalConnection = config('database.connections.helper-test');
 
-        $result = isSqliteOrPgsql();
+        try {
+            config([
+                'database.default' => 'helper-test',
+                'database.connections.helper-test' => [
+                    'driver' => $driver,
+                    'database' => ':memory:',
+                ],
+            ]);
 
-        $this->assertSame($expected, $result);
+            $result = isSqliteOrPgsql();
+
+            $this->assertSame($expected, $result);
+        } finally {
+            config([
+                'database.default' => $originalDefault,
+                'database.connections.helper-test' => $originalConnection,
+            ]);
+        }
     }
 
     /**

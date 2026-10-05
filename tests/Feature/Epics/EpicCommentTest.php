@@ -98,16 +98,23 @@ class EpicCommentTest extends TestCase
             ->assertJsonPath('comments.0.dateTime', '2026-10-01T09:30:00+00:00');
     }
 
-    public function test_comment_endpoint_shows_deleted_user_for_comment_without_author(): void
+    public function test_comment_endpoint_shows_deleted_user_when_the_author_is_trashed(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
-        EpicComment::factory()->for($epic)->withoutAuthor()->create(['body' => 'Orphaned comment']);
+        $comment = EpicComment::factory()->for($epic)->create(['body' => 'Comment by deleted user']);
+        $author = $comment->user;
+
+        if ($author === null) {
+            self::fail('The comment must have an author.');
+        }
+
+        $author->delete();
 
         $this->getJson(route('epics.comments.index', $epic))
             ->assertOk()
             ->assertJsonPath('comments.0.author', __('Deleted user'))
-            ->assertJsonPath('comments.0.body', 'Orphaned comment');
+            ->assertJsonPath('comments.0.body', 'Comment by deleted user');
     }
 
     public function test_comment_endpoint_returns_only_the_latest_comments_for_the_requested_epic(): void
@@ -282,19 +289,24 @@ class EpicCommentTest extends TestCase
             self::fail('The comment must still exist after its author is deleted.');
         }
 
-        $this->assertNull($freshComment->user_id);
+        $this->assertSame($commentAuthor->id, $freshComment->user_id);
+        $this->assertNull($freshComment->user);
     }
 
-    public function test_comments_can_resolve_their_epic_after_it_is_trashed(): void
+    public function test_epics_with_comments_cannot_be_deleted(): void
     {
         $epic = Epic::factory()->create();
         $comment = EpicComment::factory()->for($epic)->create();
 
-        $epic->delete();
+        $this->assertFalse($epic->delete());
+
+        $this->assertModelExists($epic);
+        $this->assertModelExists($comment);
+
         $freshComment = $comment->fresh();
 
         if ($freshComment === null) {
-            self::fail('The comment must still exist after its epic is trashed.');
+            self::fail('The comment must still exist after epic deletion is refused.');
         }
 
         $commentEpic = $freshComment->epic;

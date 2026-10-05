@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Epic;
 use App\Models\User;
 use Livewire\Livewire;
 use App\Models\Project;
@@ -41,9 +42,10 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * A customer cannot reach the trash while it has projects, and a project cannot while it has
-     * epics; trashed children count too. The row is locked inside the guard's own transaction, so a
-     * child that appears between the check and the delete makes the delete wait and then fail.
+     * A customer cannot reach the trash while it has projects, a project cannot while it has epics,
+     * and an epic cannot be deleted while it has comments; trashed children count too. The row is
+     * locked inside the guard's own transaction, so a child that appears between the check and the
+     * delete makes the delete wait and then fail.
      *
      * The hook is what makes this safe, not the caller: it holds the guarantee for every path that
      * soft deletes a record, including a plain `$model->delete()` outside a controller.
@@ -66,6 +68,15 @@ class AppServiceProvider extends ServiceProvider
                 ->firstOrFail());
 
             return ! $locked->epics()->withTrashed()->exists();
+        });
+
+        Epic::deleting(function (Epic $epic): bool {
+            $locked = DB::transaction(static fn (): Epic => Epic::withTrashed()
+                ->whereKey($epic->getKey())
+                ->lockForUpdate()
+                ->firstOrFail());
+
+            return ! $locked->comments()->exists();
         });
     }
 

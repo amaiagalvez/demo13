@@ -26,8 +26,8 @@ function addCommonColumns(Blueprint $table): void
  * Add the three audit columns that record who created, last changed and trashed a row.
  *
  * They are written by `App\Concerns\TracksAuditColumns`, never by a request payload, so a record
- * keeps its trail even after the user who made it is gone: the keys point at users with
- * `ON DELETE SET NULL`, which empties the trail instead of removing or blocking the rows.
+ * keeps its trail while the user who made it exists. Foreign keys restrict deleting a user while
+ * an audit record still points to them.
  */
 function addAuditColumns(Blueprint $table): void
 {
