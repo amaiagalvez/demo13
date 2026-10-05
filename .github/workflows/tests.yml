@@ -103,18 +103,18 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      # composer setup migrates, so this step alone targets the application schema.
+      - name: Setup Application
+        env:
+          DB_DATABASE: laravel
+        run: composer setup
+
       # @vite renders on every page, so the manifest has to exist before the PHP suite runs.
       - name: Install node dependencies
         run: npm ci
 
       - name: Build assets
         run: npm run build
-
-      # composer setup migrates, so this step alone targets the application schema.
-      - name: Setup Application
-        env:
-          DB_DATABASE: laravel
-        run: composer setup
 
       - name: Create test database
         run: >-
