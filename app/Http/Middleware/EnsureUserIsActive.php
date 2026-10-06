@@ -20,6 +20,9 @@ class EnsureUserIsActive
     {
         $user = $request->user();
 
+        // The row is read again on purpose. The guard caches the user instance for the request, so
+        // reading `$user->active` would trust a model that a concurrent deactivation, or a test
+        // that updates the row behind it, has already made stale.
         if ($user instanceof User &&
             ! User::whereKey($user->getAuthIdentifier())->where('active', true)->exists()) {
             Auth::guard()->logout();

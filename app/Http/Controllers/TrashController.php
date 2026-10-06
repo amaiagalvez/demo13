@@ -56,7 +56,33 @@ abstract class TrashController extends Controller
             ? __('Record restored successfully. No new record was created with the repeated name.')
             : __('Record restored successfully.');
 
+        // save() reports true whether it updated a row or not, so a restore whose row was
+        // permanently deleted by a concurrent request would otherwise claim a success it did not
+        // achieve. Re-reading the key is what tells the two apart.
+        if (! $this->restoreTookEffect($record)) {
+            return $this->restoreMissingResponse();
+        }
+
         return to_route($this->trashRoute())->with('status', $message);
+    }
+
+    /**
+     * Whether the record is present and out of the trash after the restore.
+     */
+    private function restoreTookEffect(Model $record): bool
+    {
+        $recordClass = $this->recordClass();
+
+        return $recordClass::withTrashed()
+            ->whereKey($record->getKey())
+            ->whereNull('deleted_at')
+            ->exists();
+    }
+
+    private function restoreMissingResponse(): RedirectResponse
+    {
+        return to_route($this->trashRoute())
+            ->with('error', __('This record is no longer in the trash.'));
     }
 
     /**

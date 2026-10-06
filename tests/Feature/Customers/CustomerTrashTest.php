@@ -6,6 +6,8 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerTrashTest extends TestCase
@@ -62,6 +64,32 @@ class CustomerTrashTest extends TestCase
             ->assertSessionHas('status', __('Record restored successfully.'));
 
         $this->assertNotSoftDeleted($customer);
+    }
+
+    public function test_a_restore_does_not_claim_success_when_the_record_vanished_concurrently(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $customer = Customer::factory()->trashed()->create();
+        $vanished = false;
+
+        // Stands in for a concurrent force delete: the row disappears just before the restore
+        // writes, so save() updates nothing and still reports true.
+        DB::listen(static function (QueryExecuted $query) use ($customer, &$vanished): void {
+            if ($vanished || ! str_starts_with(strtolower(ltrim($query->sql)), 'update')) {
+                return;
+            }
+
+            $vanished = true;
+
+            DB::table('customers')->where('id', $customer->id)->delete();
+        });
+
+        $this->patch(route('customers.trash.restore', $customer->id))
+            ->assertRedirect(route('customers.trash.index'))
+            ->assertSessionMissing('status')
+            ->assertSessionHas('error', __('This record is no longer in the trash.'));
+
+        $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }
 
     public function test_confirmed_restore_does_not_create_an_additional_customer(): void

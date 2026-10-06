@@ -4,6 +4,7 @@ namespace Tests\Feature\Support\Database;
 
 use Tests\TestCase;
 use App\Models\User;
+use Tests\DuskTestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
@@ -12,6 +13,20 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class DatabaseHelpersTest extends TestCase
 {
+    /**
+     * This class creates and drops real tables, so it must never point at a database worth
+     * keeping. It deliberately carries none of the database traits: MariaDB commits implicitly on
+     * CREATE TABLE, which would commit the transaction a RefreshDatabase wraps this test in.
+     *
+     * @see DuskTestCase::setUp() for the same guard on the browser suite.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        self::assertSame('laravel_test', config('database.connections.mysql.database'));
+    }
+
     public function test_adds_the_common_columns_to_a_table(): void
     {
         Schema::dropIfExists('helper_columns');

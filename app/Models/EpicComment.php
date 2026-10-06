@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Carbon;
+use Carbon\CarbonImmutable;
 use App\Concerns\TracksAuditColumns;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\EpicCommentFactory;
@@ -21,8 +21,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 #[Fillable(['body', 'notes'])]
 class EpicComment extends Model

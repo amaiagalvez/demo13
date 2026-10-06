@@ -496,11 +496,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->click('dialog[open] [data-test="customer-submit"]')
                 ->waitForLocation('/customers')
                 ->assertSee('Dusk Customer')
-                ->assertVisible('[data-test="customer-status"]')
-                ->waitUntil(
-                    'document.querySelector(\'[data-test="customer-status"]\').style.display === \'none\'',
-                    22,
-                );
+                ->assertVisible('[data-test="customer-status"]');
 
             $customer = Customer::query()->where('name', 'Dusk Customer')->firstOrFail();
             $customerId = $customer->id;

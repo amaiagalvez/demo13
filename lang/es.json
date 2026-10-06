@@ -33,6 +33,7 @@
     "Cannot be deleted while it has related records.": "No se puede eliminar porque tiene registros relacionados.",
     "Cannot be permanently deleted while it has related records.": "No se puede eliminar definitivamente porque tiene registros relacionados.",
     "Cannot be restored because another record outside the trash uses this name.": "No se puede restaurar porque otro registro fuera de la papelera ya usa este nombre.",
+    "This record is no longer in the trash.": "Este registro ya no está en la papelera.",
     "Choose": "Elija",
     "Choose a customer from the list or create a new one.": "Elige un cliente de la lista o crea uno nuevo.",
     "Clear": "Limpiar",

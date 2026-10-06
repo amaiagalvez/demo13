@@ -33,6 +33,7 @@
     "Cannot be deleted while it has related records.": "Impossible de supprimer cet enregistrement car il contient des enregistrements liés.",
     "Cannot be permanently deleted while it has related records.": "Impossible de supprimer définitivement cet enregistrement car il contient des enregistrements liés.",
     "Cannot be restored because another record outside the trash uses this name.": "Impossible de restaurer cet enregistrement : un autre enregistrement hors de la corbeille utilise déjà ce nom.",
+    "This record is no longer in the trash.": "Cet enregistrement n'est plus dans la corbeille.",
     "Choose": "Choisir",
     "Choose a customer from the list or create a new one.": "Choisissez un client dans la liste ou créez-en un nouveau.",
     "Clear": "Effacer",

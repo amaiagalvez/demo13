@@ -33,6 +33,7 @@
     "Cannot be deleted while it has related records.": "Cannot be deleted while it has related records.",
     "Cannot be permanently deleted while it has related records.": "Cannot be permanently deleted while it has related records.",
     "Cannot be restored because another record outside the trash uses this name.": "Cannot be restored because another record outside the trash uses this name.",
+    "This record is no longer in the trash.": "This record is no longer in the trash.",
     "Choose": "Choose",
     "Choose a customer from the list or create a new one.": "Choose a customer from the list or create a new one.",
     "Clear": "Clear",

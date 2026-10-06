@@ -135,19 +135,50 @@ class ResourceUniformityTest extends TestCase
         $this->assertSame($customerAbilities, $projectAbilities);
         $this->assertSame($expectedEpicAbilities, $epicAbilities);
 
-        $httpSource = '';
+        // Read the authorization call sites per resource, so dropping the check on one controller
+        // is caught even while the other two still call it. The shared base classes
+        // (InactiveController, RestoreRequest, TrashDestroyRequest...) hold call sites that apply to
+        // every resource, so they count towards all three.
+        $models = ['Customer', 'Project', 'Epic'];
+        $byResource = array_fill_keys($models, '');
+        $shared = '';
 
         foreach (File::allFiles(app_path('Http')) as $file) {
-            $httpSource .= (string) file_get_contents($file->getPathname());
+            $contents = (string) file_get_contents($file->getPathname());
+            $matched = false;
+
+            foreach ($models as $model) {
+                if (str_contains($file->getFilename(), $model)) {
+                    $byResource[$model] .= $contents;
+                    $matched = true;
+                }
+            }
+
+            if (! $matched) {
+                $shared .= $contents;
+            }
+        }
+
+        foreach ($byResource as $model => $source) {
+            $byResource[$model] = $source.$shared;
         }
 
         foreach ([...$customerAbilities, 'comment'] as $ability) {
             $pattern = '/->(?:authorize|can)\(\s*[\'\"]'.preg_quote($ability, '/').'[\'\"]/';
-            $this->assertNotSame(
-                0,
-                preg_match($pattern, $httpSource),
-                "No HTTP call site found for [{$ability}].",
-            );
+            $missing = [];
+
+            foreach ($byResource as $model => $source) {
+                // `comment` only exists on the epic policy, so the other two are exempt.
+                if ($ability === 'comment' && $model !== 'Epic') {
+                    continue;
+                }
+
+                if (preg_match($pattern, $source) === 0) {
+                    $missing[] = $model;
+                }
+            }
+
+            $this->assertSame([], $missing, "No HTTP call site for [{$ability}] in: ".implode(', ', $missing));
         }
     }
 

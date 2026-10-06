@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
 use Database\Factories\UserFactory;
 use App\Concerns\TracksAuditColumns;
 use Illuminate\Notifications\Notifiable;
@@ -23,18 +23,18 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string $email
  * @property string|null $notes
  * @property bool $active
- * @property Carbon|null $email_verified_at
+ * @property CarbonImmutable|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
+ * @property CarbonImmutable|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property int|null $deleted_by
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property CarbonImmutable|null $deleted_at
  */
 #[Fillable(['name', 'email', 'password', 'notes'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
