@@ -14,8 +14,15 @@ use App\Support\Database\UniqueConstraintViolation;
 /**
  * Restores and permanently deletes a trashed record.
  *
- * The delete always takes a row lock inside its transaction, so a name inserted while the request
- * was in flight cannot slip past the unique index the restore depends on.
+ * The two verbs lean on different guarantees, so they are documented apart:
+ *
+ * - The restore takes no lock. What stops a name inserted mid-request from slipping past is the
+ *   `active_name` unique index: restoring clears `deleted_at`, which makes that generated column
+ *   non-null and therefore index-checked, and the collision arrives as the QueryException that
+ *   restoreTrashed() turns into the conflict response. The nameIsTaken() pre-check is only a fast
+ *   path. Do not drop the catch on the strength of the pre-check.
+ * - The permanent delete does take a row lock, on the record it is deleting, so it cannot race a
+ *   concurrent force delete of the same row. That lock says nothing about name uniqueness.
  *
  * Each controller keeps the concrete requests in its own signatures because Laravel builds them out
  * of those type hints, and hands them over to restoreTrashed() and destroyTrashed() here.

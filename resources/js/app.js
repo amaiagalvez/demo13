@@ -521,7 +521,7 @@ document.addEventListener('alpine:init', () => {
         ...local,
     }));
 
-    window.Alpine.data('listSearch', (initialSearch) => ({
+    window.Alpine.data('listSearch', (initialSearch, resultsTemplate) => ({
         currentSearch: initialSearch,
         requestController: null,
 
@@ -638,7 +638,22 @@ document.addEventListener('alpine:init', () => {
                     window.history.pushState({}, '', url);
                 }
 
-                window.Alpine.morph(this.$root, results.outerHTML);
+                // The morph re-initialises the root's x-data, so the live region is filled after it
+                // rather than before: a value set beforehand belongs to the discarded instance.
+                const announcement = (resultsTemplate ?? '').replace(
+                    ':count',
+                    String(results.querySelectorAll('tbody tr').length),
+                );
+
+                const root = this.$root;
+
+                window.Alpine.morph(root, results.outerHTML);
+
+                const region = root.querySelector('[data-list-results-announcement]');
+
+                if (region) {
+                    region.textContent = announcement;
+                }
             } catch (error) {
                 if (!controller.signal.aborted) {
                     throw error;

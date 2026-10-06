@@ -166,6 +166,7 @@ services:
         command: bash -c "
             composer install --no-progress
             && php artisan migrate:fresh
+            && php artisan db:seed
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
             db:
@@ -187,6 +188,7 @@ services:
         command: bash -c "
             composer install --no-progress
             && php artisan migrate
+            && php artisan db:seed
             && chown -R ${DC_UID:-1000}:${DC_GID:-1000} vendor"
         depends_on:
             db:

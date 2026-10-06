@@ -2,30 +2,30 @@
     submit-disabled="isSubmitting || !isDirty || form.customerCreating">
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\ProjectRequest::class" field="name"
-            test="project-name-info">
+            test="project-name-info" for="project-name">
             {{ __('Name') }}
         </x-forms.field-label>
         <flux:input name="name" x-model="form.name" minlength="4"
             maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required
-            autofocus data-test="project-name" />
+            autofocus id="project-name" data-test="project-name" />
         <flux:error name="name" />
     </flux:field>
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\ProjectRequest::class" field="start_date"
-            test="project-start-date-info">
+            test="project-start-date-info" for="project-start-date">
             {{ __('Start date') }}
         </x-forms.field-label>
         <flux:input type="date" name="start_date" x-model="form.start_date" required
-            data-test="project-start-date" />
+            id="project-start-date" data-test="project-start-date" />
         <flux:error name="start_date" />
     </flux:field>
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\ProjectRequest::class" field="end_date"
-            test="project-end-date-info" :labels="['start_date' => __('Start date')]">
+            test="project-end-date-info" for="project-end-date" :labels="['start_date' => __('Start date')]">
             {{ __('End date') }}
         </x-forms.field-label>
         <flux:input type="date" name="end_date" x-model="form.end_date"
-            x-bind:min="form.start_date" data-test="project-end-date" />
+            x-bind:min="form.start_date" id="project-end-date" data-test="project-end-date" />
         <flux:error name="end_date" />
     </flux:field>
     <flux:field>
@@ -66,12 +66,12 @@
     </flux:field>
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\ProjectRequest::class" field="notes"
-            test="project-notes-info">
+            test="project-notes-info" for="project-notes">
             {{ __('Notes') }}
         </x-forms.field-label>
         <flux:textarea name="notes" x-model="form.notes" rows="3"
             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
-            data-test="project-notes" />
+            id="project-notes" data-test="project-notes" />
         <flux:error name="notes" />
     </flux:field>
 </x-forms.tracked-resource>

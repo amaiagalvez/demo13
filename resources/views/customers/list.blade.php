@@ -68,14 +68,14 @@
 
                 <x-list.table prefix="customer" :paginator="$customers">
                     <flux:table.columns>
-                        <flux:table.column>{{ __('Name') }}</flux:table.column>
-                        <flux:table.column>{{ __('Projects') }}</flux:table.column>
-                        <flux:table.column>{{ __('Epics') }}</flux:table.column>
-                        <flux:table.column>{{ __('Comments') }}</flux:table.column>
+                        <flux:table.column scope="col">{{ __('Name') }}</flux:table.column>
+                        <flux:table.column scope="col">{{ __('Projects') }}</flux:table.column>
+                        <flux:table.column scope="col">{{ __('Epics') }}</flux:table.column>
+                        <flux:table.column scope="col">{{ __('Comments') }}</flux:table.column>
                         @if ($list['extraDateHeading'])
-                            <flux:table.column>{{ $list['extraDateHeading'] }}</flux:table.column>
+                            <flux:table.column scope="col">{{ $list['extraDateHeading'] }}</flux:table.column>
                         @endif
-                        <flux:table.column align="end" sticky class="text-end">
+                        <flux:table.column scope="col" align="end" sticky class="text-end">
                             <span class="sr-only">{{ __('Actions') }}</span>
                         </flux:table.column>
                     </flux:table.columns>

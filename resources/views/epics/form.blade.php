@@ -1,12 +1,12 @@
 <x-forms.tracked-resource prefix="epic" context-field="_epic_form" id-field="_epic_id">
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="name"
-            test="epic-name-info">
+            test="epic-name-info" for="epic-name">
             {{ __('Name') }}
         </x-forms.field-label>
         <flux:input name="name" x-model="form.name" minlength="4"
             maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required
-            autofocus data-test="epic-name" />
+            autofocus id="epic-name" data-test="epic-name" />
         <flux:error name="name" />
     </flux:field>
     <flux:field>
@@ -35,16 +35,16 @@
     </flux:field>
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="start_date"
-            test="epic-start-date-info" :labels="['end_date' => __('End date')]">
+            test="epic-start-date-info" for="epic-start-date" :labels="['end_date' => __('End date')]">
             {{ __('Start date') }}
         </x-forms.field-label>
         <flux:input type="date" name="start_date" x-model="form.start_date"
-            x-bind:required="form.end_date !== ''" data-test="epic-start-date" />
+            x-bind:required="form.end_date !== ''" id="epic-start-date" data-test="epic-start-date" />
         <flux:error name="start_date" />
     </flux:field>
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="end_date"
-            test="epic-end-date-info" :labels="['start_date' => __('Start date')]">
+            test="epic-end-date-info" for="epic-end-date" :labels="['start_date' => __('Start date')]">
             {{ __('End date') }}
         </x-forms.field-label>
         <flux:input id="epic-end-date" type="date" name="end_date" x-model="form.end_date"
@@ -53,12 +53,12 @@
     </flux:field>
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\EpicRequest::class" field="notes"
-            test="epic-notes-info">
+            test="epic-notes-info" for="epic-notes">
             {{ __('Notes') }}
         </x-forms.field-label>
         <flux:textarea name="notes" x-model="form.notes" rows="3"
             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
-            data-test="epic-notes" />
+            id="epic-notes" data-test="epic-notes" />
         <flux:error name="notes" />
     </flux:field>
 
@@ -78,12 +78,12 @@
                     <input type="hidden" name="_comment_epic_id" x-bind:value="form.id">
                     <flux:field>
                         <x-forms.field-label :request="\App\Http\Requests\EpicCommentRequest::class" field="body"
-                            test="epic-comment-body-info">
+                            test="epic-comment-body-info" for="epic-comment-body">
                             {{ __('New comment') }}
                         </x-forms.field-label>
                         <flux:textarea name="body" x-model="form.commentBody" rows="3"
                             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}" required
-                            data-test="epic-comment-body" />
+                            id="epic-comment-body" data-test="epic-comment-body" />
                         @error('body', 'comment')
                             <flux:text class="text-sm text-red-600" role="alert">{{ $message }}
                             </flux:text>
@@ -91,12 +91,12 @@
                     </flux:field>
                     <flux:field>
                         <x-forms.field-label :request="\App\Http\Requests\EpicCommentRequest::class" field="notes"
-                            test="epic-comment-notes-info">
+                            test="epic-comment-notes-info" for="epic-comment-notes">
                             {{ __('Notes') }}
                         </x-forms.field-label>
                         <flux:textarea name="notes" x-model="form.commentNotes" rows="3"
                             maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
-                            data-test="epic-comment-notes" />
+                            id="epic-comment-notes" data-test="epic-comment-notes" />
                         @error('notes', 'comment')
                             <flux:text class="text-sm text-red-600" role="alert">{{ $message }}
                             </flux:text>

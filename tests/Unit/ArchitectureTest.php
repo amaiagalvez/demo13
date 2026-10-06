@@ -238,8 +238,13 @@ class ArchitectureTest extends TestCase
             }
         }
 
+        // The pagination view is published from the framework on purpose, so this landmark can be
+        // dropped: x-list.table already renders one around the paginator. Its raw echoes are stock
+        // Laravel `__()` calls, not user data, and the count is pinned so that hand-editing the
+        // published file to add one of our own still fails here.
         $this->assertSame([
             resource_path('views/pages/settings/⚡two-factor-setup-modal.blade.php') => 1,
+            resource_path('views/vendor/pagination/tailwind.blade.php') => 8,
         ], $rawEchoesByFile);
     }
 
