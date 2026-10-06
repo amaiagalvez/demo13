@@ -256,16 +256,9 @@
                                     <x-list.local-time :datetime="$row['endDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    @if ($row['commentsCount'] > 0)
-                                        <flux:badge size="sm" icon="chat-bubble-left"
-                                            data-test="epic-comments-count-{{ $row['id'] }}"
-                                            class="hover:text-brand-700 dark:hover:text-brand-400">
-                                            {{ $row['commentsCount'] }}
-                                        </flux:badge>
-                                    @else
-                                        <span
-                                            data-test="epic-comments-count-{{ $row['id'] }}"></span>
-                                    @endif
+                                    <x-list.count icon="chat-bubble-left" :count="$row['commentsCount']"
+                                        :label="__('Comments: :count', ['count' => $row['commentsCount']])"
+                                        data-test="epic-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 @if ($list['extraDateHeading'])
                                     <flux:table.cell>

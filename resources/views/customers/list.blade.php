@@ -93,43 +93,20 @@
                                         data-payload="{{ json_encode($row['editPayload']) }}">{{ $row['name'] }}</button>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    @if ($row['projectsUrl'])
-                                        <flux:button :href="$row['projectsUrl']" wire:navigate
-                                            size="xs" variant="ghost" icon="briefcase"
-                                            :aria-label="__('View :count projects', ['count' => $row[
-                                                'projectsCount']])"
-                                            data-test="customer-projects-count-{{ $row['id'] }}"
-                                            class="hover:bg-zinc-100 hover:text-brand-700 dark:hover:bg-zinc-800 dark:hover:text-brand-400">
-                                            {{ $row['projectsCount'] }}
-                                        </flux:button>
-                                    @else
-                                        <span
-                                            data-test="customer-projects-count-{{ $row['id'] }}"></span>
-                                    @endif
+                                    <x-list.count icon="briefcase" :count="$row['projectsCount']"
+                                        :url="$row['projectsUrl']"
+                                        :label="__('View :count projects', ['count' => $row['projectsCount']])"
+                                        data-test="customer-projects-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    @if ($row['epicsCount'] > 0)
-                                        <flux:badge size="sm" icon="flag"
-                                            data-test="customer-epics-count-{{ $row['id'] }}"
-                                            class="hover:text-brand-700 dark:hover:text-brand-400">
-                                            {{ $row['epicsCount'] }}
-                                        </flux:badge>
-                                    @else
-                                        <span
-                                            data-test="customer-epics-count-{{ $row['id'] }}"></span>
-                                    @endif
+                                    <x-list.count icon="flag" :count="$row['epicsCount']"
+                                        :label="__('Epics: :count', ['count' => $row['epicsCount']])"
+                                        data-test="customer-epics-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    @if ($row['commentsCount'] > 0)
-                                        <flux:badge size="sm" icon="chat-bubble-left"
-                                            data-test="customer-comments-count-{{ $row['id'] }}"
-                                            class="hover:text-brand-700 dark:hover:text-brand-400">
-                                            {{ $row['commentsCount'] }}
-                                        </flux:badge>
-                                    @else
-                                        <span
-                                            data-test="customer-comments-count-{{ $row['id'] }}"></span>
-                                    @endif
+                                    <x-list.count icon="chat-bubble-left" :count="$row['commentsCount']"
+                                        :label="__('Comments: :count', ['count' => $row['commentsCount']])"
+                                        data-test="customer-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 @if ($list['extraDateHeading'])
                                     <flux:table.cell>

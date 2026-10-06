@@ -132,30 +132,15 @@
                                     <x-list.local-time :datetime="$row['endDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    @if ($row['epicsUrl'])
-                                        <flux:button :href="$row['epicsUrl']" wire:navigate
-                                            size="xs" variant="ghost" icon="flag"
-                                            :aria-label="__('View :count epics', ['count' => $row['epicsCount']])"
-                                            data-test="project-epics-count-{{ $row['id'] }}"
-                                            class="hover:bg-zinc-100 hover:text-brand-700 dark:hover:bg-zinc-800 dark:hover:text-brand-400">
-                                            {{ $row['epicsCount'] }}
-                                        </flux:button>
-                                    @else
-                                        <span
-                                            data-test="project-epics-count-{{ $row['id'] }}"></span>
-                                    @endif
+                                    <x-list.count icon="flag" :count="$row['epicsCount']"
+                                        :url="$row['epicsUrl']"
+                                        :label="__('View :count epics', ['count' => $row['epicsCount']])"
+                                        data-test="project-epics-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    @if ($row['commentsCount'] > 0)
-                                        <flux:badge size="sm" icon="chat-bubble-left"
-                                            data-test="project-comments-count-{{ $row['id'] }}"
-                                            class="hover:text-brand-700 dark:hover:text-brand-400">
-                                            {{ $row['commentsCount'] }}
-                                        </flux:badge>
-                                    @else
-                                        <span
-                                            data-test="project-comments-count-{{ $row['id'] }}"></span>
-                                    @endif
+                                    <x-list.count icon="chat-bubble-left" :count="$row['commentsCount']"
+                                        :label="__('Comments: :count', ['count' => $row['commentsCount']])"
+                                        data-test="project-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 @if ($list['extraDateHeading'])
                                     <flux:table.cell>
