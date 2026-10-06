@@ -319,6 +319,8 @@
     "This password reset link will expire in :count minutes.": "Hau pasahitza berrezarri lotura iraungiko :count minutu.",
     "to": "ra",
     "To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app.": "Bi faktoreen autentifikazioa gaitzen amaitzeko, eskaneatu QR kodea edo sartu konfigurazio tekla zure autentifikatzaile aplikazioan.",
+    "Setup key": "Konfigurazio tekla",
+    "Copy setup key": "Kopiatu konfigurazio tekla",
     "Too Many Requests": "Eskaera gehiegi",
     "Translate": "Itzuli",
     "Trash": "Zakarrontzia",

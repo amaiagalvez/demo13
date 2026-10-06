@@ -127,6 +127,18 @@ class SecurityTest extends TestCase
         ]);
     }
 
+    public function test_the_setup_key_and_its_copy_button_have_accessible_names(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::settings.two-factor-setup-modal', ['requiresConfirmation' => false])
+            ->call('startTwoFactorSetup')
+            ->assertSee('aria-label="'.__('Setup key').'"', escape: false)
+            ->assertSee('aria-label="'.__('Copy setup key').'"', escape: false);
+    }
+
     public function test_clients_cannot_change_two_factor_management_flag(): void
     {
         $this->actingAs(User::factory()->create());

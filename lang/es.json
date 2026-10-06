@@ -319,6 +319,8 @@
     "This password reset link will expire in :count minutes.": "Este enlace de restablecimiento de contraseña expirará en :count minutos.",
     "to": "al",
     "To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app.": "Para terminar de habilitar la autenticación de dos factores, escanee el código QR o ingrese la clave de configuración en su aplicación de autenticación.",
+    "Setup key": "Clave de configuración",
+    "Copy setup key": "Copiar la clave de configuración",
     "Too Many Requests": "Demasiadas peticiones",
     "Translate": "Traducir",
     "Trash": "Papelera",
