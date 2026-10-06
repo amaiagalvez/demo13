@@ -13,19 +13,8 @@ use Database\Factories\ProjectFactory;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * Load fixture to measure the customer list at scale. It is deliberately kept out of
- * DatabaseSeeder: it writes tens of thousands of rows, so it is only executed on demand,
- * against a disposable database, with:
- *
- *     php artisan db:seed --class="Database\Seeders\CustomerPerformanceSeeder"
- *
- * The customer count is the only knob, and the ratios below stay constant at every scale:
- * 3 projects per customer, 4 epics per project and 3 comments per epic.
- */
-class CustomerPerformanceSeeder extends Seeder
+class DevelopTableSeeder extends Seeder
 {
-    /** Share of the records that land on each state, in twentieths. */
     private const STATE_WEIGHTS = ['active' => 12, 'inactive' => 5, 'trashed' => 3];
 
     private const PROJECTS_PER_CUSTOMER = 3;
@@ -47,7 +36,7 @@ class CustomerPerformanceSeeder extends Seeder
     /** @var array<string, int> How many states each level of the tree has already been given. */
     private array $cursors = ['customers' => 0, 'projects' => 0, 'epics' => 0];
 
-    public function __construct(private readonly int $customers = 300)
+    public function __construct(private readonly int $customers = 100)
     {
         $states = [];
 

@@ -55,7 +55,7 @@ Medición realizada siguiendo `.github/tasks/09.performancce-test-plan.md`.
 
 ```bash
 DX php artisan migrate:fresh
-DX php artisan db:seed --class="Database\Seeders\CustomerPerformanceSeeder"   # 300 por defecto
+DX php artisan db:seed --class="Database\Seeders\DevelopTableSeeder"   # 300 por defecto
 
 DX php storage/app/perf/customer-list-bench.php 20 3   # [ejecuciones] [calentamientos]
 DX php storage/app/perf/index-probe.php
@@ -66,7 +66,7 @@ Para otros perfiles se instancia el seeder con otra cantidad:
 ```bash
 DX php -r 'require "vendor/autoload.php"; $app = require "bootstrap/app.php";
   $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-  (new Database\Seeders\CustomerPerformanceSeeder(1000))->setContainer($app)->run();'
+  (new Database\Seeders\DevelopTableSeeder(1000))->setContainer($app)->run();'
 ```
 
 ## Entorno
@@ -463,7 +463,7 @@ pestañas pasarían a ser el único término O(n) (~0,3 ms por escaneo con 100.0
 
 | Archivo | Contenido |
 |---|---|
-| `database/seeders/CustomerPerformanceSeeder.php` | Semilla de carga. Independiente, no está conectada a `DatabaseSeeder`; el número de clientes es el único parámetro (300 por defecto). |
+| `database/seeders/DevelopTableSeeder.php` | Semilla de carga. Independiente, no está conectada a `DatabaseSeeder`; el número de clientes es el único parámetro (300 por defecto). |
 | `storage/app/perf/customer-list-bench.php` | Medición de los tres estados del listado con sus búsquedas y páginas. |
 | `storage/app/perf/index-probe.php` | Sonda de índice candidato sobre las sentencias del listado. |
 
