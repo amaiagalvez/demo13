@@ -7,6 +7,11 @@
     it is hidden from assistive technology and the dates next to it are always the real answer. On
     narrow screens the table collapses to cards and the bar moves under the name, so nothing is lost
     by losing the column.
+
+    Column widths: dates and status hug their content (`w-px`) so the name is the only flexible
+    column and takes the whole leftover width. The name keeps `max-w-0` so a long name or
+    breadcrumb truncates instead of stretching the table, with a 16rem floor on desktop so it stays
+    readable on the timeline, where the month axis claims nearly all of the width.
 --}}
 @props(['groups', 'timeline', 'months', 'today', 'paginator', 'message'])
 
@@ -66,7 +71,7 @@
                         @foreach ($group['rows'] as $row)
                             <tr data-test="{{ $row['test'] }}"
                                 class="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800/70 dark:hover:bg-zinc-800/40">
-                                <th scope="row" class="max-w-0 px-3 py-2.5 text-start font-normal">
+                                <th scope="row" class="max-w-0 lg:min-w-[16rem] px-3 py-2.5 text-start font-normal">
                                     <span class="block truncate font-medium text-zinc-900 dark:text-zinc-100"
                                         title="{{ $row['name'] }}">{{ $row['name'] }}</span>
                                     <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400"

@@ -19,8 +19,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
  * rather than a row of its own. A row with no end date has no bar and no quarter, and lands last.
  *
  * The ordering needs both tables at once, so the page is picked from a cheap id-only read of the two
- * and the records it names are then loaded whole. That keeps the number of records the browser
- * receives to one page, which is the point of the screen.
+ * and only the records that page names are then loaded whole. That keeps both the rows the database
+ * hydrates and the records the browser receives to one page, which is the point of the screen.
  *
  * @extends ListQueryBase<Project>
  *
@@ -172,13 +172,18 @@ final class PlanningQuery extends ListQueryBase
      */
     private function paginateRows(array $entries, string $search, CarbonImmutable $today, ?int $page): LengthAwarePaginator
     {
+        // The page is cut out of the ids before anything is loaded whole: hydrating every match and
+        // slicing afterwards would run whereIn() over the whole portfolio to render one page of it.
+        $page ??= LengthAwarePaginator::resolveCurrentPage();
+        $pageEntries = array_slice($entries, ($page - 1) * self::PER_PAGE, self::PER_PAGE);
+
         $projectIds = array_column(array_filter(
-            $entries,
+            $pageEntries,
             static fn (array $entry): bool => $entry['resource'] === 'project',
         ), 'id');
 
         $epicIds = array_column(array_filter(
-            $entries,
+            $pageEntries,
             static fn (array $entry): bool => $entry['resource'] === 'epic',
         ), 'id');
 
@@ -198,7 +203,7 @@ final class PlanningQuery extends ListQueryBase
 
         $rows = [];
 
-        foreach ($entries as $entry) {
+        foreach ($pageEntries as $entry) {
             $record = $entry['resource'] === 'project'
                 ? $projects->get($entry['id'])
                 : $epics->get($entry['id']);
@@ -213,8 +218,6 @@ final class PlanningQuery extends ListQueryBase
         }
 
         // The rows are read in page order rather than loaded order, so the deadline ordering survives.
-        $page ??= LengthAwarePaginator::resolveCurrentPage();
-        $rows = array_slice($rows, ($page - 1) * self::PER_PAGE, self::PER_PAGE);
         usort($rows, $this->byDeadline(...));
 
         return new LengthAwarePaginator(
