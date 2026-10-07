@@ -6,7 +6,8 @@
     aligned with the rows below it. The bar column is decorative: it carries no text of its own, so
     it is hidden from assistive technology and the dates next to it are always the real answer. On
     narrow screens the table collapses to cards and the bar moves under the name, so nothing is lost
-    by losing the column.
+    by losing the column. The roadmap has no bar column at any width, so it keeps the bar under the
+    name everywhere: only the timeline hides it behind the column that carries it.
 
     Column widths: dates and status hug their content (`w-px`) so the name is the only flexible
     column and takes the whole leftover width. The name keeps `max-w-0` so a long name or
@@ -87,8 +88,10 @@
                                     </span>
 
                                     @if ($row['bar'])
-                                        {{-- The bar, on the small layout where there is no bar column. --}}
-                                        <span class="relative mt-1.5 block h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 lg:hidden"
+                                        {{-- The bar where there is no column to carry it: every width of the
+                                             roadmap, and the small layouts of the timeline. --}}
+                                        <span
+                                            class="relative mt-1.5 block h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 {{ $timeline ? 'lg:hidden' : '' }}"
                                             aria-hidden="true">
                                             <span
                                                 class="absolute inset-y-0 rounded-full {{ $row['status'] === 'overdue' ? 'bg-amber-500' : 'bg-brand-600 dark:bg-brand-400' }}"
