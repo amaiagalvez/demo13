@@ -12,11 +12,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
- * The planning screen: the active projects and epics, ordered by the day they are due and grouped
- * by the quarter they finish in, ready to be drawn either as a roadmap or on a timeline.
+ * The planning screen: the active projects, ordered by the day they are due and grouped by the
+ * quarter they finish in, ready to be drawn either as a roadmap or on a timeline.
  *
- * Only projects and epics are rows: a customer carries no dates, so it is the trail under a row
- * rather than a row of its own. A row with no end date has no bar and no quarter, and lands last.
+ * Projects are the rows: their epics are the count on the row, and a customer carries no dates, so
+ * it is the trail under a row rather than a row of its own. A row with no end date has no bar and
+ * no quarter, and lands last.
  *
  * The ordering needs both tables at once, so the page is picked from a cheap id-only read of the two
  * and only the records that page names are then loaded whole. That keeps both the rows the database
@@ -36,7 +37,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
  *     count: array{icon: string, value: int, label: string, url: string|null},
  *     bar: Bar|null
  * }
- * @phpstan-type Entry array{resource: 'project'|'epic', id: int}
  * @phpstan-type Group array{key: string, label: string, count: int, rows: list<Row>}
  * @phpstan-type Window array{
  *     from: CarbonImmutable,
@@ -66,14 +66,7 @@ final class PlanningQuery extends ListQueryBase
     {
         $today = CarbonImmutable::today();
 
-        $entries = array_values([
-            ...$this->projectIds($search),
-            ...$this->epicIds($search),
-        ]);
-
-        usort($entries, $this->byResourceAndId(...));
-
-        $paginator = $this->paginateRows($entries, $search, $today, $page);
+        $paginator = $this->paginateRows($this->projectIds($search), $search, $today, $page);
         $rows = array_values($paginator->items());
 
         $timeline = $this->timeline($rows, $today);
@@ -116,11 +109,13 @@ final class PlanningQuery extends ListQueryBase
     /**
      * Active projects whatever the state of their customer: deactivation does not cascade, so a
      * project of an inactive customer is still active work, and its customer is who says whose.
+     * Ids come back in id order, which is what fixes the order the pages are cut in.
      *
-     * @return array<int, Entry>
+     * @return list<int>
      */
     private function projectIds(string $search): array
     {
+        /** @var list<int|string> $ids */
         $ids = $this->whereMatches(
             Project::query()
                 ->join('customers as planning_customers', 'planning_customers.id', '=', 'projects.customer_id')
@@ -129,113 +124,57 @@ final class PlanningQuery extends ListQueryBase
             ['projects.name', 'planning_customers.name'],
         )
             ->orderBy('projects.id')
-            ->pluck('projects.id');
+            ->pluck('projects.id')
+            ->all();
 
-        $entries = [];
-        foreach ($ids->all() as $id) {
-            $entries[] = ['resource' => 'project', 'id' => (int) $id];
-        }
-
-        return $entries;
+        return array_map(static fn (int|string $id): int => (int) $id, $ids);
     }
 
     /**
-     * @return array<int, Entry>
-     */
-    private function epicIds(string $search): array
-    {
-        $ids = $this->whereMatches(
-            Epic::query()
-                ->join('projects as planning_projects', 'planning_projects.id', '=', 'epics.project_id')
-                ->join('customers as planning_customers', 'planning_customers.id', '=', 'planning_projects.customer_id')
-                ->where('epics.active', true),
-            $search,
-            ['epics.name', 'planning_projects.name', 'planning_customers.name'],
-        )
-            ->orderBy('epics.id')
-            ->pluck('epics.id');
-
-        $entries = [];
-        foreach ($ids->all() as $id) {
-            $entries[] = ['resource' => 'epic', 'id' => (int) $id];
-        }
-
-        return $entries;
-    }
-
-    /**
-     * Load the records of one page and wrap them in a paginator, so the view renders a page and the
-     * links behave like the ones of the resource lists.
+     * Load the projects of one page and wrap them in a paginator, so the view renders a page and
+     * the links behave like the ones of the resource lists.
      *
-     * @param  list<Entry>  $entries
+     * @param  list<int>  $ids
      * @return LengthAwarePaginator<int, Row>
      */
-    private function paginateRows(array $entries, string $search, CarbonImmutable $today, ?int $page): LengthAwarePaginator
+    private function paginateRows(array $ids, string $search, CarbonImmutable $today, ?int $page): LengthAwarePaginator
     {
         // The page is cut out of the ids before anything is loaded whole: hydrating every match and
         // slicing afterwards would run whereIn() over the whole portfolio to render one page of it.
         $page ??= LengthAwarePaginator::resolveCurrentPage();
-        $pageEntries = array_slice($entries, ($page - 1) * self::PER_PAGE, self::PER_PAGE);
-
-        $projectIds = array_column(array_filter(
-            $pageEntries,
-            static fn (array $entry): bool => $entry['resource'] === 'project',
-        ), 'id');
-
-        $epicIds = array_column(array_filter(
-            $pageEntries,
-            static fn (array $entry): bool => $entry['resource'] === 'epic',
-        ), 'id');
+        $pageIds = array_slice($ids, ($page - 1) * self::PER_PAGE, self::PER_PAGE);
 
         $projects = Project::query()
-            ->whereIn('projects.id', $projectIds)
+            ->whereIn('projects.id', $pageIds)
             ->with('customer')
             ->withCount(['epics' => fn (Builder $epics): Builder => $epics->where('epics.active', true)])
             ->get()
             ->keyBy('id');
 
-        $epics = Epic::query()
-            ->whereIn('epics.id', $epicIds)
-            ->with('project.customer')
-            ->withCount('comments')
-            ->get()
-            ->keyBy('id');
-
         $rows = [];
 
-        foreach ($pageEntries as $entry) {
-            $record = $entry['resource'] === 'project'
-                ? $projects->get($entry['id'])
-                : $epics->get($entry['id']);
+        foreach ($pageIds as $id) {
+            $record = $projects->get($id);
 
             if ($record === null) {
                 continue;
             }
 
-            $rows[] = $record instanceof Project
-                ? $this->projectRow($record, $today)
-                : $this->epicRow($record, $today);
+            $rows[] = $this->projectRow($record, $today);
         }
 
-        // The rows are read in page order rather than loaded order, so the deadline ordering survives.
+        // The page arrives in id order from the query, and sorting it here as well keeps the
+        // displayed order in PHP's own terms: the database breaks a date tie by its collation,
+        // which is not the byte order this comparison uses.
         usort($rows, $this->byDeadline(...));
 
         return new LengthAwarePaginator(
             items: $rows,
-            total: count($entries),
+            total: count($ids),
             perPage: self::PER_PAGE,
             currentPage: $page,
             options: ['path' => Route::getRoutes()->getByName('planning')?->uri() ?? 'planning'],
         );
-    }
-
-    /**
-     * @param  Entry  $left
-     * @param  Entry  $right
-     */
-    private function byResourceAndId(array $left, array $right): int
-    {
-        return [$left['resource'], $left['id']] <=> [$right['resource'], $right['id']];
     }
 
     /**
@@ -288,33 +227,6 @@ final class PlanningQuery extends ListQueryBase
                 'value' => $epicsCount,
                 'label' => __('Epics: :count', ['count' => $epicsCount]),
                 'url' => $epicsCount > 0 ? route('epics.index', ['search' => $project->name]) : null,
-            ],
-            'bar' => null,
-        ];
-    }
-
-    /**
-     * @return Row
-     */
-    private function epicRow(Epic $epic, CarbonImmutable $today): array
-    {
-        $commentsCount = (int) $epic->comments_count;
-
-        return [
-            'test' => 'planning-epic-'.$epic->id,
-            'name' => $epic->name,
-            // An epic can finish in a different quarter than the project it belongs to, so it
-            // carries the whole trail instead of relying on the project row sitting above it.
-            'trail' => [$epic->project->customer->name, $epic->project->name],
-            'url' => route('epics.index', ['search' => $epic->name]),
-            'start' => $epic->start_date,
-            'end' => $epic->end_date,
-            'status' => $this->status($epic->end_date, $today),
-            'count' => [
-                'icon' => 'chat-bubble-left',
-                'value' => $commentsCount,
-                'label' => __('Comments: :count', ['count' => $commentsCount]),
-                'url' => null,
             ],
             'bar' => null,
         ];

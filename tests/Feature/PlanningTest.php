@@ -145,7 +145,6 @@ class PlanningTest extends TestCase
     public function test_rows_are_grouped_by_the_quarter_they_finish_in(): void
     {
         $customer = Customer::factory()->create();
-        $project = Project::factory()->for($customer)->create();
 
         Project::factory()->for($customer)->create([
             'name' => 'Finishes in Q2',
@@ -153,13 +152,13 @@ class PlanningTest extends TestCase
             'end_date' => '2026-05-31',
         ]);
 
-        Epic::factory()->for($project)->create([
-            'name' => 'Epic finishing in Q4',
+        Project::factory()->for($customer)->create([
+            'name' => 'Finishes in Q4',
             'start_date' => '2026-09-01',
             'end_date' => '2026-11-30',
         ]);
 
-        Epic::factory()->for($project)->withoutDates()->create(['name' => 'Undated epic']);
+        Project::factory()->for($customer)->state(['end_date' => null])->create(['name' => 'Undated project']);
 
         $this->actingAs(User::factory()->create())
             ->get(route('planning'))
@@ -170,11 +169,11 @@ class PlanningTest extends TestCase
             ], false)
             ->assertSeeInOrder([
                 'data-test="planning-group-2026-4"',
-                'Epic finishing in Q4',
+                'Finishes in Q4',
             ], false)
             ->assertSeeInOrder([
                 'data-test="planning-group-no-date"',
-                'Undated epic',
+                'Undated project',
             ], false);
     }
 
@@ -229,13 +228,11 @@ class PlanningTest extends TestCase
     {
         $customer = Customer::factory()->create();
         $project = Project::factory()->for($customer)->create(['name' => 'Portal rewrite']);
-        Epic::factory()->for($project)->create(['name' => 'Checkout flow']);
 
         $this->actingAs(User::factory()->create())
             ->get(route('planning', ['view' => $layout]))
             ->assertOk()
             ->assertSee('Portal rewrite')
-            ->assertSee('Checkout flow')
             ->assertSee('data-test="planning-'.$layout.'-link"', false)
             ->assertSee(__('Active projects'))
             ->assertSee(__('Active epics'));
@@ -322,13 +319,11 @@ class PlanningTest extends TestCase
     {
         $customer = Customer::factory()->create(['name' => 'Northwind Traders']);
         $project = Project::factory()->for($customer)->create(['name' => 'Warehouse move']);
-        Epic::factory()->for($project)->create(['name' => 'Shelf audit']);
 
         $this->actingAs(User::factory()->create())
             ->get(route('planning', ['search' => 'Northwind']))
             ->assertOk()
-            ->assertSee('Warehouse move')
-            ->assertSee('Shelf audit');
+            ->assertSee('Warehouse move');
     }
 
     public function test_the_search_term_survives_switching_layout(): void
