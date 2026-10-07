@@ -148,7 +148,7 @@ class ResourceActivationTest extends TestCase
      * @param  class-string<Customer|Project|Epic>  $model
      */
     #[DataProvider('resourcesWithTestPrefix')]
-    public function test_inactive_list_appends_the_update_date_and_only_offers_reactivation(
+    public function test_inactive_list_shows_records_and_only_offers_reactivation(
         string $model,
         string $resource,
         string $prefix,
@@ -159,8 +159,8 @@ class ResourceActivationTest extends TestCase
 
         $this->get(route($resource.'.inactive.index'))
             ->assertOk()
-            ->assertSeeInOrder(['<thead', __('Name'), __('Updated at')], false)
-            ->assertSeeInOrder(['Dormant record', '2026-10-02 12:30'])
+            ->assertSeeInOrder(['<thead', __('Name')], false)
+            ->assertSee('Dormant record')
             ->assertSee('data-test="'.$prefix.'-reactivate-'.$record->id.'"', false)
             ->assertDontSee('data-test="'.$prefix.'-edit-'.$record->id.'"', false)
             ->assertDontSee('data-test="'.$prefix.'-delete-'.$record->id.'"', false)

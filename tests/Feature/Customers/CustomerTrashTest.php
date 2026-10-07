@@ -22,7 +22,7 @@ class CustomerTrashTest extends TestCase
             ->assertSee(__('Trash is empty.'));
     }
 
-    public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
+    public function test_trash_preserves_index_columns_without_deletion_date(): void
     {
         $this->actingAs(User::factory()->create());
         $this->travelTo('2026-10-02 12:00:00');
@@ -32,9 +32,8 @@ class CustomerTrashTest extends TestCase
 
         $response = $this->get(route('customers.trash.index'));
 
-        $activeResponse->assertDontSee(__('Deleted at'));
-        $response->assertSeeInOrder(['<thead', __('Name'), __('Projects'), __('Epics'), __('Comments'), __('Deleted at'), __('Actions')], false)
-            ->assertSeeInOrder(['Customer with dates', '2026-10-02']);
+        $response->assertSeeInOrder(['<thead', __('Name'), __('Projects'), __('Epics'), __('Comments'), __('Actions')], false)
+            ->assertSeeInOrder(['Customer with dates']);
     }
 
     public function test_trash_only_lists_deleted_customers(): void

@@ -144,7 +144,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->click('[data-test="customer-inactive-link"]')
                 ->waitForLocation('/customers/inactive')
                 ->assertSee($customer->name)
-                ->assertSeeIn('thead', __('Updated at'))
+                ->assertSeeIn('thead', __('Name'))
                 ->assertMissing("[data-test='customer-edit-{$customer->id}']")
                 ->click("[data-test='customer-reactivate-{$customer->id}']")
                 ->waitFor('dialog[open]')

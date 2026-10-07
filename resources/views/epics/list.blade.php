@@ -221,9 +221,6 @@
                         <flux:table.column scope="col">{{ __('Start date') }}</flux:table.column>
                         <flux:table.column scope="col">{{ __('End date') }}</flux:table.column>
                         <flux:table.column scope="col">{{ __('Comments') }}</flux:table.column>
-                        @if ($list['extraDateHeading'])
-                            <flux:table.column scope="col">{{ $list['extraDateHeading'] }}</flux:table.column>
-                        @endif
                         <flux:table.column scope="col" align="end" sticky class="text-end">
                             <span class="sr-only">{{ __('Actions') }}</span>
                         </flux:table.column>
@@ -234,12 +231,9 @@
                             <flux:table.row :key="$row['id']"
                                 class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                 <flux:table.cell class="max-w-[16rem]">
-                                    <button type="button"
-                                        class="block max-w-full truncate rounded text-start font-medium text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 dark:text-zinc-100 dark:focus-visible:ring-brand-400"
+                                    <span class="block max-w-full truncate text-start font-medium text-zinc-900 dark:text-zinc-100"
                                         title="{{ $row['name'] }}"
-                                        data-test="epic-name-{{ $row['id'] }}"
-                                        x-on:click="editEpic(JSON.parse($el.dataset.payload)); $dispatch('modal-show', { name: 'epic-form' })"
-                                        data-payload="{{ json_encode($row['editPayload']) }}">{{ $row['name'] }}</button>
+                                        data-test="epic-name-{{ $row['id'] }}">{{ $row['name'] }}</span>
                                 </flux:table.cell>
                                 <flux:table.cell class="max-w-[16rem] truncate"
                                     :title="$row['project']">
@@ -260,11 +254,6 @@
                                         :label="__('Comments: :count', ['count' => $row['commentsCount']])"
                                         data-test="epic-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
-                                @if ($list['extraDateHeading'])
-                                    <flux:table.cell>
-                                        <x-list.local-time :datetime="$row['extraDate']" format="datetime" />
-                                    </flux:table.cell>
-                                @endif
                                 <flux:table.cell align="end" sticky
                                     class="bg-white dark:bg-zinc-900">
                                     <x-list.row-actions :actions="$row['actions']" prefix="epic"
@@ -273,7 +262,7 @@
                                 </flux:table.cell>
                             </flux:table.row>
                         @empty
-                            <x-list.empty-state :colspan="$list['extraDateHeading'] ? 8 : 7" :message="$list['emptyMessage']" />
+                            <x-list.empty-state :colspan="7" :message="$list['emptyMessage']" />
                         @endforelse
                     </flux:table.rows>
                 </x-list.table>

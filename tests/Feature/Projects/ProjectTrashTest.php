@@ -13,7 +13,7 @@ class ProjectTrashTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
+    public function test_trash_preserves_index_columns_without_deletion_date(): void
     {
         $this->actingAs(User::factory()->create());
         $this->travelTo('2026-10-02 12:00:00');
@@ -29,7 +29,6 @@ class ProjectTrashTest extends TestCase
 
         $response = $this->get(route('projects.trash.index'));
 
-        $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
             '<thead',
             __('Name'),
@@ -38,9 +37,8 @@ class ProjectTrashTest extends TestCase
             __('End date'),
             __('Epics'),
             __('Comments'),
-            __('Deleted at'),
             __('Actions'),
-        ], false)->assertSeeInOrder(['Project with dates', $customer->name, '2026-01-03', '2026-08-04', '2026-10-02']);
+        ], false)->assertSeeInOrder(['Project with dates', $customer->name, '2026-01-03', '2026-08-04']);
     }
 
     public function test_deleted_projects_can_be_restored_or_permanently_deleted(): void

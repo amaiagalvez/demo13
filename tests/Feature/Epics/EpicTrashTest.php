@@ -14,7 +14,7 @@ class EpicTrashTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_trash_preserves_index_columns_and_appends_the_deletion_date(): void
+    public function test_trash_preserves_index_columns_without_deletion_date(): void
     {
         $this->actingAs(User::factory()->create());
         $this->travelTo('2026-10-02 12:00:00');
@@ -31,7 +31,6 @@ class EpicTrashTest extends TestCase
 
         $response = $this->get(route('epics.trash.index'));
 
-        $activeResponse->assertDontSee(__('Deleted at'));
         $response->assertSeeInOrder([
             '<thead',
             __('Name'),
@@ -40,7 +39,6 @@ class EpicTrashTest extends TestCase
             __('Start date'),
             __('End date'),
             __('Comments'),
-            __('Deleted at'),
             __('Actions'),
         ], false)->assertSeeInOrder([
             'Epic with dates',
@@ -48,7 +46,6 @@ class EpicTrashTest extends TestCase
             $customer->name,
             '2026-01-03',
             '2026-08-04',
-            '2026-10-02',
         ]);
         $response->assertSee('data-test="epic-comments-count-'.$epic->id.'"></span>', false);
     }
