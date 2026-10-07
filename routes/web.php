@@ -5,6 +5,7 @@ use App\Http\Controllers\EpicController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PlanningController;
+use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\EpicTrashController;
 use App\Http\Controllers\EpicCommentController;
 use App\Http\Controllers\EpicInactiveController;
@@ -18,6 +19,7 @@ Route::view('/', 'welcome')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::get('planning', [PlanningController::class, 'index'])->name('planning');
+    Route::get('timeline', [TimelineController::class, 'index'])->name('timeline');
     Route::get('customers/inactive', [CustomerInactiveController::class, 'index'])->name('customers.inactive.index');
     Route::patch('customers/inactive/{customer}', [CustomerInactiveController::class, 'reactivate'])
         ->whereNumber('customer')

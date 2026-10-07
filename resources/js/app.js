@@ -15,13 +15,27 @@ const formatLocalDateTime = (value, format = 'datetime') => {
     const isSpanish = /^es(?:-|$)/.test(normalizedLocale);
 
     if (format === 'date') {
-        const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+        // Accept YYYY-MM-DD, YYYY/M/D, DD-MM-YYYY, etc.
+        const parts = /^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/.exec(value) ||
+                      /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/.exec(value);
 
         if (!parts) {
+            // If parsing fails, return the original value as last resort
             return value;
         }
 
-        const [, year, month, day] = parts;
+        let year, month, day;
+
+        if (parts[1].length === 4) {
+            // YYYY-MM-DD or YYYY/M/D
+            [, year, month, day] = parts;
+        } else {
+            // DD-MM-YYYY
+            [, day, month, year] = parts;
+        }
+
+        month = month.padStart(2, '0');
+        day = day.padStart(2, '0');
 
         if (isBasque) {
             return `${year}-${month}-${day}`;
@@ -40,7 +54,17 @@ const formatLocalDateTime = (value, format = 'datetime') => {
         return new Intl.DateTimeFormat(locale, { dateStyle: 'short' }).format(date);
     }
 
-    const date = new Date(value);
+    // datetime format: try parsing as ISO first, then fall back to Date constructor
+    let date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        // Try parsing common formats
+        const isoMatch = /^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})[T ](\d{1,2}):(\d{1,2}):?(\d{1,2})?/.exec(value);
+        if (isoMatch) {
+            const [, y, m, d, h, min, s = '0'] = isoMatch;
+            date = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${h.padStart(2,'0')}:${min.padStart(2,'0')}:${s.padStart(2,'0')}`);
+        }
+    }
 
     if (Number.isNaN(date.getTime())) {
         return value;

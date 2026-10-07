@@ -229,9 +229,12 @@ class TimelineTest extends TestCase
             ], false)
             ->assertSee(__($label));
 
+        $content = $response->getContent();
+        $this->assertIsString($content);
+
         $this->assertSame(
             2,
-            substr_count($response->getContent(), 'data-status="'.$status.'"'),
+            substr_count($content, 'data-status="'.$status.'"'),
             "Both the project and the epic row must be labelled [{$status}].",
         );
     }
@@ -260,10 +263,13 @@ class TimelineTest extends TestCase
             ->assertSee('data-test="timeline-bar-'.$project->id.'"', false);
 
         // One labelled block per month of the window, each sized as a share of it.
-        $this->assertMatchesRegularExpression('/data-test="timeline-axis".*?style="width: [0-9.]+%"/s', $response->getContent());
+        $content = $response->getContent();
+        $this->assertIsString($content);
+
+        $this->assertMatchesRegularExpression('/data-test="timeline-axis".*?style="width: [0-9.]+%"/s', $content);
         $this->assertMatchesRegularExpression(
             '/data-test="timeline-bar-'.$project->id.'"[^>]*style="inset-inline-start: [0-9.]+%; width: [0-9.]+%"/',
-            $response->getContent(),
+            $content,
         );
     }
 

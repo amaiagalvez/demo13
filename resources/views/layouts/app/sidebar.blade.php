@@ -36,6 +36,10 @@
                     :current="request()->routeIs('planning')" wire:navigate>
                     {{ __('Planning') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="calendar-date-range" :href="route('timeline')"
+                    :current="request()->routeIs('timeline')" wire:navigate>
+                    {{ __('Timeline') }}
+                </flux:sidebar.item>
             </flux:sidebar.group>
         </flux:sidebar.nav>
 

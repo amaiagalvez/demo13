@@ -314,7 +314,7 @@ final class PlanningQuery extends ListQueryBase
 
         for ($month = $from; $month->lessThan($to); $month = $month->addMonth()) {
             $months[] = [
-                'label' => $month->translatedFormat('M Y'),
+                'label' => $month->format('Y-m'),
                 'width' => $this->share($this->days($month, $month->addMonth()), $days),
             ];
         }
