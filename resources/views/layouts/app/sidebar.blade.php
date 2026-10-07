@@ -32,6 +32,10 @@
                     :current="request()->routeIs('epics.*')" wire:navigate>
                     {{ __('Epics') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="calendar-days" :href="route('planning')"
+                    :current="request()->routeIs('planning')" wire:navigate>
+                    {{ __('Planning') }}
+                </flux:sidebar.item>
             </flux:sidebar.group>
         </flux:sidebar.nav>
 

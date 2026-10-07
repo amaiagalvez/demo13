@@ -9,7 +9,9 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 [] test sin db prioridad
 [] al filtrar no se muestrra el numero total de resultado sencontrados
 [] en vez de RESULTS_LIMIT usar PER_PAGE
-
+[] las fechas de las epicas deben estar dentro de las fechas del proyecto, arreglar validaciones y tenerlo en cuenta en el factory y en los seeders
+[] planning ibilbidea y kronograma va por proyectos, hacer una nueva con las epicas https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fsupport.monday.com%2Fhc%2Fes%2Farticles%2F360009482179-Planificaci%25C3%25B3n-de-epopeyas-con-monday-dev&ved=0CBcQjRxqGAoTCKjGns_0pJcDFQAAAAAdAAAAABCJAQ&opi=89978449
+https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fsupport.monday.com%2Fhc%2Fes%2Farticles%2F360009482179-Planificaci%25C3%25B3n-de-epopeyas-con-monday-dev&ved=0CBcQjRxqGAoTCKjGns_0pJcDFQAAAAAdAAAAABCkAQ&opi=89978449
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------

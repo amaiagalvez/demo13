@@ -315,7 +315,7 @@ class CustomerCrudTest extends DuskTestCase
                     'dialog[open] [data-test="customer-submit"]'
                 ))
                 ->assertPresent('dialog[open]')
-                ->assertSeeIn(
+                ->waitForTextIn(
                     'dialog[open]',
                     __('validation.unique', ['attribute' => __('validation.attributes')['name']]),
                 )
@@ -383,7 +383,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitForReload(fn (Browser $browser) => $browser->click(
                     'dialog[open] [data-test="customer-submit"]'
                 ))
-                ->assertSeeIn(
+                ->waitForTextIn(
                     'dialog[open]',
                     __('validation.required', ['attribute' => __('validation.attributes')['name']]),
                 );
@@ -408,7 +408,7 @@ class CustomerCrudTest extends DuskTestCase
                 ->waitForReload(fn (Browser $browser) => $browser->click(
                     'dialog[open] [data-test="customer-submit"]'
                 ))
-                ->assertSeeIn(
+                ->waitForTextIn(
                     'dialog[open]',
                     __('validation.unique', ['attribute' => __('validation.attributes')['name']]),
                 )

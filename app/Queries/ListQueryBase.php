@@ -35,16 +35,7 @@ abstract class ListQueryBase
         string $search,
         array $searchColumns,
     ): LengthAwarePaginator {
-        if ($search !== '') {
-            $pattern = $this->searchPattern($search);
-            $clause = ' like ? escape \''.self::LIKE_ESCAPE.'\'';
-
-            $query->where(function (Builder $query) use ($pattern, $clause, $searchColumns): void {
-                foreach ($searchColumns as $column) {
-                    $query->orWhereRaw($column.$clause, [$pattern]);
-                }
-            });
-        }
+        $this->whereMatches($query, $search, $searchColumns);
 
         $items = $query->paginate(static::PER_PAGE);
 
@@ -53,6 +44,37 @@ abstract class ListQueryBase
         }
 
         return $items;
+    }
+
+    /**
+     * Narrow a query down to the records that match a search term in any of the given columns. A
+     * blank term leaves the query untouched, so a caller can hand the request value straight in.
+     * Every term reaches the database through the shared pattern.
+     *
+     * The model is generic in its own right rather than taken from the class template: a query that
+     * spans more than one resource still gets its own builder type back, so the caller keeps
+     * working with concrete models.
+     *
+     * @template TQueryModel of Model
+     *
+     * @param  Builder<TQueryModel>  $query
+     * @param  non-empty-list<literal-string>  $searchColumns
+     * @return Builder<TQueryModel>
+     */
+    protected function whereMatches(Builder $query, string $search, array $searchColumns): Builder
+    {
+        if ($search === '') {
+            return $query;
+        }
+
+        $pattern = $this->searchPattern($search);
+        $clause = ' like ? escape \''.self::LIKE_ESCAPE.'\'';
+
+        return $query->where(function (Builder $query) use ($pattern, $clause, $searchColumns): void {
+            foreach ($searchColumns as $column) {
+                $query->orWhereRaw($column.$clause, [$pattern]);
+            }
+        });
     }
 
     /**

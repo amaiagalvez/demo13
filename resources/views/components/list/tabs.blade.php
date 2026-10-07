@@ -2,10 +2,13 @@
     State tabs (resource / inactive / trash) built by the *ListTransformer classes, each one with
     the number of records it holds. The current tab links to the full URL, search included, so it
     always describes the view being shown.
---}}
-@props(['tabs', 'prefix'])
 
-<nav aria-label="{{ __('List views') }}" data-test="{{ $prefix }}-tabs"
+    $label names the group of tabs for screen readers; it defaults to the resource lists, which are
+    the only other place these are used from.
+--}}
+@props(['tabs', 'prefix', 'label' => null])
+
+<nav aria-label="{{ $label ?? __('List views') }}" data-test="{{ $prefix }}-tabs"
     class="flex flex-wrap items-center gap-x-1">
     @foreach ($tabs as $tab)
         <a href="{{ $tab['current'] ? request()->fullUrl() : $tab['url'] }}" wire:navigate
