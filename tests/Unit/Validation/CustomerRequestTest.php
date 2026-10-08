@@ -3,8 +3,9 @@
 namespace Tests\Unit\Validation;
 
 use Tests\TestCase;
-use App\Http\Requests\CustomerRequest;
+use Illuminate\Routing\Route;
 use App\Support\Validation\MaxLength;
+use App\Http\Requests\CustomerRequest;
 
 class CustomerRequestTest extends TestCase
 {
@@ -62,9 +63,9 @@ class CustomerRequestTest extends TestCase
     public function test_prepare_for_validation_trims_name(): void
     {
         $request = CustomerRequest::create('/', 'POST', ['name' => '  Trimmed Name  ']);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -77,9 +78,9 @@ class CustomerRequestTest extends TestCase
     public function test_prepare_for_validation_does_not_trim_non_string_name(): void
     {
         $request = CustomerRequest::create('/', 'POST', ['name' => ['array']]);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -109,8 +110,11 @@ class CustomerRequestTest extends TestCase
         $this->assertContains('required', $nameRules);
         $this->assertContains('string', $nameRules);
         $this->assertContains('min:4', $nameRules);
-        $this->assertStringStartsWith('max:', $nameRules[array_search('max:'.MaxLength::string(), $nameRules) ?? 0]);
-        $this->assertContains('max:'.MaxLength::string(), $nameRules);
+        $maxRule = 'max:'.MaxLength::string();
+        $this->assertContains($maxRule, $nameRules);
+        $index = array_search($maxRule, $nameRules, true);
+        $this->assertIsInt($index);
+        $this->assertStringStartsWith('max:', $nameRules[$index]);
     }
 
     public function test_authorize_returns_false_when_user_cannot_create(): void

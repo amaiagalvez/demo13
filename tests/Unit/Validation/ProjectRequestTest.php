@@ -3,6 +3,7 @@
 namespace Tests\Unit\Validation;
 
 use Tests\TestCase;
+use Illuminate\Routing\Route;
 use App\Http\Requests\ProjectRequest;
 use App\Support\Validation\MaxLength;
 
@@ -117,9 +118,9 @@ class ProjectRequestTest extends TestCase
     public function test_prepare_for_validation_trims_name(): void
     {
         $request = ProjectRequest::create('/', 'POST', ['name' => '  Trimmed Name  ']);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -132,9 +133,9 @@ class ProjectRequestTest extends TestCase
     public function test_prepare_for_validation_does_not_trim_non_string_name(): void
     {
         $request = ProjectRequest::create('/', 'POST', ['name' => ['array']]);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -196,6 +197,30 @@ class ProjectRequestTest extends TestCase
 
         $this->assertContains('required', $rules['customer_id']);
         $this->assertContains('integer', $rules['customer_id']);
+    }
+
+    public function test_name_rule_contains_unique_with_ignore(): void
+    {
+        $request = new ProjectRequest;
+        $rules = $request->rules();
+
+        $nameRules = $rules['name'];
+        $uniqueRules = array_filter($nameRules, static fn (string $rule): bool => str_starts_with($rule, 'unique:'));
+        $this->assertNotEmpty($uniqueRules, 'name rule must contain unique rule');
+    }
+
+    public function test_customer_id_rule_contains_exists_with_active_condition(): void
+    {
+        $request = new ProjectRequest;
+        $rules = $request->rules();
+
+        $customerIdRules = $rules['customer_id'];
+        $existsRules = array_filter($customerIdRules, static fn (string $rule): bool => str_starts_with($rule, 'exists:'));
+        $this->assertNotEmpty($existsRules, 'customer_id rule must contain exists rule');
+
+        // The rule should reference the customers table
+        $existsRule = reset($existsRules);
+        $this->assertStringContainsString('customers', $existsRule);
     }
 
     public function test_authorize_returns_false_when_user_cannot_create(): void

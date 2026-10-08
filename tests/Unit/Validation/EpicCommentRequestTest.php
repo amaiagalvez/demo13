@@ -3,8 +3,9 @@
 namespace Tests\Unit\Validation;
 
 use Tests\TestCase;
-use App\Http\Requests\EpicCommentRequest;
+use Illuminate\Routing\Route;
 use App\Support\Validation\MaxLength;
+use App\Http\Requests\EpicCommentRequest;
 
 class EpicCommentRequestTest extends TestCase
 {
@@ -48,9 +49,9 @@ class EpicCommentRequestTest extends TestCase
     public function test_prepare_for_validation_trims_body(): void
     {
         $request = EpicCommentRequest::create('/', 'POST', ['body' => '  Trimmed body  ']);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -63,9 +64,9 @@ class EpicCommentRequestTest extends TestCase
     public function test_prepare_for_validation_does_not_trim_non_string_body(): void
     {
         $request = EpicCommentRequest::create('/', 'POST', ['body' => ['array']]);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');

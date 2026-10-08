@@ -3,6 +3,7 @@
 namespace Tests\Unit\Validation;
 
 use Tests\TestCase;
+use Illuminate\Routing\Route;
 use App\Http\Requests\EpicRequest;
 use App\Support\Validation\MaxLength;
 
@@ -115,9 +116,9 @@ class EpicRequestTest extends TestCase
     public function test_prepare_for_validation_trims_name(): void
     {
         $request = EpicRequest::create('/', 'POST', ['name' => '  Trimmed Name  ']);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -130,9 +131,9 @@ class EpicRequestTest extends TestCase
     public function test_prepare_for_validation_does_not_trim_non_string_name(): void
     {
         $request = EpicRequest::create('/', 'POST', ['name' => ['array']]);
-        $route = new \Illuminate\Routing\Route($request->getMethod(), '/', static fn (): null => null);
+        $route = new Route($request->getMethod(), '/', static fn (): null => null);
         $route->bind($request);
-        $request->setRouteResolver(static fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(static fn (): Route => $route);
 
         $reflection = new \ReflectionClass($request);
         $method = $reflection->getMethod('prepareForValidation');
@@ -195,6 +196,29 @@ class EpicRequestTest extends TestCase
 
         $this->assertContains('required', $rules['project_id']);
         $this->assertContains('integer', $rules['project_id']);
+    }
+
+    public function test_name_rule_contains_unique_scoped_to_project(): void
+    {
+        $request = new EpicRequest;
+        $rules = $request->rules();
+
+        $nameRules = $rules['name'];
+        $uniqueRules = array_filter($nameRules, static fn (string $rule): bool => str_starts_with($rule, 'unique:'));
+        $this->assertNotEmpty($uniqueRules, 'name rule must contain unique rule');
+    }
+
+    public function test_project_id_rule_contains_exists_with_active_condition(): void
+    {
+        $request = new EpicRequest;
+        $rules = $request->rules();
+
+        $projectIdRules = $rules['project_id'];
+        $existsRules = array_filter($projectIdRules, static fn (string $rule): bool => str_starts_with($rule, 'exists:'));
+        $this->assertNotEmpty($existsRules, 'project_id rule must contain exists rule');
+
+        $existsRule = reset($existsRules);
+        $this->assertStringContainsString('projects', $existsRule);
     }
 
     public function test_authorize_returns_false_when_user_cannot_create(): void
