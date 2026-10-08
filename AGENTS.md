@@ -44,3 +44,25 @@ State server-side; validate and authorize in actions. Alpine is already bundled.
 - Before you call a change done, run the 4 architecture tests: `DX php artisan test --compact tests/Unit/ArchitectureTest tests/Unit/ValidationCoverageTest tests/Unit/ModelSchemaParityTest tests/Unit/ResourceUniformityTest`. They guard the per-resource set, validated input, model↔schema parity and cross-resource uniformity.
 - CI enforces at least 80% total code coverage and uploads a Clover report; run `docker compose run --rm laravel13-phpunit` locally to check the same threshold.
 - Static analysis: run `DX ./vendor/bin/phpstan analyse` (level 9).
+
+### Test Location Rules (apply on EVERY test creation/modification)
+**Decide where the test belongs BEFORE writing it:**
+
+| Test Type | Location | DB? | Trait |
+|-----------|----------|-----|-------|
+| Pure logic (rules, policies, helpers, middleware config, query structure, translations) | `tests/Unit/...` | ❌ No | none |
+| Validation rules (FormRequest `rules()`, `authorize()`, `prepareForValidation()`) | `tests/Unit/Validation/*RequestTest.php` | ❌ No | none |
+| Policy methods (`viewAny`, `create`, `update`, etc.) | `tests/Unit/Policies/*PolicyTest.php` | ❌ No | none |
+| Query builders (`ListQueryBase`, search patterns, state counts) | `tests/Unit/Queries/*ListQueryTest.php` | ❌ No | none |
+| HTTP integration (full request/response, view rendering) | `tests/Feature/...` | ✅ Yes | `RefreshDatabase` |
+| Read-light Feature tests (auth pages, query tests with 1 create, middleware) | `tests/Feature/...` | ✅ Yes (lazy) | `LazilyRefreshDatabase` |
+
+**Decision checklist for new tests:**
+1. Can it run without touching the database? → `tests/Unit/`
+2. Does it only validate rules/authorize/prepareForValidation? → `tests/Unit/Validation/`
+3. Does it test a Policy method directly? → `tests/Unit/Policies/`
+4. Does it test query structure (constants, method signatures, search patterns)? → `tests/Unit/Queries/`
+4. Does it need HTTP + DB (CRUD, Trash, ListQuery with real data)? → `tests/Feature/` + `RefreshDatabase`
+5. Does it only create 0-1 records and mostly reads? → `tests/Feature/` + `LazilyRefreshDatabase`
+
+**Refactoring existing tests:** When touching a Feature test that only does pure logic, move it to Unit. When touching a Feature test with few creates, consider `LazilyRefreshDatabase`.

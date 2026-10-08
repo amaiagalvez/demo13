@@ -6,9 +6,12 @@ use Tests\TestCase;
 use App\Models\User;
 use Laravel\Fortify\Features;
 use App\Http\Middleware\EnsureUserIsActive;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class SecurityAccessTest extends TestCase
 {
+    use LazilyRefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

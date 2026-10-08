@@ -5,11 +5,11 @@ namespace Tests\Feature\Auth;
 use Tests\TestCase;
 use App\Models\User;
 use Laravel\Fortify\Features;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class TwoFactorChallengeTest extends TestCase
 {
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
 
     protected function setUp(): void
     {

@@ -4,11 +4,11 @@ namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
 use Laravel\Fortify\Features;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class RegistrationTest extends TestCase
 {
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
 
     protected function setUp(): void
     {
