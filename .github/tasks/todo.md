@@ -7,13 +7,7 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
     2. si el formulario se abre en modo edición, en el select o select2 se mostraran el elemento sseleccionado (tenga o no active=1) y el resto de elementos seran solo los que tengan acitive=1 
 [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
 [] test sin db prioridad
-[] al filtrar no se muestrra el numero total de resultado sencontrados
-[] en vez de RESULTS_LIMIT usar PER_PAGE
 [] las fechas de las epicas deben estar dentro de las fechas del proyecto, arreglar validaciones y tenerlo en cuenta en el factory y en los seeders
-[] planning ibilbidea y kronograma va por proyectos, hacer una nueva con las epicas https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fsupport.monday.com%2Fhc%2Fes%2Farticles%2F360009482179-Planificaci%25C3%25B3n-de-epopeyas-con-monday-dev&ved=0CBcQjRxqGAoTCKjGns_0pJcDFQAAAAAdAAAAABCJAQ&opi=89978449
-https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fsupport.monday.com%2Fhc%2Fes%2Farticles%2F360009482179-Planificaci%25C3%25B3n-de-epopeyas-con-monday-dev&ved=0CBcQjRxqGAoTCKjGns_0pJcDFQAAAAAdAAAAABCkAQ&opi=89978449
-[] en vez de inactivos o bloquear cuando habla de active = 0 , el termino es Archivado o archivar
-[] quitar enlace en columna izena, quitar created-at columna
 
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)

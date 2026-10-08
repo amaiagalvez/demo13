@@ -545,9 +545,14 @@ document.addEventListener('alpine:init', () => {
         ...local,
     }));
 
-    window.Alpine.data('listSearch', (initialSearch, resultsTemplate) => ({
+    window.Alpine.data('listSearch', (initialSearch, initialTotal, resultsTemplate) => ({
         currentSearch: initialSearch,
+        totalResults: initialTotal,
         requestController: null,
+
+        get hasSearch() {
+            return this.currentSearch !== '';
+        },
 
         init() {
             this.handlePopstate = () => {
@@ -664,9 +669,13 @@ document.addEventListener('alpine:init', () => {
 
                 // The morph re-initialises the root's x-data, so the live region is filled after it
                 // rather than before: a value set beforehand belongs to the discarded instance.
+                const totalResults = results.dataset.totalResults
+                    ? parseInt(results.dataset.totalResults, 10)
+                    : results.querySelectorAll('tbody tr').length;
+                this.totalResults = totalResults;
                 const announcement = (resultsTemplate ?? '').replace(
                     ':count',
-                    String(results.querySelectorAll('tbody tr').length),
+                    String(totalResults),
                 );
 
                 const root = this.$root;
@@ -677,6 +686,13 @@ document.addEventListener('alpine:init', () => {
 
                 if (region) {
                     region.textContent = announcement;
+                }
+
+                // Update visible result count
+                const countDisplay = root.querySelector('[data-count-display]');
+                const countTemplate = root.dataset.countTemplate ?? '';
+                if (countDisplay && countTemplate) {
+                    countDisplay.textContent = countTemplate.replace(':count', String(totalResults));
                 }
             } catch (error) {
                 if (!controller.signal.aborted) {

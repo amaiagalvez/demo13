@@ -22,7 +22,7 @@ final class CustomerListQuery extends ListQueryBase
         return $this->paginate(
             $this->withActiveCounts(
                 // Unique names among non-deleted customers keep the ordering total on its own; the id
-                // is here so this list breaks ties the same way the inactive and trash lists do.
+                // is here so this list breaks ties the same way the archived and trash lists do.
                 Customer::query()->where('active', true)->orderBy('name')->orderBy('id'),
             )->withExists(['projects' => fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class)]),
             $search,
@@ -33,7 +33,7 @@ final class CustomerListQuery extends ListQueryBase
     /**
      * @return LengthAwarePaginator<int, Customer>
      */
-    public function inactive(string $search): LengthAwarePaginator
+    public function archived(string $search): LengthAwarePaginator
     {
         return $this->paginate(
             $this->withActiveCounts(Customer::query()->where('active', false)->orderBy('name')->orderBy('id')),
@@ -62,14 +62,14 @@ final class CustomerListQuery extends ListQueryBase
     /**
      * Number of records in each list state, shown as the badge of the state tabs.
      *
-     * @return array{active: int, inactive: int, trashed: int}
+     * @return array{active: int, archived: int, trashed: int}
      */
     public function stateCounts(
         ?int $activeTotal = null,
-        ?int $inactiveTotal = null,
+        ?int $archivedTotal = null,
         ?int $trashedTotal = null,
     ): array {
-        return $this->countStates(Customer::class, $activeTotal, $inactiveTotal, $trashedTotal);
+        return $this->countStates(Customer::class, $activeTotal, $archivedTotal, $trashedTotal);
     }
 
     /**

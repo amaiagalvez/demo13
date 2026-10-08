@@ -9,7 +9,7 @@ use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
 
-class CustomerInactiveController extends InactiveController
+class CustomerArchivedController extends ArchivedController
 {
     public function index(
         CustomerListRequest $request,
@@ -17,26 +17,26 @@ class CustomerInactiveController extends InactiveController
         CustomerListTransformer $transformer,
     ): View|string {
         $search = $request->search();
-        $customers = $query->inactive($search);
+        $customers = $query->archived($search);
 
         return $this->listView($request, 'customers.list', [
             'customers' => $customers,
-            'list' => $transformer->inactive(
+            'list' => $transformer->archived(
                 $customers,
                 $search,
-                $query->stateCounts(inactiveTotal: $search === '' ? $customers->total() : null),
+                $query->stateCounts(archivedTotal: $search === '' ? $customers->total() : null),
             ),
         ]);
     }
 
-    public function deactivate(Customer $customer): RedirectResponse
+    public function archive(Customer $customer): RedirectResponse
     {
-        return $this->deactivateRecord($customer);
+        return $this->archiveRecord($customer);
     }
 
-    public function reactivate(Customer $customer): RedirectResponse
+    public function activate(Customer $customer): RedirectResponse
     {
-        return $this->reactivateRecord($customer);
+        return $this->activateRecord($customer);
     }
 
     protected function activeRoute(): string
@@ -44,8 +44,8 @@ class CustomerInactiveController extends InactiveController
         return 'customers.index';
     }
 
-    protected function inactiveRoute(): string
+    protected function archivedRoute(): string
     {
-        return 'customers.inactive.index';
+        return 'customers.archived.index';
     }
 }

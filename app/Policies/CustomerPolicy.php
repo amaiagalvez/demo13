@@ -56,17 +56,17 @@ class CustomerPolicy
     }
 
     /**
-     * Determine whether the user can deactivate the model.
+     * Determine whether the user can archive the model.
      */
-    public function deactivate(User $user, Customer $customer): bool
+    public function archive(User $user, Customer $customer): bool
     {
         return true;
     }
 
     /**
-     * Determine whether the user can reactivate the model.
+     * Determine whether the user can activate the model.
      */
-    public function reactivate(User $user, Customer $customer): bool
+    public function activate(User $user, Customer $customer): bool
     {
         return true;
     }

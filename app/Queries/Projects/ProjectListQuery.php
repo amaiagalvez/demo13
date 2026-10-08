@@ -41,7 +41,7 @@ final class ProjectListQuery extends ListQueryBase
     /**
      * @return LengthAwarePaginator<int, Project>
      */
-    public function inactive(string $search): LengthAwarePaginator
+    public function archived(string $search): LengthAwarePaginator
     {
         return $this->paginate(
             $this->withActiveCounts($this->withCustomer(Project::query()->where('projects.active', false)))
@@ -77,14 +77,14 @@ final class ProjectListQuery extends ListQueryBase
     /**
      * Number of records in each list state, shown as the badge of the state tabs.
      *
-     * @return array{active: int, inactive: int, trashed: int}
+     * @return array{active: int, archived: int, trashed: int}
      */
     public function stateCounts(
         ?int $activeTotal = null,
-        ?int $inactiveTotal = null,
+        ?int $archivedTotal = null,
         ?int $trashedTotal = null,
     ): array {
-        return $this->countStates(Project::class, $activeTotal, $inactiveTotal, $trashedTotal);
+        return $this->countStates(Project::class, $activeTotal, $archivedTotal, $trashedTotal);
     }
 
     /**

@@ -13,7 +13,7 @@ class CustomerListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function active(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
@@ -29,7 +29,7 @@ class CustomerListTransformer extends ListTransformer
                 'actions' => [
                     $this->editAction($customer),
                     $customer->projects_exists
-                        ? $this->deactivateAction($customer)
+                        ? $this->archiveAction($customer)
                         : $this->deleteAction($customer),
                 ],
             ])->all(),
@@ -38,24 +38,24 @@ class CustomerListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function inactive(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
+    public function archived(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
     {
         return [
-            ...$this->envelope('inactive', $search, $counts),
+            ...$this->envelope('archived', $search, $counts),
             'rows' => collect($customers->items())->map(fn (Customer $customer): array => [
                 ...$this->columns($customer),
                 'extraDate' => $customer->updated_at?->toIso8601String(),
-                'actions' => [$this->reactivateAction($customer)],
+                'actions' => [$this->activateAction($customer)],
             ])->all(),
         ];
     }
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function trash(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
@@ -124,17 +124,17 @@ class CustomerListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{active: string, inactive: string, trash: string, destroy: string, deactivate: string, reactivate: string, restore: string, trashDestroy: string}
+     * @return array{active: string, archived: string, trash: string, destroy: string, archive: string, activate: string, restore: string, trashDestroy: string}
      */
     protected function routes(): array
     {
         return [
             'active' => 'customers.index',
-            'inactive' => 'customers.inactive.index',
+            'archived' => 'customers.archived.index',
             'trash' => 'customers.trash.index',
             'destroy' => 'customers.destroy',
-            'deactivate' => 'customers.deactivate',
-            'reactivate' => 'customers.inactive.reactivate',
+            'archive' => 'customers.archive',
+            'activate' => 'customers.archived.activate',
             'restore' => 'customers.trash.restore',
             'trashDestroy' => 'customers.trash.destroy',
         ];

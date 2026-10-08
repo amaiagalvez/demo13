@@ -90,7 +90,7 @@
         <x-list.flash prefix="project" />
 
         @fragment('list-results')
-            <x-list.searchable-results :search="$list['search']">
+            <x-list.searchable-results :search="$list['search']" :total="$projects->total()">
                 <x-list.search :search="$list['search']" prefix="project" />
 
                 <x-list.table prefix="project" :paginator="$projects">

@@ -1,10 +1,7 @@
-@if ($paginator->hasPages())
-    {{-- Published so this landmark can be dropped: x-list.table already renders the navigation
-     landmark around the paginator, and two nested landmarks of the same purpose help nobody.
-     Everything else here is stock Laravel; see tests/Unit/ArchitectureTest.php. --}}
-    <div>
+{{-- Always render pagination to show total count and page info even for single page --}}
+<div>
 
-        <div class="flex gap-2 items-center justify-between sm:hidden">
+    <div class="flex gap-2 items-center justify-between sm:hidden">
 
             @if ($paginator->onFirstPage())
                 <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 cursor-not-allowed leading-5 rounded-md dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
@@ -111,4 +108,3 @@
             </div>
         </div>
     </div>
-@endif

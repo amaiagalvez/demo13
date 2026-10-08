@@ -8,11 +8,11 @@ use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\EpicTrashController;
 use App\Http\Controllers\EpicCommentController;
-use App\Http\Controllers\EpicInactiveController;
+use App\Http\Controllers\EpicArchivedController;
 use App\Http\Controllers\ProjectTrashController;
 use App\Http\Controllers\CustomerTrashController;
-use App\Http\Controllers\ProjectInactiveController;
-use App\Http\Controllers\CustomerInactiveController;
+use App\Http\Controllers\ProjectArchivedController;
+use App\Http\Controllers\CustomerArchivedController;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -20,13 +20,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::get('planning', [PlanningController::class, 'index'])->name('planning');
     Route::get('timeline', [TimelineController::class, 'index'])->name('timeline');
-    Route::get('customers/inactive', [CustomerInactiveController::class, 'index'])->name('customers.inactive.index');
-    Route::patch('customers/inactive/{customer}', [CustomerInactiveController::class, 'reactivate'])
+    Route::get('customers/archived', [CustomerArchivedController::class, 'index'])->name('customers.archived.index');
+    Route::patch('customers/archived/{customer}', [CustomerArchivedController::class, 'activate'])
         ->whereNumber('customer')
-        ->name('customers.inactive.reactivate');
-    Route::patch('customers/{customer}/deactivate', [CustomerInactiveController::class, 'deactivate'])
+        ->name('customers.archived.activate');
+    Route::patch('customers/{customer}/archive', [CustomerArchivedController::class, 'archive'])
         ->whereNumber('customer')
-        ->name('customers.deactivate');
+        ->name('customers.archive');
     Route::get('customers/trash', [CustomerTrashController::class, 'index'])->name('customers.trash.index');
     Route::patch('customers/trash/{customer}', [CustomerTrashController::class, 'restore'])
         ->whereNumber('customer')
@@ -37,13 +37,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('customers/options', [CustomerController::class, 'selectOptions'])
         ->name('customers.options');
     Route::resource('customers', CustomerController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::get('projects/inactive', [ProjectInactiveController::class, 'index'])->name('projects.inactive.index');
-    Route::patch('projects/inactive/{project}', [ProjectInactiveController::class, 'reactivate'])
+    Route::get('projects/archived', [ProjectArchivedController::class, 'index'])->name('projects.archived.index');
+    Route::patch('projects/archived/{project}', [ProjectArchivedController::class, 'activate'])
         ->whereNumber('project')
-        ->name('projects.inactive.reactivate');
-    Route::patch('projects/{project}/deactivate', [ProjectInactiveController::class, 'deactivate'])
+        ->name('projects.archived.activate');
+    Route::patch('projects/{project}/archive', [ProjectArchivedController::class, 'archive'])
         ->whereNumber('project')
-        ->name('projects.deactivate');
+        ->name('projects.archive');
     Route::get('projects/trash', [ProjectTrashController::class, 'index'])->name('projects.trash.index');
     Route::patch('projects/trash/{project}', [ProjectTrashController::class, 'restore'])
         ->whereNumber('project')
@@ -54,13 +54,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('projects/options', [ProjectController::class, 'selectOptions'])
         ->name('projects.options');
     Route::resource('projects', ProjectController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::get('epics/inactive', [EpicInactiveController::class, 'index'])->name('epics.inactive.index');
-    Route::patch('epics/inactive/{epic}', [EpicInactiveController::class, 'reactivate'])
+    Route::get('epics/archived', [EpicArchivedController::class, 'index'])->name('epics.archived.index');
+    Route::patch('epics/archived/{epic}', [EpicArchivedController::class, 'activate'])
         ->whereNumber('epic')
-        ->name('epics.inactive.reactivate');
-    Route::patch('epics/{epic}/deactivate', [EpicInactiveController::class, 'deactivate'])
+        ->name('epics.archived.activate');
+    Route::patch('epics/{epic}/archive', [EpicArchivedController::class, 'archive'])
         ->whereNumber('epic')
-        ->name('epics.deactivate');
+        ->name('epics.archive');
     Route::get('epics/trash', [EpicTrashController::class, 'index'])->name('epics.trash.index');
     Route::patch('epics/trash/{epic}', [EpicTrashController::class, 'restore'])
         ->whereNumber('epic')

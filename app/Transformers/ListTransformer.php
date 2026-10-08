@@ -30,8 +30,8 @@ abstract class ListTransformer
     /**
      * Everything a list view needs above its rows.
      *
-     * @param  'active'|'inactive'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  'active'|'archived'|'trash'  $state
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     final protected function envelope(string $state, string $search, ?array $counts): array
@@ -41,7 +41,7 @@ abstract class ListTransformer
             'breadcrumbs' => $this->breadcrumbs($state),
             'extraDateHeading' => match ($state) {
                 'active' => __('Created at'),
-                'inactive' => __('Updated at'),
+                'archived' => __('Updated at'),
                 'trash' => __('Deleted at'),
             },
             'emptyMessage' => $this->emptyMessage($state, $search),
@@ -59,21 +59,21 @@ abstract class ListTransformer
      * State tabs shown under the page heading: the resource itself plus its other states, each one
      * with the number of records it holds.
      *
-     * @param  'active'|'inactive'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  'active'|'archived'|'trash'  $state
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return list<array{label: string, url: string, current: bool, count: int|null, test: string}>
      */
     final protected function tabs(string $state, ?array $counts): array
     {
         return [
             $this->tab($this->resourceLabel(), route($this->routes()['active']), 'active', 'active', $state, $counts),
-            $this->tab(__('Inactive'), route($this->routes()['inactive']), 'inactive', 'inactive', $state, $counts),
+            $this->tab(__('Archived'), route($this->routes()['archived']), 'archived', 'archived', $state, $counts),
             $this->tab(__('Trash'), route($this->routes()['trash']), 'trash', 'trashed', $state, $counts),
         ];
     }
 
     /**
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array{label: string, url: string, current: bool, count: int|null, test: string}
      */
     private function tab(
@@ -94,7 +94,7 @@ abstract class ListTransformer
     }
 
     /**
-     * @param  'active'|'inactive'|'trash'  $state
+     * @param  'active'|'archived'|'trash'  $state
      * @return list<array{label: string, url: string|null}>
      */
     private function breadcrumbs(string $state): array
@@ -104,13 +104,13 @@ abstract class ListTransformer
 
         return match ($state) {
             'active' => [$dashboard, ['label' => $this->resourceLabel(), 'url' => null]],
-            'inactive' => [$dashboard, $resource, ['label' => __('Inactive'), 'url' => null]],
+            'archived' => [$dashboard, $resource, ['label' => __('Archived'), 'url' => null]],
             'trash' => [$dashboard, $resource, ['label' => __('Trash'), 'url' => null]],
         };
     }
 
     /**
-     * @param  'active'|'inactive'|'trash'  $state
+     * @param  'active'|'archived'|'trash'  $state
      */
     private function emptyMessage(string $state, string $search): string
     {
@@ -120,7 +120,7 @@ abstract class ListTransformer
 
         return match ($state) {
             'active' => $this->noRecordsMessage(),
-            'inactive' => __('No inactive records.'),
+            'archived' => __('No archived records.'),
             'trash' => __('Trash is empty.'),
         };
     }
@@ -163,17 +163,17 @@ abstract class ListTransformer
      * @param  TRecord  $record
      * @return array<string, mixed>
      */
-    final protected function deactivateAction(Model $record): array
+    final protected function archiveAction(Model $record): array
     {
         return $this->confirmAction(
             $record,
-            __('Deactivate'),
-            'lock-closed',
-            'deactivate',
-            route($this->routes()['deactivate'], $record),
+            __('Archive'),
+            'archive-box',
+            'archive',
+            route($this->routes()['archive'], $record),
             'PATCH',
-            __('Deactivate record?'),
-            __('You can reactivate it from the inactive list.'),
+            __('Archive record?'),
+            __('You can activate it from the archived list.'),
             danger: true,
         );
     }
@@ -182,16 +182,16 @@ abstract class ListTransformer
      * @param  TRecord  $record
      * @return array<string, mixed>
      */
-    final protected function reactivateAction(Model $record): array
+    final protected function activateAction(Model $record): array
     {
         return $this->confirmAction(
             $record,
-            __('Reactivate'),
-            'lock-open',
-            'reactivate',
-            route($this->routes()['reactivate'], $record),
+            __('Activate'),
+            'archive-box-arrow-down',
+            'activate',
+            route($this->routes()['activate'], $record),
             'PATCH',
-            __('Reactivate record?'),
+            __('Activate record?'),
             __('The record will return to the active list.'),
             danger: false,
         );
@@ -215,7 +215,7 @@ abstract class ListTransformer
             __('Restore record?'),
             $active
                 ? __('The record will return to the active list.')
-                : __('The record will return to the inactive list.'),
+                : __('The record will return to the archived list.'),
             danger: false,
         );
     }
@@ -325,7 +325,7 @@ abstract class ListTransformer
     /**
      * Routes this transformer links to, indexed by list state and by action.
      *
-     * @return array{active: string, inactive: string, trash: string, destroy: string, deactivate: string, reactivate: string, restore: string, trashDestroy: string}
+     * @return array{active: string, archived: string, trash: string, destroy: string, archive: string, activate: string, restore: string, trashDestroy: string}
      */
     abstract protected function routes(): array;
 

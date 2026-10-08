@@ -9,7 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use App\Transformers\EpicListTransformer;
 
-class EpicInactiveController extends InactiveController
+class EpicArchivedController extends ArchivedController
 {
     public function index(
         EpicListRequest $request,
@@ -17,26 +17,26 @@ class EpicInactiveController extends InactiveController
         EpicListTransformer $transformer,
     ): View|string {
         $search = $request->search();
-        $epics = $query->inactive($search);
+        $epics = $query->archived($search);
 
         return $this->listView($request, 'epics.list', [
             'epics' => $epics,
-            'list' => $transformer->inactive(
+            'list' => $transformer->archived(
                 $epics,
                 $search,
-                $query->stateCounts(inactiveTotal: $search === '' ? $epics->total() : null),
+                $query->stateCounts(archivedTotal: $search === '' ? $epics->total() : null),
             ),
         ]);
     }
 
-    public function deactivate(Epic $epic): RedirectResponse
+    public function archive(Epic $epic): RedirectResponse
     {
-        return $this->deactivateRecord($epic);
+        return $this->archiveRecord($epic);
     }
 
-    public function reactivate(Epic $epic): RedirectResponse
+    public function activate(Epic $epic): RedirectResponse
     {
-        return $this->reactivateRecord($epic);
+        return $this->activateRecord($epic);
     }
 
     protected function activeRoute(): string
@@ -44,8 +44,8 @@ class EpicInactiveController extends InactiveController
         return 'epics.index';
     }
 
-    protected function inactiveRoute(): string
+    protected function archivedRoute(): string
     {
-        return 'epics.inactive.index';
+        return 'epics.archived.index';
     }
 }

@@ -7,9 +7,7 @@
         </flux:table>
     </div>
 
-    @if ($paginator->hasPages())
-        <nav aria-label="{{ __('Pagination') }}" data-test="{{ $prefix }}-pagination">
-            {{ $paginator->links() }}
-        </nav>
-    @endif
+    <nav aria-label="{{ __('Pagination') }}" data-test="{{ $prefix }}-pagination">
+        {{ $paginator->links() }}
+    </nav>
 </div>

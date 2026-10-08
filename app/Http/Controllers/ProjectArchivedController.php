@@ -9,7 +9,7 @@ use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
 
-class ProjectInactiveController extends InactiveController
+class ProjectArchivedController extends ArchivedController
 {
     public function index(
         ProjectListRequest $request,
@@ -17,26 +17,26 @@ class ProjectInactiveController extends InactiveController
         ProjectListTransformer $transformer,
     ): View|string {
         $search = $request->search();
-        $projects = $query->inactive($search);
+        $projects = $query->archived($search);
 
         return $this->listView($request, 'projects.list', [
             'projects' => $projects,
-            'list' => $transformer->inactive(
+            'list' => $transformer->archived(
                 $projects,
                 $search,
-                $query->stateCounts(inactiveTotal: $search === '' ? $projects->total() : null),
+                $query->stateCounts(archivedTotal: $search === '' ? $projects->total() : null),
             ),
         ]);
     }
 
-    public function deactivate(Project $project): RedirectResponse
+    public function archive(Project $project): RedirectResponse
     {
-        return $this->deactivateRecord($project);
+        return $this->archiveRecord($project);
     }
 
-    public function reactivate(Project $project): RedirectResponse
+    public function activate(Project $project): RedirectResponse
     {
-        return $this->reactivateRecord($project);
+        return $this->activateRecord($project);
     }
 
     protected function activeRoute(): string
@@ -44,8 +44,8 @@ class ProjectInactiveController extends InactiveController
         return 'projects.index';
     }
 
-    protected function inactiveRoute(): string
+    protected function archivedRoute(): string
     {
-        return 'projects.inactive.index';
+        return 'projects.archived.index';
     }
 }

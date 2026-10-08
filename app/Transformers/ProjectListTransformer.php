@@ -13,7 +13,7 @@ class ProjectListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function active(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
@@ -29,7 +29,7 @@ class ProjectListTransformer extends ListTransformer
                 'actions' => [
                     $this->editAction($project),
                     $project->epics_exists
-                        ? $this->deactivateAction($project)
+                        ? $this->archiveAction($project)
                         : $this->deleteAction($project),
                 ],
             ])->all(),
@@ -38,24 +38,24 @@ class ProjectListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function inactive(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
+    public function archived(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
     {
         return [
-            ...$this->envelope('inactive', $search, $counts),
+            ...$this->envelope('archived', $search, $counts),
             'rows' => collect($projects->items())->map(fn (Project $project): array => [
                 ...$this->columns($project),
                 'extraDate' => $project->updated_at?->toIso8601String(),
-                'actions' => [$this->reactivateAction($project)],
+                'actions' => [$this->activateAction($project)],
             ])->all(),
         ];
     }
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function trash(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
@@ -134,17 +134,17 @@ class ProjectListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{active: string, inactive: string, trash: string, destroy: string, deactivate: string, reactivate: string, restore: string, trashDestroy: string}
+     * @return array{active: string, archived: string, trash: string, destroy: string, archive: string, activate: string, restore: string, trashDestroy: string}
      */
     protected function routes(): array
     {
         return [
             'active' => 'projects.index',
-            'inactive' => 'projects.inactive.index',
+            'archived' => 'projects.archived.index',
             'trash' => 'projects.trash.index',
             'destroy' => 'projects.destroy',
-            'deactivate' => 'projects.deactivate',
-            'reactivate' => 'projects.inactive.reactivate',
+            'archive' => 'projects.archive',
+            'activate' => 'projects.archived.activate',
             'restore' => 'projects.trash.restore',
             'trashDestroy' => 'projects.trash.destroy',
         ];

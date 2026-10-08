@@ -13,7 +13,7 @@ class EpicListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function active(LengthAwarePaginator $epics, string $search, ?array $counts = null): array
@@ -29,7 +29,7 @@ class EpicListTransformer extends ListTransformer
                 'actions' => [
                     $this->editAction($epic),
                     $epic->comments_count > 0
-                        ? $this->deactivateAction($epic)
+                        ? $this->archiveAction($epic)
                         : $this->deleteAction($epic),
                 ],
             ])->all(),
@@ -38,24 +38,24 @@ class EpicListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
-    public function inactive(LengthAwarePaginator $epics, string $search, ?array $counts = null): array
+    public function archived(LengthAwarePaginator $epics, string $search, ?array $counts = null): array
     {
         return [
-            ...$this->envelope('inactive', $search, $counts),
+            ...$this->envelope('archived', $search, $counts),
             'rows' => collect($epics->items())->map(fn (Epic $epic): array => [
                 ...$this->columns($epic),
                 'extraDate' => $epic->updated_at?->toIso8601String(),
-                'actions' => [$this->reactivateAction($epic)],
+                'actions' => [$this->activateAction($epic)],
             ])->all(),
         ];
     }
 
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function trash(LengthAwarePaginator $epics, string $search, ?array $counts = null): array
@@ -162,17 +162,17 @@ class EpicListTransformer extends ListTransformer
     }
 
     /**
-     * @return array{active: string, inactive: string, trash: string, destroy: string, deactivate: string, reactivate: string, restore: string, trashDestroy: string}
+     * @return array{active: string, archived: string, trash: string, destroy: string, archive: string, activate: string, restore: string, trashDestroy: string}
      */
     protected function routes(): array
     {
         return [
             'active' => 'epics.index',
-            'inactive' => 'epics.inactive.index',
+            'archived' => 'epics.archived.index',
             'trash' => 'epics.trash.index',
             'destroy' => 'epics.destroy',
-            'deactivate' => 'epics.deactivate',
-            'reactivate' => 'epics.inactive.reactivate',
+            'archive' => 'epics.archive',
+            'activate' => 'epics.archived.activate',
             'restore' => 'epics.trash.restore',
             'trashDestroy' => 'epics.trash.destroy',
         ];
