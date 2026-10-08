@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit\Http;
 
 use Tests\TestCase;
 use Illuminate\Http\Middleware\TrustHosts;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit\Http\Middleware;
 
 use Tests\TestCase;
 use App\Models\User;
