@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit\Translations;
 
 use Tests\TestCase;
 use App\Models\Customer;

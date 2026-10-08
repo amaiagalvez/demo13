@@ -24,6 +24,16 @@ trait ValidatesFormRequests
     /**
      * @param  Closure(): array<string, array<int, mixed>>  $rules
      */
+    protected function assertRequestValidationPasses(FormRequest $request, Closure $rules): void
+    {
+        $validator = $this->validatorForRequest($request, $rules);
+
+        $this->assertFalse($validator->fails());
+    }
+
+    /**
+     * @param  Closure(): array<string, array<int, mixed>>  $rules
+     */
     protected function validatorForRequest(FormRequest $request, Closure $rules): LaravelValidator
     {
         $route = new Route($request->getMethod(), '/', static fn (): null => null);
