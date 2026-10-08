@@ -219,7 +219,10 @@ class EpicInputValidationTest extends TestCase
     public function test_start_date_can_be_set_without_end_date(): void
     {
         $this->actingAs(User::factory()->create());
-        $project = Project::factory()->create();
+        $project = Project::factory()->create([
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+        ]);
 
         $this->post(route('epics.store'), [
             'name' => 'Open-ended epic',
@@ -369,5 +372,133 @@ class EpicInputValidationTest extends TestCase
 
         $this->assertDatabaseHas('epics', ['name' => 'Deleted epic', 'deleted_at' => null]);
         $this->assertSoftDeleted($deletedEpic);
+    }
+
+    public function test_epic_start_date_cannot_be_before_project_start_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['start_date' => '2026-06-01']);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), [
+                'name' => 'Epic before project',
+                'start_date' => '2026-05-01',
+                'end_date' => '2026-07-01',
+                'project_id' => $project->id,
+            ])
+            ->assertSessionHasErrors(['start_date']);
+
+        $this->assertDatabaseCount('epics', 0);
+    }
+
+    public function test_epic_start_date_can_equal_project_start_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['start_date' => '2026-06-01', 'end_date' => '2026-12-31']);
+
+        $this->post(route('epics.store'), [
+            'name' => 'Epic at project start',
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-07-01',
+            'project_id' => $project->id,
+        ])->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('epics', ['name' => 'Epic at project start']);
+    }
+
+    public function test_epic_end_date_cannot_be_after_project_end_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create([
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-12-31',
+        ]);
+
+        $this->from(route('epics.index'))
+            ->post(route('epics.store'), [
+                'name' => 'Epic after project',
+                'start_date' => '2026-11-01',
+                'end_date' => '2027-01-01',
+                'project_id' => $project->id,
+            ])
+            ->assertSessionHasErrors(['end_date']);
+
+        $this->assertDatabaseCount('epics', 0);
+    }
+
+    public function test_epic_end_date_can_equal_project_end_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['start_date' => '2026-06-01', 'end_date' => '2026-12-31']);
+
+        $this->post(route('epics.store'), [
+            'name' => 'Epic at project end',
+            'start_date' => '2026-11-01',
+            'end_date' => '2026-12-31',
+            'project_id' => $project->id,
+        ])->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('epics', ['name' => 'Epic at project end']);
+    }
+
+    public function test_epic_end_date_not_validated_when_project_has_no_end_date(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['start_date' => '2026-06-01', 'end_date' => null]);
+
+        $this->post(route('epics.store'), [
+            'name' => 'Epic in open-ended project',
+            'start_date' => '2026-07-01',
+            'end_date' => '2027-06-01',
+            'project_id' => $project->id,
+        ])->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('epics', ['name' => 'Epic in open-ended project']);
+    }
+
+    public function test_epic_dates_must_be_within_project_when_updating(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['start_date' => '2026-06-01', 'end_date' => '2026-12-31']);
+        $epic = Epic::factory()->for($project)->create([
+            'start_date' => '2026-07-01',
+            'end_date' => '2026-08-01',
+        ]);
+
+        $this->from(route('epics.index'))
+            ->put(route('epics.update', $epic), [
+                'name' => $epic->name,
+                'start_date' => '2026-05-01', // Before project start
+                'end_date' => '2026-08-01',
+                'project_id' => $project->id,
+            ])
+            ->assertSessionHasErrors(['start_date']);
+    }
+
+    public function test_epic_can_be_updated_to_remove_dates(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $project = Project::factory()->create(['start_date' => '2026-06-01', 'end_date' => '2026-12-31']);
+        $epic = Epic::factory()->for($project)->create([
+            'start_date' => '2026-07-01',
+            'end_date' => '2026-08-01',
+        ]);
+
+        $this->put(route('epics.update', $epic), [
+            'name' => $epic->name,
+            'project_id' => $project->id,
+            'start_date' => null,
+            'end_date' => null,
+        ])->assertRedirect(route('epics.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('epics', [
+            'id' => $epic->id,
+            'start_date' => null,
+            'end_date' => null,
+        ]);
     }
 }

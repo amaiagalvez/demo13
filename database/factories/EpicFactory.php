@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Epic;
 use App\Models\Project;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,18 +16,32 @@ class EpicFactory extends Factory
 
     /**
      * Define the model's default state. The end date must be later than the start date per EpicRequest.
+     * Dates must also fall within the project's date range.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $startDate = fake()->dateTimeBetween('-1 year', 'now')->format('Y-m-d');
+        $project = Project::inRandomOrder()->first() ?? Project::factory()->create();
+
+        // Epic dates must be within project dates
+        $projectStart = CarbonImmutable::parse($project->start_date);
+        $projectEnd = $project->end_date ? CarbonImmutable::parse($project->end_date) : CarbonImmutable::now()->addYear();
+
+        // Ensure epic start is after project start and before project end
+        $earliestStart = $projectStart;
+        $latestStart = $projectEnd->subDay(); // At least 1 day before project end for end_date to fit
+
+        $startDate = fake()->dateTimeBetween($earliestStart, $latestStart)->format('Y-m-d');
+
+        // Epic end must be after epic start and before project end
+        $endDate = fake()->dateTimeBetween($startDate.' +1 day', $projectEnd)->format('Y-m-d');
 
         return [
             'name' => fake()->unique()->sentence(3),
             'start_date' => $startDate,
-            'end_date' => fake()->dateTimeBetween($startDate.' +1 day', '+1 year')->format('Y-m-d'),
-            'project_id' => Project::factory(),
+            'end_date' => $endDate,
+            'project_id' => $project->id,
         ];
     }
 

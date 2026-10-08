@@ -7,7 +7,6 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
     2. si el formulario se abre en modo edición, en el select o select2 se mostraran el elemento sseleccionado (tenga o no active=1) y el resto de elementos seran solo los que tengan acitive=1 
 [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
 [] test sin db prioridad
-[] las fechas de las epicas deben estar dentro de las fechas del proyecto, arreglar validaciones y tenerlo en cuenta en el factory y en los seeders
 
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Database\Factories\EpicFactory;
 use Database\Factories\ProjectFactory;
@@ -70,10 +71,8 @@ class DevelopTableSeeder extends Seeder
                 $projects++;
 
                 for ($epicIndex = 1; $epicIndex <= self::EPICS_PER_PROJECT; $epicIndex++) {
-                    $epic = $this->withState('epics', Epic::factory())->createOne([
-                        'name' => sprintf('Perf Epic %05d', $epics + $epicIndex),
-                        'project_id' => $project->id,
-                    ]);
+                    /** @var Project $project */
+                    $epic = $this->createEpicWithinProject($project, $epics + $epicIndex);
                     $epics++;
 
                     for ($commentIndex = 1; $commentIndex <= self::COMMENTS_PER_EPIC; $commentIndex++) {
@@ -87,6 +86,51 @@ class DevelopTableSeeder extends Seeder
                 }
             }
         }
+    }
+
+    /**
+     * Create an epic with dates constrained to the project's date range.
+     */
+    private function createEpicWithinProject(Project $project, int $epicNumber): Epic
+    {
+        $projectStart = CarbonImmutable::parse($project->start_date);
+        $projectEnd = $project->end_date ? CarbonImmutable::parse($project->end_date) : CarbonImmutable::now()->addYear();
+
+        // Epic can have no dates
+        if (fake()->boolean(20)) {
+            /** @var Epic $epic */
+            $epic = $this->withState('epics', Epic::factory())->createOne([
+                'name' => sprintf('Perf Epic %05d', $epicNumber),
+                'project_id' => $project->id,
+                'start_date' => null,
+                'end_date' => null,
+            ]);
+
+            return $epic;
+        }
+
+        // Ensure there's at least 1 day between project start and project end for epic dates
+        $earliestStart = $projectStart;
+        $latestStart = $projectEnd->subDay();
+
+        // If project is only 1 day or less, use project start for both
+        if ($latestStart->lessThanOrEqualTo($earliestStart)) {
+            $startDate = $projectStart->format('Y-m-d');
+            $endDate = $projectEnd->format('Y-m-d');
+        } else {
+            $startDate = fake()->dateTimeBetween($earliestStart, $latestStart)->format('Y-m-d');
+            $endDate = fake()->dateTimeBetween($startDate.' +1 day', $projectEnd)->format('Y-m-d');
+        }
+
+        /** @var Epic $epic */
+        $epic = $this->withState('epics', Epic::factory())->createOne([
+            'name' => sprintf('Perf Epic %05d', $epicNumber),
+            'project_id' => $project->id,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]);
+
+        return $epic;
     }
 
     /**

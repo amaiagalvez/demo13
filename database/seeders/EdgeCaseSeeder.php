@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Epic;
 use App\Models\Project;
 use App\Models\Customer;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
 class EdgeCaseSeeder extends Seeder
@@ -30,9 +31,16 @@ class EdgeCaseSeeder extends Seeder
         $projectsForEpics = Project::factory()->count(3)->create();
 
         foreach ($projectsForEpics as $index => $project) {
+            $projectStart = CarbonImmutable::parse($project->start_date);
+            $projectEnd = $project->end_date ? CarbonImmutable::parse($project->end_date) : CarbonImmutable::now()->addYear();
+            $startDate = fake()->dateTimeBetween($projectStart, $projectEnd->subDay())->format('Y-m-d');
+            $endDate = fake()->dateTimeBetween($startDate.' +1 day', $projectEnd)->format('Y-m-d');
+
             Epic::factory()->create([
                 'name' => "Epic without comments {$index}",
                 'project_id' => $project->id,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ]);
         }
     }

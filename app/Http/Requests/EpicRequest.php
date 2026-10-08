@@ -35,7 +35,7 @@ class EpicRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => [
                 'required',
                 'string',
@@ -53,6 +53,20 @@ class EpicRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:'.MaxLength::longText()],
             'reuse_deleted_name' => ['sometimes', 'boolean'],
         ];
+
+        // Add project date boundary validation after project_id is validated
+        $projectId = $this->integer('project_id');
+        if ($projectId > 0) {
+            $project = Project::withTrashed()->find($projectId);
+            if ($project) {
+                $rules['start_date'][] = 'after_or_equal:'.$project->start_date->format('Y-m-d');
+                if ($project->end_date) {
+                    $rules['end_date'][] = 'before_or_equal:'.$project->end_date->format('Y-m-d');
+                }
+            }
+        }
+
+        return $rules;
     }
 
     /**
