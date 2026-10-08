@@ -6,11 +6,11 @@ use Tests\TestCase;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Queries\Projects\ProjectListQuery;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class ProjectListQueryTest extends TestCase
 {
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
 
     public function test_active_list_includes_projects_with_trashed_customers(): void
     {
