@@ -25,7 +25,7 @@ class CustomerArchivedController extends ArchivedController
             'list' => $transformer->archived(
                 $customers,
                 $search,
-                $query->stateCounts(inactiveTotal: $search === '' ? $customers->total() : null),
+                $query->stateCounts(archivedTotal: $search === '' ? $customers->total() : null),
             ),
         ]);
     }

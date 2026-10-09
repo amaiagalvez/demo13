@@ -25,7 +25,7 @@ class ProjectArchivedController extends ArchivedController
             'list' => $transformer->archived(
                 $projects,
                 $search,
-                $query->stateCounts(inactiveTotal: $search === '' ? $projects->total() : null),
+                $query->stateCounts(archivedTotal: $search === '' ? $projects->total() : null),
             ),
         ]);
     }

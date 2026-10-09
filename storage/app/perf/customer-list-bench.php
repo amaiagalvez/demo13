@@ -4,7 +4,7 @@
  * Throwaway harness behind .github/tasks/09.performancce-test-plan.md.
  *
  * It walks the real login flow through the HTTP kernel and then measures the three states of the
- * customer list (active, inactive, trash) with and without search, on the first and on a later
+ * customer list (active, archived, trash) with and without search, on the first and on a later
  * page. Every request records its total duration, its query count and the duration of each query,
  * so the numbers come from the real list requests and not from the fixture alone.
  *
@@ -69,7 +69,7 @@ $interpolate = static function (array $query): string {
     foreach ($query['bindings'] as $binding) {
         $value = is_int($binding) || is_float($binding)
             ? (string) $binding
-            : "'".str_replace("'", "''", (string) $binding)."'";
+            : "'" . str_replace("'", "''", (string) $binding) . "'";
         $query['sql'] = preg_replace('/\?/', $value, $query['sql'], 1);
     }
 
@@ -106,7 +106,7 @@ $cookies = [$cookie['name'] => $cookie['value']];
 $probe = $send('/customers', cookies: $cookies);
 
 if ($probe->getStatusCode() !== 200) {
-    exit('The customer list answered '.$probe->getStatusCode().' instead of 200: authentication failed.');
+    exit('The customer list answered ' . $probe->getStatusCode() . ' instead of 200: authentication failed.');
 }
 
 $volumes = [
@@ -116,14 +116,14 @@ $volumes = [
     'epic comments' => DB::table('epic_comments')->count(),
 ];
 
-echo 'Authenticated as '.$user->email.'. Debug: '.var_export((bool) config('app.debug'), true).PHP_EOL;
-echo 'Volumes: '.json_encode($volumes).PHP_EOL.PHP_EOL;
+echo 'Authenticated as ' . $user->email . '. Debug: ' . var_export((bool) config('app.debug'), true) . PHP_EOL;
+echo 'Volumes: ' . json_encode($volumes) . PHP_EOL . PHP_EOL;
 
 // --- Scenarios ---------------------------------------------------------------------------------
 
 $terms = static function (string $state): array {
     $name = match ($state) {
-        'inactive' => Customer::query()->where('active', false)->value('name'),
+        'archived' => Customer::query()->where('active', false)->value('name'),
         'trash' => Customer::onlyTrashed()->value('name'),
         default => Customer::query()->where('active', true)->value('name'),
     };
@@ -136,12 +136,12 @@ $terms = static function (string $state): array {
     ];
 };
 
-$uris = ['active' => '/customers', 'inactive' => '/customers/inactive', 'trash' => '/customers/trash'];
+$uris = ['active' => '/customers', 'archived' => '/customers/archived', 'trash' => '/customers/trash'];
 $counts = app(CustomerListQuery::class)->stateCounts();
 $perPage = ListQueryBase::PER_PAGE;
 $lastPages = [
     'active' => (int) ceil($counts['active'] / $perPage),
-    'inactive' => (int) ceil($counts['inactive'] / $perPage),
+    'archived' => (int) ceil($counts['archived'] / $perPage),
     'trash' => (int) ceil($counts['trashed'] / $perPage),
 ];
 
@@ -158,14 +158,14 @@ foreach ($uris as $state => $uri) {
         foreach ($pages as $page) {
             $scenarios[] = [
                 'label' => sprintf('%s / %s / page %d', $state, $variant, $page),
-                'uri' => $uri.'?'.http_build_query(['page' => $page] + $parameters),
+                'uri' => $uri . '?' . http_build_query(['page' => $page] + $parameters),
             ];
         }
     }
 }
 
-echo 'States: active '.$counts['active'].', inactive '.$counts['inactive'].', trashed '.$counts['trashed'].
-    ' (page size '.$perPage.'; last pages '.json_encode($lastPages).').'.PHP_EOL;
+echo 'States: active ' . $counts['active'] . ', archived ' . $counts['archived'] . ', trashed ' . $counts['trashed'] .
+    ' (page size ' . $perPage . '; last pages ' . json_encode($lastPages) . ').' . PHP_EOL;
 
 // --- Measure -----------------------------------------------------------------------------------
 
@@ -183,7 +183,7 @@ $request = function (array $scenario) use ($send, $cookies, &$queries): array {
     $elapsed = (hrtime(true) - $started) / 1e6;
 
     if ($response->getStatusCode() !== 200) {
-        exit($scenario['label'].' answered '.$response->getStatusCode().PHP_EOL);
+        exit($scenario['label'] . ' answered ' . $response->getStatusCode() . PHP_EOL);
     }
 
     return [$elapsed, $queries];
@@ -231,11 +231,11 @@ echo sprintf(
     'queries',
     'slowest query (median ms)',
 );
-echo str_repeat('-', 186).PHP_EOL;
+echo str_repeat('-', 186) . PHP_EOL;
 
 foreach ($results as $label => $result) {
     $db = array_sum(array_map(
-        static fn (array $times): float => array_sum($times) / count($times),
+        static fn(array $times): float => array_sum($times) / count($times),
         $result['sql'],
     ));
 
@@ -261,24 +261,24 @@ foreach ($results as $label => $result) {
         max($result['counts']),
         $slowest[$topSql] ?? 0.0,
         mb_substr($topSql, 0, 70),
-    ).PHP_EOL;
+    ) . PHP_EOL;
 }
 
-echo PHP_EOL.'Query breakdown of the first page of each state, without search'.PHP_EOL;
+echo PHP_EOL . 'Query breakdown of the first page of each state, without search' . PHP_EOL;
 
 foreach ($plans as $label => $queries) {
     if (! str_contains($label, '/ none / page 1')) {
         continue;
     }
 
-    echo PHP_EOL.$label.PHP_EOL;
+    echo PHP_EOL . $label . PHP_EOL;
 
     foreach ($queries as $query) {
         printf("  %6.2fms  %s\n", $query['time'], mb_substr($interpolate($query), 0, 130));
     }
 }
 
-echo PHP_EOL.'EXPLAIN of the queries behind the active list'.PHP_EOL;
+echo PHP_EOL . 'EXPLAIN of the queries behind the active list' . PHP_EOL;
 
 foreach ($plans as $label => $queries) {
     if (! str_starts_with($label, 'active /')) {
@@ -292,9 +292,9 @@ foreach ($plans as $label => $queries) {
             continue;
         }
 
-        echo PHP_EOL.$label.PHP_EOL.'  '.$sql.PHP_EOL;
+        echo PHP_EOL . $label . PHP_EOL . '  ' . $sql . PHP_EOL;
 
-        foreach (DB::select('EXPLAIN '.$sql) as $row) {
+        foreach (DB::select('EXPLAIN ' . $sql) as $row) {
             echo sprintf(
                 "    table=%-14s type=%-8s key=%-32s rows=%-8s extra=%s\n",
                 $row->table ?? '-',

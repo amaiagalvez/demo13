@@ -233,10 +233,10 @@ class EpicInputValidationTest extends TestCase
         $this->assertDatabaseHas('epics', ['name' => 'Open-ended epic', 'end_date' => null]);
     }
 
-    public function test_inactive_projects_cannot_receive_epics(): void
+    public function test_archived_projects_cannot_receive_epics(): void
     {
         $this->actingAs(User::factory()->create());
-        $project = Project::factory()->inactive()->create();
+        $project = Project::factory()->archived()->create();
 
         $this->from(route('epics.index'))
             ->post(route('epics.store'), ['name' => 'Orphan epic', 'project_id' => $project->id])
@@ -249,10 +249,10 @@ class EpicInputValidationTest extends TestCase
      * The project an epic already belongs to stays valid while editing, even once it has been
      * deactivated, so a form that only renames the epic can still be saved.
      */
-    public function test_an_epic_can_keep_its_inactive_project_while_being_edited(): void
+    public function test_an_epic_can_keep_its_archived_project_while_being_edited(): void
     {
         $this->actingAs(User::factory()->create());
-        $project = Project::factory()->inactive()->create();
+        $project = Project::factory()->archived()->create();
         $epic = Epic::factory()->for($project)->create();
 
         $this->from(route('epics.index'))
@@ -270,16 +270,16 @@ class EpicInputValidationTest extends TestCase
         ]);
     }
 
-    public function test_an_epic_cannot_be_moved_to_an_inactive_project(): void
+    public function test_an_epic_cannot_be_moved_to_an_archived_project(): void
     {
         $this->actingAs(User::factory()->create());
         $epic = Epic::factory()->create();
-        $inactive = Project::factory()->inactive()->create();
+        $archived = Project::factory()->archived()->create();
 
         $this->from(route('epics.index'))
             ->put(route('epics.update', $epic), [
                 'name' => 'Moved epic',
-                'project_id' => $inactive->id,
+                'project_id' => $archived->id,
             ])
             ->assertSessionHasErrors(['project_id']);
 

@@ -34,7 +34,7 @@
     "Bad Request": "Solicitud incorrecta",
     "Browse": "Navegar",
     "Cancel": "Cancelar",
-    "Cannot be deleted while it has related records.": "No se puede eliminar porque tiene registros relacionados.",
+    "Cannot be deleted while it has related records.": "No se puede eliminar porque tiene registros relacionados. Puedes archivarlo",
     "Cannot be permanently deleted while it has related records.": "No se puede eliminar definitivamente porque tiene registros relacionados.",
     "Choose": "Elija",
     "Choose a customer from the list or create a new one.": "Elige un cliente de la lista o crea uno nuevo.",

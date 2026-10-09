@@ -17,12 +17,12 @@ deleted from a trash view.
 ## Main Modules / Domains
 
 - Customer management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, inactive list, and trash list.
+  Eloquent model, active list, archived list, and trash list.
 - Project management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, inactive list, and trash list. Each project belongs to one customer;
+  Eloquent model, active list, archived list, and trash list. Each project belongs to one customer;
   a customer may have many projects.
 - Epic management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, inactive list, and trash list. Each epic belongs to one project;
+  Eloquent model, active list, archived list, and trash list. Each epic belongs to one project;
   a project may have many epics. Epics have comments (author and creation time),
   added from the epic edit drawer.
 - Authentication and account settings: Laravel Fortify, email verification, passkeys,
@@ -55,26 +55,26 @@ and the `laravel_test` database configured in `phpunit.xml`; the test suite does
 not use SQLite.
 
 Customers, projects, epics, and users have an `active` boolean, defaulting to true.
-Resource index lists include only active, non-deleted records; inactive lists include
-only inactive, non-deleted records and append the last modification date. Trash lists
+Resource index lists include only active, non-deleted records; archived lists include
+only archived, non-deleted records and append the last modification date. Trash lists
 include every deleted record regardless of `active`; restoring preserves that flag.
 Deactivation does not cascade to children. Index rows offer deactivation instead of
 deletion when a customer has projects or a project has epics, including deleted children.
 Parent selectors show only active customers when creating or changing a project and
 only active projects when creating or changing an epic. In edit mode, the current
-parent remains selected even if it has since become inactive; other inactive parents
+parent remains selected even if it has since become archived; other archived parents
 are not offered.
 The `active` flag is never mass assignable on users or resources. Resource activation
 changes only through the dedicated deactivate/reactivate actions, not through create,
 update, or other request payloads.
 
 Important constraints: customer and project names are unique among non-deleted records,
-including inactive records.
+including archived records.
 Soft-deleted names may be reused. Restoring a deleted record whose name is already
 used by a non-deleted record is rejected with a conflict message. Projects require one
 customer and have a nullable end date that cannot precede the required start date.
 Customers with projects cannot be moved to the trash or permanently deleted.
-Epic names are unique per project among non-deleted epics, including inactive ones. Epic start and end dates are
+Epic names are unique per project among non-deleted epics, including archived ones. Epic start and end dates are
 optional, but an end date requires a start date and must be later than it. Projects
 with epics (including trashed epics) cannot be moved to the trash or permanently
 deleted. Epic comments are removed when their epic is permanently deleted and keep
@@ -101,7 +101,7 @@ Blade / Livewire / Vue / Inertia:
 
 - Blade with Livewire and Flux components, bundled by Vite Plus and Tailwind CSS.
 - Laravel Dusk covers the customer CRUD end to end. Projects and epics have Dusk coverage of
-  their CRUD and of the parent selector, but not of their trash, inactive lists or drawer;
+  their CRUD and of the parent selector, but not of their trash, archived lists or drawer;
   those flows are covered by feature tests only.
 
 ---

@@ -309,10 +309,10 @@ class ProjectInputValidationTest extends TestCase
             ]));
     }
 
-    public function test_inactive_customers_cannot_be_assigned_to_projects(): void
+    public function test_archived_customers_cannot_be_assigned_to_projects(): void
     {
         $this->actingAs(User::factory()->create());
-        $customer = Customer::factory()->inactive()->create();
+        $customer = Customer::factory()->archived()->create();
 
         $this->from(route('projects.index'))
             ->post(route('projects.store'), [
@@ -331,10 +331,10 @@ class ProjectInputValidationTest extends TestCase
      * The customer a project already belongs to stays valid while editing, even once it has been
      * deactivated, so a form that only renames the project can still be saved.
      */
-    public function test_a_project_can_keep_its_inactive_customer_while_being_edited(): void
+    public function test_a_project_can_keep_its_archived_customer_while_being_edited(): void
     {
         $this->actingAs(User::factory()->create());
-        $customer = Customer::factory()->inactive()->create();
+        $customer = Customer::factory()->archived()->create();
         $project = Project::factory()->for($customer)->create();
 
         $this->from(route('projects.index'))
@@ -354,18 +354,18 @@ class ProjectInputValidationTest extends TestCase
         ]);
     }
 
-    public function test_a_project_cannot_be_moved_to_an_inactive_customer(): void
+    public function test_a_project_cannot_be_moved_to_an_archived_customer(): void
     {
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create();
-        $inactive = Customer::factory()->inactive()->create();
+        $archived = Customer::factory()->archived()->create();
 
         $this->from(route('projects.index'))
             ->put(route('projects.update', $project), [
                 'name' => 'Moved project',
                 'start_date' => self::START_DATE,
                 'end_date' => '2026-10-31',
-                'customer_id' => $inactive->id,
+                'customer_id' => $archived->id,
             ])
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['customer_id']);

@@ -14,7 +14,7 @@ class CustomerListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function active(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
@@ -39,7 +39,7 @@ class CustomerListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function archived(LengthAwarePaginator $customers, string $search, ?array $counts = null): array
@@ -56,7 +56,7 @@ class CustomerListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $customers
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function trash(LengthAwarePaginator $customers, string $search, ?array $counts = null): array

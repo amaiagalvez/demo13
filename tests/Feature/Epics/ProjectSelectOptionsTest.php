@@ -27,10 +27,10 @@ class ProjectSelectOptionsTest extends TestCase
             ->assertSee('epic-no-project-form-button');
     }
 
-    public function test_epic_list_offers_project_form_when_only_inactive_projects_exist(): void
+    public function test_epic_list_offers_project_form_when_only_archived_projects_exist(): void
     {
         $this->actingAs(User::factory()->create());
-        Project::factory()->inactive()->create();
+        Project::factory()->archived()->create();
 
         $this->get(route('epics.index'))
             ->assertOk()
@@ -109,7 +109,7 @@ class ProjectSelectOptionsTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
         Project::factory()->for($customer)->create(['name' => 'Active select project']);
-        Project::factory()->for($customer)->inactive()->create(['name' => 'Inactive select project']);
+        Project::factory()->for($customer)->archived()->create(['name' => 'Inactive select project']);
         Project::factory()->for($customer)->trashed()->create(['name' => 'Deleted select project']);
 
         $this->getJson(route('projects.options', ['q' => 'select project']))

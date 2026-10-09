@@ -31,9 +31,9 @@ class InactiveUserTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_inactive_users_cannot_log_in_with_a_valid_password(): void
+    public function test_archived_users_cannot_log_in_with_a_valid_password(): void
     {
-        $user = User::factory()->inactive()->create();
+        $user = User::factory()->archived()->create();
 
         $this->post(route('login.store'), [
             'email' => $user->email,
@@ -44,10 +44,10 @@ class InactiveUserTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_inactive_users_cannot_begin_a_two_factor_challenge(): void
+    public function test_archived_users_cannot_begin_a_two_factor_challenge(): void
     {
         $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
-        $user = User::factory()->inactive()->withTwoFactor()->create();
+        $user = User::factory()->archived()->withTwoFactor()->create();
 
         $this->post(route('login.store'), [
             'email' => $user->email,
@@ -109,9 +109,9 @@ class InactiveUserTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_inactive_authenticated_json_requests_are_rejected(): void
+    public function test_archived_authenticated_json_requests_are_rejected(): void
     {
-        $user = User::factory()->inactive()->create();
+        $user = User::factory()->archived()->create();
 
         $this->actingAs($user)->getJson(route('dashboard'))
             ->assertUnauthorized();
@@ -121,7 +121,7 @@ class InactiveUserTest extends TestCase
 
     public function test_deactivated_sessions_are_revoked_before_guest_route_redirects(): void
     {
-        $user = User::factory()->inactive()->create();
+        $user = User::factory()->archived()->create();
 
         $this->actingAs($user)->get(route('login'))
             ->assertRedirect(route('login'));
@@ -151,10 +151,10 @@ class InactiveUserTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_inactive_users_cannot_log_in_with_a_verified_passkey(): void
+    public function test_archived_users_cannot_log_in_with_a_verified_passkey(): void
     {
         $this->skipUnlessFortifyHas(Features::passkeys());
-        $user = User::factory()->inactive()->create();
+        $user = User::factory()->archived()->create();
         $passkey = $user->passkeys()->create([
             'name' => 'Test passkey',
             'credential_id' => 'aWQ',

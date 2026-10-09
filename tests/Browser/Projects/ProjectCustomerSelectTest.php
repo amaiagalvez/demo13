@@ -19,7 +19,7 @@ class ProjectCustomerSelectTest extends DuskTestCase
     public function test_no_active_customers_action_opens_the_customer_form(): void
     {
         $user = User::factory()->create();
-        Customer::factory()->inactive()->create();
+        Customer::factory()->archived()->create();
         Customer::factory()->trashed()->create();
 
         $this->browse(function (Browser $browser) use ($user): void {
@@ -117,17 +117,17 @@ class ProjectCustomerSelectTest extends DuskTestCase
         ]);
     }
 
-    public function test_edit_keeps_its_inactive_customer_selected_and_only_offers_active_options(): void
+    public function test_edit_keeps_its_archived_customer_selected_and_only_offers_active_options(): void
     {
         $user = User::factory()->create();
-        $inactiveCustomer = Customer::factory()->inactive()->create(['name' => 'Inactive selected customer']);
+        $archivedCustomer = Customer::factory()->archived()->create(['name' => 'Inactive selected customer']);
         $activeCustomer = Customer::factory()->create(['name' => 'Active option customer']);
-        $otherInactiveCustomer = Customer::factory()->inactive()->create(['name' => 'Other inactive customer']);
-        $project = Project::factory()->for($inactiveCustomer)->create(['name' => 'Project with inactive customer']);
+        $otherInactiveCustomer = Customer::factory()->archived()->create(['name' => 'Other archived customer']);
+        $project = Project::factory()->for($archivedCustomer)->create(['name' => 'Project with archived customer']);
 
         $this->browse(function (Browser $browser) use (
             $user,
-            $inactiveCustomer,
+            $archivedCustomer,
             $activeCustomer,
             $otherInactiveCustomer,
             $project,
@@ -136,7 +136,7 @@ class ProjectCustomerSelectTest extends DuskTestCase
                 ->visit('/projects?search='.urlencode($project->name))
                 ->click('[data-test="project-edit-'.$project->id.'"]')
                 ->waitFor(self::OPEN_DIALOG.' [data-test="project-name"]')
-                ->assertSelected(self::OPEN_DIALOG.' #project-customer-id', (string) $inactiveCustomer->id)
+                ->assertSelected(self::OPEN_DIALOG.' #project-customer-id', (string) $archivedCustomer->id)
                 ->click('#select2-project-customer-id-container')
                 ->type(self::OPEN_DIALOG.' .select2-container--open .select2-search__field', 'option customer')
                 ->waitUntil(
@@ -144,9 +144,9 @@ class ProjectCustomerSelectTest extends DuskTestCase
                     10,
                 )
                 ->assertSeeIn(self::OPEN_DIALOG.' .select2-results', $activeCustomer->name)
-                ->assertDontSeeIn(self::OPEN_DIALOG.' .select2-results', $inactiveCustomer->name)
+                ->assertDontSeeIn(self::OPEN_DIALOG.' .select2-results', $archivedCustomer->name)
                 ->assertDontSeeIn(self::OPEN_DIALOG.' .select2-results', $otherInactiveCustomer->name)
-                ->assertSelected(self::OPEN_DIALOG.' #project-customer-id', (string) $inactiveCustomer->id);
+                ->assertSelected(self::OPEN_DIALOG.' #project-customer-id', (string) $archivedCustomer->id);
         });
     }
 }

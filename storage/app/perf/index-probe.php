@@ -57,24 +57,24 @@ foreach ($login->headers->getCookies() as $candidate) {
 }
 
 $cookies = [(string) config('session.cookie') => $cookie];
-$list = [['active', '/customers', []], ['inactive', '/customers/inactive', []], ['trash', '/customers/trash', []]];
+$list = [['active', '/customers', []], ['archived', '/customers/archived', []], ['trash', '/customers/trash', []]];
 
 /** Statements of one request per list state, without the session and auth bookkeeping. */
 $statements = [];
 
 foreach ($list as [$state, $uri, $parameters]) {
     $queries = [];
-    $send($uri.'?'.http_build_query(['page' => 1] + $parameters), cookies: $cookies);
+    $send($uri . '?' . http_build_query(['page' => 1] + $parameters), cookies: $cookies);
 
     foreach ($queries as $query) {
         if (str_contains($query['sql'], 'customers') && ! str_contains($query['sql'], 'count(*) as `aggregate`')) {
-            $statements[$state.' / results'] = [$query['sql'], $query['bindings']];
+            $statements[$state . ' / results'] = [$query['sql'], $query['bindings']];
 
             continue;
         }
 
         if (str_contains($query['sql'], 'count(*) as `aggregate` from `customers`')) {
-            $statements[$state.' / counts'] = [$query['sql'], $query['bindings']];
+            $statements[$state . ' / counts'] = [$query['sql'], $query['bindings']];
         }
     }
 }
@@ -106,12 +106,12 @@ $measure = static function (array $statements): array {
 $before = $measure($statements);
 
 $plans = static function (array $statements, string $title): void {
-    echo PHP_EOL.$title.PHP_EOL;
+    echo PHP_EOL . $title . PHP_EOL;
 
     foreach ($statements as $label => [$sql, $bindings]) {
-        echo PHP_EOL.$label.PHP_EOL;
+        echo PHP_EOL . $label . PHP_EOL;
 
-        foreach (DB::select('EXPLAIN '.$sql, $bindings) as $row) {
+        foreach (DB::select('EXPLAIN ' . $sql, $bindings) as $row) {
             echo sprintf(
                 "    table=%-14s type=%-8s key=%-32s rows=%-8s extra=%s\n",
                 $row->table ?? '-',
@@ -131,9 +131,9 @@ $after = $measure($statements);
 $plans($statements, 'EXPLAIN con el indice candidato (active, deleted_at, name)');
 DB::statement('drop index customers_state_name_index on customers');
 
-echo PHP_EOL.'Customers: '.Customer::withTrashed()->count().PHP_EOL.PHP_EOL;
+echo PHP_EOL . 'Customers: ' . Customer::withTrashed()->count() . PHP_EOL . PHP_EOL;
 echo sprintf("%-22s %10s %10s %10s\n", 'statement', 'before', 'after', 'delta');
-echo str_repeat('-', 56).PHP_EOL;
+echo str_repeat('-', 56) . PHP_EOL;
 
 foreach ($before as $label => $time) {
     echo sprintf(
@@ -142,5 +142,5 @@ foreach ($before as $label => $time) {
         $time,
         $after[$label],
         $after[$label] - $time,
-    ).PHP_EOL;
+    ) . PHP_EOL;
 }

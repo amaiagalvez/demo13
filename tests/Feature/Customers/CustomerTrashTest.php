@@ -135,11 +135,11 @@ class CustomerTrashTest extends TestCase
         $this->assertModelExists($activeCustomer);
     }
 
-    public function test_deleted_customer_cannot_be_restored_when_an_inactive_customer_uses_its_name(): void
+    public function test_deleted_customer_cannot_be_restored_when_an_archived_customer_uses_its_name(): void
     {
         $this->actingAs(User::factory()->create());
         $deletedCustomer = Customer::factory()->trashed()->create(['name' => 'Ane Bezeroa']);
-        $inactiveCustomer = Customer::factory()->inactive()->create(['name' => 'Ane Bezeroa']);
+        $archivedCustomer = Customer::factory()->archived()->create(['name' => 'Ane Bezeroa']);
 
         $this->patch(route('customers.trash.restore', $deletedCustomer->id))
             ->assertRedirect(route('customers.trash.index'))
@@ -149,8 +149,8 @@ class CustomerTrashTest extends TestCase
             );
 
         $this->assertSoftDeleted($deletedCustomer);
-        $this->assertModelExists($inactiveCustomer);
-        $this->assertFalse($inactiveCustomer->active);
+        $this->assertModelExists($archivedCustomer);
+        $this->assertFalse($archivedCustomer->active);
     }
 
     public function test_deleted_customer_can_be_permanently_deleted(): void

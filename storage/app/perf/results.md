@@ -112,10 +112,10 @@ para que la mezcla sea idéntica en cualquier escala.
 | active / `00001` / pág. 2 | 20,7 ms | 22,6 ms | 19,4 ms | 2,7 ms | 18,0 ms | 8 |
 | active / `zzz-no-match` / pág. 1 | 19,7 ms | 22,8 ms | 18,3 ms | 2,4 ms | 17,3 ms | 7–8 |
 | active / `zzz-no-match` / pág. 2 | 20,4 ms | 28,1 ms | 18,6 ms | 2,4 ms | 18,0 ms | 7–8 |
-| inactive / sin búsqueda / pág. 1 | 49,6 ms | 59,2 ms | 47,2 ms | 3,8 ms | 45,7 ms | 8–9 |
-| inactive / `Perf` / pág. 1 | 51,9 ms | 57,7 ms | 47,5 ms | 4,5 ms | 47,4 ms | 8 |
-| inactive / `00001` / pág. 1 | 19,6 ms | 20,2 ms | 17,8 ms | 3,0 ms | 16,6 ms | 8–9 |
-| inactive / `zzz-no-match` / pág. 1 | 17,5 ms | 19,0 ms | 16,5 ms | 2,0 ms | 15,5 ms | 7 |
+| archived / sin búsqueda / pág. 1 | 49,6 ms | 59,2 ms | 47,2 ms | 3,8 ms | 45,7 ms | 8–9 |
+| archived / `Perf` / pág. 1 | 51,9 ms | 57,7 ms | 47,5 ms | 4,5 ms | 47,4 ms | 8 |
+| archived / `00001` / pág. 1 | 19,6 ms | 20,2 ms | 17,8 ms | 3,0 ms | 16,6 ms | 8–9 |
+| archived / `zzz-no-match` / pág. 1 | 17,5 ms | 19,0 ms | 16,5 ms | 2,0 ms | 15,5 ms | 7 |
 | trash / sin búsqueda / pág. 1 | 37,5 ms | 41,2 ms | 35,9 ms | 3,0 ms | 34,5 ms | 8–9 |
 | trash / `Perf` / pág. 1 | 38,6 ms | 41,6 ms | 37,6 ms | 3,2 ms | 35,4 ms | 8 |
 | trash / `00001` / pág. 1 | 20,2 ms | 20,9 ms | 18,8 ms | 2,8 ms | 17,3 ms | 8 |
@@ -136,14 +136,14 @@ La segunda página no se midió en inactivos ni papelera porque a esta escala so
 | active / `00001` / pág. 2 | 21,8 ms | 22,9 ms | 19,8 ms | 3,3 ms | 18,6 ms | 8 |
 | active / `zzz-no-match` / pág. 1 | 20,7 ms | 22,3 ms | 19,0 ms | 2,8 ms | 18,0 ms | 7–8 |
 | active / `zzz-no-match` / pág. 2 | 20,3 ms | 28,2 ms | 18,0 ms | 2,4 ms | 18,0 ms | 7–8 |
-| inactive / sin búsqueda / pág. 1 | 51,4 ms | 57,0 ms | 48,7 ms | 4,6 ms | 46,8 ms | 8–9 |
-| inactive / sin búsqueda / pág. 2 | 52,4 ms | 71,8 ms | 48,3 ms | 4,6 ms | 47,8 ms | 8 |
-| inactive / `Perf` / pág. 1 | 51,3 ms | 66,0 ms | 49,8 ms | 5,0 ms | 46,3 ms | 8 |
-| inactive / `Perf` / pág. 2 | 51,2 ms | 56,0 ms | 48,7 ms | 4,9 ms | 46,3 ms | 8 |
-| inactive / `00001` / pág. 1 | 20,7 ms | 22,0 ms | 18,4 ms | 3,5 ms | 17,2 ms | 8 |
-| inactive / `00001` / pág. 2 | 19,7 ms | 23,7 ms | 18,1 ms | 3,2 ms | 16,5 ms | 8 |
-| inactive / `zzz-no-match` / pág. 1 | 17,9 ms | 21,4 ms | 16,3 ms | 2,5 ms | 15,4 ms | 7–8 |
-| inactive / `zzz-no-match` / pág. 2 | 18,5 ms | 20,8 ms | 16,5 ms | 2,3 ms | 16,2 ms | 7 |
+| archived / sin búsqueda / pág. 1 | 51,4 ms | 57,0 ms | 48,7 ms | 4,6 ms | 46,8 ms | 8–9 |
+| archived / sin búsqueda / pág. 2 | 52,4 ms | 71,8 ms | 48,3 ms | 4,6 ms | 47,8 ms | 8 |
+| archived / `Perf` / pág. 1 | 51,3 ms | 66,0 ms | 49,8 ms | 5,0 ms | 46,3 ms | 8 |
+| archived / `Perf` / pág. 2 | 51,2 ms | 56,0 ms | 48,7 ms | 4,9 ms | 46,3 ms | 8 |
+| archived / `00001` / pág. 1 | 20,7 ms | 22,0 ms | 18,4 ms | 3,5 ms | 17,2 ms | 8 |
+| archived / `00001` / pág. 2 | 19,7 ms | 23,7 ms | 18,1 ms | 3,2 ms | 16,5 ms | 8 |
+| archived / `zzz-no-match` / pág. 1 | 17,9 ms | 21,4 ms | 16,3 ms | 2,5 ms | 15,4 ms | 7–8 |
+| archived / `zzz-no-match` / pág. 2 | 18,5 ms | 20,8 ms | 16,5 ms | 2,3 ms | 16,2 ms | 7 |
 | trash / sin búsqueda / pág. 1 | 53,8 ms | 61,0 ms | 51,4 ms | 3,5 ms | 50,3 ms | 8–9 |
 | trash / sin búsqueda / pág. 2 | 44,6 ms | 49,8 ms | 43,2 ms | 2,8 ms | 41,8 ms | 8 |
 | trash / `Perf` / pág. 1 | 57,5 ms | 61,8 ms | 52,1 ms | 4,3 ms | 53,2 ms | 8–9 |
@@ -165,14 +165,14 @@ La segunda página no se midió en inactivos ni papelera porque a esta escala so
 | active / `00001` / pág. 2 | 22,6 ms | 25,8 ms | 20,9 ms | 5,1 ms | 17,5 ms | 8 |
 | active / `zzz-no-match` / pág. 1 | 21,0 ms | 23,2 ms | 19,3 ms | 2,6 ms | 18,4 ms | 7 |
 | active / `zzz-no-match` / pág. 2 | 19,9 ms | 22,0 ms | 18,4 ms | 2,7 ms | 17,2 ms | 7 |
-| inactive / sin búsqueda / pág. 1 | 51,9 ms | 62,3 ms | 49,8 ms | 5,5 ms | 46,5 ms | 8 |
-| inactive / sin búsqueda / pág. 2 | 53,5 ms | 60,3 ms | 49,5 ms | 5,4 ms | 48,1 ms | 8–9 |
-| inactive / `Perf` / pág. 1 | 55,1 ms | 71,1 ms | 51,2 ms | 6,5 ms | 48,6 ms | 8 |
-| inactive / `Perf` / pág. 2 | 52,3 ms | 64,5 ms | 50,5 ms | 6,3 ms | 46,0 ms | 8 |
-| inactive / `00001` / pág. 1 | 21,3 ms | 25,2 ms | 19,0 ms | 4,7 ms | 16,7 ms | 8 |
-| inactive / `00001` / pág. 2 | 21,1 ms | 23,9 ms | 19,4 ms | 4,6 ms | 16,5 ms | 8 |
-| inactive / `zzz-no-match` / pág. 1 | 18,5 ms | 21,2 ms | 17,1 ms | 2,8 ms | 15,7 ms | 7 |
-| inactive / `zzz-no-match` / pág. 2 | 18,4 ms | 21,6 ms | 17,5 ms | 2,8 ms | 15,6 ms | 7 |
+| archived / sin búsqueda / pág. 1 | 51,9 ms | 62,3 ms | 49,8 ms | 5,5 ms | 46,5 ms | 8 |
+| archived / sin búsqueda / pág. 2 | 53,5 ms | 60,3 ms | 49,5 ms | 5,4 ms | 48,1 ms | 8–9 |
+| archived / `Perf` / pág. 1 | 55,1 ms | 71,1 ms | 51,2 ms | 6,5 ms | 48,6 ms | 8 |
+| archived / `Perf` / pág. 2 | 52,3 ms | 64,5 ms | 50,5 ms | 6,3 ms | 46,0 ms | 8 |
+| archived / `00001` / pág. 1 | 21,3 ms | 25,2 ms | 19,0 ms | 4,7 ms | 16,7 ms | 8 |
+| archived / `00001` / pág. 2 | 21,1 ms | 23,9 ms | 19,4 ms | 4,6 ms | 16,5 ms | 8 |
+| archived / `zzz-no-match` / pág. 1 | 18,5 ms | 21,2 ms | 17,1 ms | 2,8 ms | 15,7 ms | 7 |
+| archived / `zzz-no-match` / pág. 2 | 18,4 ms | 21,6 ms | 17,5 ms | 2,8 ms | 15,6 ms | 7 |
 | trash / sin búsqueda / pág. 1 | 58,1 ms | 73,8 ms | 51,7 ms | 4,1 ms | 54,0 ms | 8 |
 | trash / sin búsqueda / pág. 2 | 55,5 ms | 72,7 ms | 51,5 ms | 4,1 ms | 51,3 ms | 8–9 |
 | trash / `Perf` / pág. 1 | 54,5 ms | 65,1 ms | 51,7 ms | 4,3 ms | 50,2 ms | 8 |
@@ -204,14 +204,14 @@ columna `db`, en cambio, es estable y es la que se usa para el análisis.
 | active / `00001` / pág. 2 | 111,6 ms | 157,6 ms | 41,9 ms | 49,5 ms | 62,1 ms | 8–9 |
 | active / `zzz-no-match` / pág. 1 | 75,5 ms | 106,0 ms | 46,4 ms | 20,8 ms | 54,7 ms | 7 |
 | active / `zzz-no-match` / pág. 2 | 50,8 ms | 72,5 ms | 36,2 ms | 15,4 ms | 35,3 ms | 7 |
-| inactive / sin búsqueda / pág. 1 | 98,9 ms | 166,3 ms | 84,0 ms | 25,4 ms | 73,5 ms | 8–9 |
-| inactive / sin búsqueda / pág. 2 | 179,4 ms | 250,0 ms | 102,5 ms | 37,7 ms | 141,8 ms | 8 |
-| inactive / `Perf` / pág. 1 | 233,6 ms | 299,5 ms | 137,7 ms | 62,6 ms | 171,0 ms | 8–9 |
-| inactive / `Perf` / pág. 2 | 117,0 ms | 157,8 ms | 94,4 ms | 33,6 ms | 83,5 ms | 8 |
-| inactive / `00001` / pág. 1 | 56,5 ms | 76,2 ms | 50,0 ms | 31,4 ms | 25,1 ms | 8–9 |
-| inactive / `00001` / pág. 2 | 60,4 ms | 96,7 ms | 49,4 ms | 34,0 ms | 26,4 ms | 8 |
-| inactive / `zzz-no-match` / pág. 1 | 36,2 ms | 53,9 ms | 28,3 ms | 11,8 ms | 24,4 ms | 7 |
-| inactive / `zzz-no-match` / pág. 2 | 54,8 ms | 81,3 ms | 34,9 ms | 16,0 ms | 38,8 ms | 7 |
+| archived / sin búsqueda / pág. 1 | 98,9 ms | 166,3 ms | 84,0 ms | 25,4 ms | 73,5 ms | 8–9 |
+| archived / sin búsqueda / pág. 2 | 179,4 ms | 250,0 ms | 102,5 ms | 37,7 ms | 141,8 ms | 8 |
+| archived / `Perf` / pág. 1 | 233,6 ms | 299,5 ms | 137,7 ms | 62,6 ms | 171,0 ms | 8–9 |
+| archived / `Perf` / pág. 2 | 117,0 ms | 157,8 ms | 94,4 ms | 33,6 ms | 83,5 ms | 8 |
+| archived / `00001` / pág. 1 | 56,5 ms | 76,2 ms | 50,0 ms | 31,4 ms | 25,1 ms | 8–9 |
+| archived / `00001` / pág. 2 | 60,4 ms | 96,7 ms | 49,4 ms | 34,0 ms | 26,4 ms | 8 |
+| archived / `zzz-no-match` / pág. 1 | 36,2 ms | 53,9 ms | 28,3 ms | 11,8 ms | 24,4 ms | 7 |
+| archived / `zzz-no-match` / pág. 2 | 54,8 ms | 81,3 ms | 34,9 ms | 16,0 ms | 38,8 ms | 7 |
 | trash / sin búsqueda / pág. 1 | 129,1 ms | 181,2 ms | 80,3 ms | 12,5 ms | 116,5 ms | 8 |
 | trash / sin búsqueda / pág. 2 | 81,0 ms | 100,0 ms | 72,0 ms | 8,4 ms | 72,5 ms | 8 |
 | trash / `Perf` / pág. 1 | 81,3 ms | 96,6 ms | 70,4 ms | 12,9 ms | 68,5 ms | 8 |
@@ -269,7 +269,7 @@ una consulta por fila. Lo que sí crece es cuántas veces los ejecuta MariaDB po
 
 Perfil 1.000, primera página de cada estado (mediana de las 20 ejecuciones):
 
-| consulta | active | inactive | trash |
+| consulta | active | archived | trash |
 |---|---|---|---|
 | `sessions` (lectura) | 0,71 ms | 0,40 ms | 0,36 ms |
 | `users exists` | 0,79 ms | 0,36 ms | 0,26 ms |
@@ -339,8 +339,8 @@ Se mide cada sentencia del listado por separado (25 ejecuciones, mediana) antes 
 |---|---|
 | active / filas | −5,81 ms … +3,10 ms |
 | active / conteos | −0,42 ms … +0,72 ms |
-| inactive / filas | −4,56 ms … +1,77 ms |
-| inactive / conteos | −0,38 ms … +0,43 ms |
+| archived / filas | −4,56 ms … +1,77 ms |
+| archived / conteos | −0,38 ms … +0,43 ms |
 | trash / filas | −1,55 ms … +2,44 ms |
 | trash / conteos | −0,18 ms … +0,95 ms |
 
@@ -356,13 +356,13 @@ Tres repeticiones seguidas, misma sesión:
 | sentencia | antes | después | diferencia |
 |---|---|---|---|
 | active / filas | 16,13 ms | 2,55 ms | **−13,58 ms** |
-| inactive / filas | 15,38 ms | 2,56 ms | **−12,82 ms** |
+| archived / filas | 15,38 ms | 2,56 ms | **−12,82 ms** |
 | active / conteos | 0,96 ms | 0,56 ms | −0,40 ms |
-| inactive / conteos | 0,51 ms | 0,55 ms | +0,04 ms |
+| archived / conteos | 0,51 ms | 0,55 ms | +0,04 ms |
 | trash / filas | 2,03 ms | 2,16 ms | +0,13 ms |
 | trash / conteos | 0,53 ms | 0,57 ms | +0,04 ms |
 
-Repeticiones 2 y 3: `active / filas` −12,97 ms y −12,92 ms; `inactive / filas` −16,71 ms y
+Repeticiones 2 y 3: `active / filas` −12,97 ms y −12,92 ms; `archived / filas` −16,71 ms y
 −12,92 ms. Los conteos de las pestañas no cambian (son escaneos sobre `active`, que el índice no
 toca) y la papelera tampoco (su consulta ya es barata).
 

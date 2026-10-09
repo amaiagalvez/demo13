@@ -44,7 +44,7 @@ cubre `initials()` — que **no tenía ningún test en todo el repo** — más `
 | **DUP-004** | Borrar `InactiveController` es una decisión de gusto, no un defecto. Se ofrece; no se hace. |
 | **OE-002** | Quitar la rama SQLite/PG depende de si el equipo quiere soportar esos motores. Decisión, no defecto. |
 | **MOD-005 `active_name`** | No se documenta: ningún código de la app la lee, sólo la proyectan los `select('x.*')`. Sería ruido. |
-| Test de desempate en `active()`/`inactive()` | **Imposible de escribir** para customers y projects, porque el nombre es único entre los no borrados. Ver MOD-004. |
+| Test de desempate en `active()`/`archived()` | **Imposible de escribir** para customers y projects, porque el nombre es único entre los no borrados. Ver MOD-004. |
 
 ### Verificaciones
 
@@ -144,7 +144,7 @@ Ficheros: `database/factories/EpicCommentFactory.php` vs `CustomerFactory.php:13
 `ProjectFactory.php:14`, `EpicFactory.php:14`, `UserFactory.php:15`
 
 Correcto si se aplica MOD-001(a): el modelo no tiene `active` ni `SoftDeletes`, así que
-`inactive()`/`trashed()` no tendrían a qué aplicarse. El problema es que **nada en el
+`archived()`/`trashed()` no tendrían a qué aplicarse. El problema es que **nada en el
 fichero lo dice** — no se distingue de un descuido.
 
 Recomendación: una línea en el docblock de la factory. Con MOD-001(b), añadir `HasStates`.
@@ -207,7 +207,7 @@ y epics.
 **Aplicado:** `->orderBy('id')` en `CustomerListQuery.php:24`. El comentario explica que es
 por consistencia, sin insinuar un bug que no existe.
 
-**No aplicado:** el test que recomendaba para exigir el desempate en `active()`/`inactive()`
+**No aplicado:** el test que recomendaba para exigir el desempate en `active()`/`archived()`
 — es **imposible de escribir** para customers y projects, porque no se pueden crear dos
 registros activos con el mismo nombre. El guard actual ya cubre `trashed()`, que es donde
 los empates sí existen.
@@ -633,7 +633,7 @@ Ordenado por impacto.
 
 ### 4. El bug de paginación
 - [ ] **MOD-004** — `->orderBy('id')` en `CustomerListQuery.php:24`, y extender
-      `ResourceUniformityTest:206` para exigir desempate en `active()` e `inactive()`.
+      `ResourceUniformityTest:206` para exigir desempate en `active()` e `archived()`.
 
 ### 5. Documentación que hoy miente
 - [ ] **DB-003** (`ARCHITECTURE.md:80-81`) — Dice *"Epic comments are removed when their epic

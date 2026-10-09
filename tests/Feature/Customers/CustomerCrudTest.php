@@ -142,9 +142,9 @@ class CustomerCrudTest extends TestCase
         Epic::factory()->for($project)->create();
         $commentedEpic = Epic::factory()->for($project)->create();
         EpicComment::factory()->count(5)->for($commentedEpic)->create();
-        $inactiveProjectEpic = Epic::factory()->for(Project::factory()->for($customer)->inactive())->create();
-        EpicComment::factory()->count(4)->for($inactiveProjectEpic)->create();
-        EpicComment::factory()->count(6)->for(Epic::factory()->for($project)->inactive())->create();
+        $archivedProjectEpic = Epic::factory()->for(Project::factory()->for($customer)->archived())->create();
+        EpicComment::factory()->count(4)->for($archivedProjectEpic)->create();
+        EpicComment::factory()->count(6)->for(Epic::factory()->for($project)->archived())->create();
         EpicComment::factory()->count(7)->for(Epic::factory()->for($project)->trashed())->create();
 
         $this->get(route('customers.index'))
@@ -160,7 +160,7 @@ class CustomerCrudTest extends TestCase
 
         $this->actingAs(User::factory()->create());
         Customer::factory()->count(2)->create();
-        Customer::factory()->inactive()->create();
+        Customer::factory()->archived()->create();
         Customer::factory()->count(3)->trashed()->create();
 
         $this->get(route('customers.index'))

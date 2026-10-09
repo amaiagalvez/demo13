@@ -183,12 +183,12 @@ class EpicTrashTest extends TestCase
         $this->assertSoftDeleted($deletedEpic);
     }
 
-    public function test_epic_cannot_be_restored_when_an_inactive_epic_in_the_same_project_uses_its_name(): void
+    public function test_epic_cannot_be_restored_when_an_archived_epic_in_the_same_project_uses_its_name(): void
     {
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create();
         $deletedEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'Repeated epic']);
-        $inactiveEpic = Epic::factory()->for($project)->inactive()->create(['name' => 'Repeated epic']);
+        $archivedEpic = Epic::factory()->for($project)->archived()->create(['name' => 'Repeated epic']);
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
             ->assertRedirect(route('epics.trash.index'))
@@ -198,8 +198,8 @@ class EpicTrashTest extends TestCase
             );
 
         $this->assertSoftDeleted($deletedEpic);
-        $this->assertModelExists($inactiveEpic);
-        $this->assertFalse($inactiveEpic->active);
+        $this->assertModelExists($archivedEpic);
+        $this->assertFalse($archivedEpic->active);
     }
 
     public function test_epic_can_be_restored_when_its_name_is_used_only_in_another_project(): void

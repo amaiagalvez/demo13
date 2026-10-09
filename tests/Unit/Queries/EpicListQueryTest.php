@@ -68,7 +68,7 @@ class EpicListQueryTest extends TestCase
         $result = $this->query->stateCounts(10, 5, 3);
 
         $this->assertSame(
-            ['active' => 10, 'inactive' => 5, 'trashed' => 3],
+            ['active' => 10, 'archived' => 5, 'trashed' => 3],
             $result,
         );
     }

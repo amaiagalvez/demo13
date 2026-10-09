@@ -17,7 +17,7 @@ class EpicFormTest extends DuskTestCase
     public function test_no_active_projects_action_opens_the_project_form(): void
     {
         $user = User::factory()->create();
-        Project::factory()->inactive()->create();
+        Project::factory()->archived()->create();
         Project::factory()->trashed()->create();
 
         $this->browse(function (Browser $browser) use ($user): void {
@@ -83,18 +83,18 @@ class EpicFormTest extends DuskTestCase
     public function test_opening_the_project_select_loads_other_projects_for_an_existing_epic(): void
     {
         $user = User::factory()->create();
-        $inactiveProject = Project::factory()->inactive()->create([
+        $archivedProject = Project::factory()->archived()->create([
             'name' => 'Inactive selected project '.Str::uuid()->toString(),
         ]);
-        $epic = Epic::factory()->for($inactiveProject)->create();
+        $epic = Epic::factory()->for($archivedProject)->create();
         $otherProject = Project::factory()->create([
             'name' => 'Other project '.Str::uuid()->toString(),
         ]);
-        $otherInactiveProject = Project::factory()->inactive()->create([
-            'name' => 'Other inactive project '.Str::uuid()->toString(),
+        $otherInactiveProject = Project::factory()->archived()->create([
+            'name' => 'Other archived project '.Str::uuid()->toString(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $epic, $inactiveProject, $otherProject, $otherInactiveProject): void {
+        $this->browse(function (Browser $browser) use ($user, $epic, $archivedProject, $otherProject, $otherInactiveProject): void {
             $browser->loginAs($user)
                 ->visit('/epics?search='.urlencode($epic->name))
                 ->click('[data-test="epic-edit-'.$epic->id.'"]')
@@ -110,7 +110,7 @@ class EpicFormTest extends DuskTestCase
                     $otherProject->name,
                 )
                 ->assertDontSeeIn('dialog[open] [data-test="epic-project"]', $otherInactiveProject->name)
-                ->assertSelected('dialog[open] [data-test="epic-project"]', (string) $inactiveProject->id);
+                ->assertSelected('dialog[open] [data-test="epic-project"]', (string) $archivedProject->id);
         });
     }
 }

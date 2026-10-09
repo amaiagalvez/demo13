@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DevelopTableSeeder extends Seeder
 {
-    private const STATE_WEIGHTS = ['active' => 12, 'inactive' => 5, 'trashed' => 3];
+    private const STATE_WEIGHTS = ['active' => 12, 'archived' => 5, 'trashed' => 3];
 
     private const PROJECTS_PER_CUSTOMER = 3;
 
@@ -145,7 +145,7 @@ class DevelopTableSeeder extends Seeder
         $state = $this->states[$this->cursors[$level]++ % count($this->states)];
 
         return match ($state) {
-            'inactive' => $factory->inactive(),
+            'archived' => $factory->archived(),
             'trashed' => $factory->trashed(),
             default => $factory,
         };

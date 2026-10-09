@@ -93,23 +93,23 @@ class TimelineTest extends TestCase
             ->assertSeeInOrder(['Dated epic', 'Undated epic']);
     }
 
-    public function test_inactive_and_trashed_records_never_reach_the_board(): void
+    public function test_archived_and_trashed_records_never_reach_the_board(): void
     {
         $customer = Customer::factory()->create();
         $project = Project::factory()->for($customer)->create(['name' => 'Shown project']);
 
-        Project::factory()->inactive()->create(['name' => 'Hidden inactive project']);
+        Project::factory()->archived()->create(['name' => 'Hidden archived project']);
         Project::factory()->trashed()->create(['name' => 'Hidden trashed project']);
-        Epic::factory()->for($project)->inactive()->create(['name' => 'Hidden inactive epic']);
+        Epic::factory()->for($project)->archived()->create(['name' => 'Hidden archived epic']);
         Epic::factory()->for($project)->trashed()->create(['name' => 'Hidden trashed epic']);
 
         $this->actingAs(User::factory()->create())
             ->get(route('timeline'))
             ->assertOk()
             ->assertSee('Shown project')
-            ->assertDontSee('Hidden inactive project')
+            ->assertDontSee('Hidden archived project')
             ->assertDontSee('Hidden trashed project')
-            ->assertDontSee('Hidden inactive epic')
+            ->assertDontSee('Hidden archived epic')
             ->assertDontSee('Hidden trashed epic');
     }
 
@@ -117,9 +117,9 @@ class TimelineTest extends TestCase
      * Deactivation does not cascade, so a project whose customer has been deactivated is still
      * active work and keeps its place on the board.
      */
-    public function test_an_active_project_of_an_inactive_customer_still_shows_up(): void
+    public function test_an_active_project_of_an_archived_customer_still_shows_up(): void
     {
-        $customer = Customer::factory()->inactive()->create(['name' => 'Sleeping customer']);
+        $customer = Customer::factory()->archived()->create(['name' => 'Sleeping customer']);
         Project::factory()->for($customer)->create(['name' => 'Still running']);
 
         $this->actingAs(User::factory()->create())

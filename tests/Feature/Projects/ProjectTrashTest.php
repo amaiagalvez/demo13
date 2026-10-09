@@ -211,14 +211,14 @@ class ProjectTrashTest extends TestCase
         $this->assertSoftDeleted($deletedProject);
     }
 
-    public function test_project_cannot_be_restored_when_an_inactive_project_uses_its_name(): void
+    public function test_project_cannot_be_restored_when_an_archived_project_uses_its_name(): void
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
         $deletedProject = Project::factory()->for($customer)->trashed()->create([
             'name' => 'Repeated project name',
         ]);
-        $inactiveProject = Project::factory()->for($customer)->inactive()->create([
+        $archivedProject = Project::factory()->for($customer)->archived()->create([
             'name' => 'Repeated project name',
         ]);
 
@@ -230,7 +230,7 @@ class ProjectTrashTest extends TestCase
             );
 
         $this->assertSoftDeleted($deletedProject);
-        $this->assertModelExists($inactiveProject);
-        $this->assertFalse($inactiveProject->active);
+        $this->assertModelExists($archivedProject);
+        $this->assertFalse($archivedProject->active);
     }
 }

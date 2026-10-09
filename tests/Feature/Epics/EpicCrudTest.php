@@ -354,7 +354,7 @@ class EpicCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $project = Project::factory()->create();
         Epic::factory()->count(2)->for($project)->create();
-        Epic::factory()->for($project)->inactive()->create();
+        Epic::factory()->for($project)->archived()->create();
         Epic::factory()->count(3)->for($project)->trashed()->create();
 
         $this->get(route('epics.index'))

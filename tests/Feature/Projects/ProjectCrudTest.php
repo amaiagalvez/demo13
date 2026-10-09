@@ -36,10 +36,10 @@ class ProjectCrudTest extends TestCase
             ->assertViewHas('hasCustomers', true);
     }
 
-    public function test_has_customers_is_false_when_only_inactive_customers_exist(): void
+    public function test_has_customers_is_false_when_only_archived_customers_exist(): void
     {
         $this->actingAs(User::factory()->create());
-        Customer::factory()->inactive()->create();
+        Customer::factory()->archived()->create();
 
         $this->get(route('projects.index'))
             ->assertOk()
@@ -262,7 +262,7 @@ class ProjectCrudTest extends TestCase
         Epic::factory()->for($project)->create();
         $commentedEpic = Epic::factory()->for($project)->create();
         EpicComment::factory()->count(3)->for($commentedEpic)->create();
-        EpicComment::factory()->count(4)->for(Epic::factory()->for($project)->inactive())->create();
+        EpicComment::factory()->count(4)->for(Epic::factory()->for($project)->archived())->create();
         EpicComment::factory()->count(5)->for(Epic::factory()->for($project)->trashed())->create();
 
         $this->get(route('projects.index'))
@@ -348,7 +348,7 @@ class ProjectCrudTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
         Project::factory()->count(2)->for($customer)->create();
-        Project::factory()->for($customer)->inactive()->create();
+        Project::factory()->for($customer)->archived()->create();
         Project::factory()->count(3)->for($customer)->trashed()->create();
 
         $this->get(route('projects.index'))

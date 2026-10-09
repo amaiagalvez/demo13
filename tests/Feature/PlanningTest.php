@@ -52,13 +52,13 @@ class PlanningTest extends TestCase
             'end_date' => '2099-01-01',
         ]);
 
-        Project::factory()->for($customer)->inactive()->create();
+        Project::factory()->for($customer)->archived()->create();
         Project::factory()->for($customer)->trashed()->create();
         Epic::factory()->for($project)->create([
             'start_date' => '2026-01-01',
             'end_date' => '2099-01-01',
         ]);
-        Epic::factory()->for($project)->inactive()->create();
+        Epic::factory()->for($project)->archived()->create();
         Epic::factory()->for($project)->trashed()->create();
 
         $this->travelTo('2026-10-06');
@@ -88,8 +88,8 @@ class PlanningTest extends TestCase
             'end_date' => '2026-04-01',
         ]);
 
-        // Same dates but inactive and trashed, so neither is late active work.
-        Project::factory()->for($customer)->inactive()->create([
+        // Same dates but archived and trashed, so neither is late active work.
+        Project::factory()->for($customer)->archived()->create([
             'start_date' => '2026-01-01',
             'end_date' => '2026-03-01',
         ]);
@@ -106,33 +106,33 @@ class PlanningTest extends TestCase
             ->assertSeeInOrder(['data-test="planning-summary-overdue"', '>2</span>'], false);
     }
 
-    public function test_inactive_and_trashed_records_never_reach_the_board(): void
+    public function test_archived_and_trashed_records_never_reach_the_board(): void
     {
         $customer = Customer::factory()->create();
         $project = Project::factory()->for($customer)->create(['name' => 'Shown project']);
 
-        Project::factory()->inactive()->create(['name' => 'Hidden inactive project']);
+        Project::factory()->archived()->create(['name' => 'Hidden archived project']);
         Project::factory()->trashed()->create(['name' => 'Hidden trashed project']);
-        Epic::factory()->inactive()->for($project)->create(['name' => 'Hidden inactive epic']);
+        Epic::factory()->archived()->for($project)->create(['name' => 'Hidden archived epic']);
         Epic::factory()->trashed()->for($project)->create(['name' => 'Hidden trashed epic']);
 
         $this->actingAs(User::factory()->create())
             ->get(route('planning'))
             ->assertOk()
             ->assertSee('Shown project')
-            ->assertDontSee('Hidden inactive project')
+            ->assertDontSee('Hidden archived project')
             ->assertDontSee('Hidden trashed project')
-            ->assertDontSee('Hidden inactive epic')
+            ->assertDontSee('Hidden archived epic')
             ->assertDontSee('Hidden trashed epic');
     }
 
     /**
-     * A project of an inactive customer is still active work, and deactivation does not cascade,
+     * A project of an archived customer is still active work, and deactivation does not cascade,
      * so it stays on the board with its customer named on the row.
      */
-    public function test_an_active_project_of_an_inactive_customer_still_shows_up(): void
+    public function test_an_active_project_of_an_archived_customer_still_shows_up(): void
     {
-        $customer = Customer::factory()->inactive()->create(['name' => 'Sleeping customer']);
+        $customer = Customer::factory()->archived()->create(['name' => 'Sleeping customer']);
         Project::factory()->for($customer)->create(['name' => 'Still running']);
 
         $this->actingAs(User::factory()->create())

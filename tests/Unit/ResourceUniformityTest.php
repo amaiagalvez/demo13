@@ -145,10 +145,12 @@ class ResourceUniformityTest extends TestCase
         $byResource = array_fill_keys($models, '');
         $shared = '';
 
-        foreach ([
-            RestoreRequest::class,
-            TrashDestroyRequest::class,
-        ] as $requestClass) {
+        foreach (
+            [
+                RestoreRequest::class,
+                TrashDestroyRequest::class,
+            ] as $requestClass
+        ) {
             $path = (new ReflectionClass($requestClass))->getFileName();
             $this->assertIsString($path);
             $shared .= File::get($path);
@@ -214,7 +216,7 @@ class ResourceUniformityTest extends TestCase
      * Every model whose table carries the active flag must cast it and offer the factory state, so
      * the three resources and the user cannot drift apart on activation.
      */
-    public function test_every_model_with_an_active_flag_offers_the_inactive_state(): void
+    public function test_every_model_with_an_active_flag_offers_the_archived_state(): void
     {
         foreach ([Customer::class, Project::class, Epic::class, User::class] as $modelClass) {
             $this->assertArrayHasKey(
@@ -223,8 +225,8 @@ class ResourceUniformityTest extends TestCase
                 "{$modelClass} has an active flag and must declare it in casts()",
             );
             $this->assertTrue(
-                method_exists($modelClass::factory(), 'inactive'),
-                "{$modelClass} has an active flag and must offer the inactive() factory state",
+                method_exists($modelClass::factory(), 'archived'),
+                "{$modelClass} has an active flag and must offer the archived() factory state",
             );
         }
     }

@@ -66,7 +66,7 @@ class CustomerSelectOptionsTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         Customer::factory()->create(['name' => 'Active select customer']);
-        Customer::factory()->inactive()->create(['name' => 'Inactive select customer']);
+        Customer::factory()->archived()->create(['name' => 'Inactive select customer']);
         Customer::factory()->trashed()->create(['name' => 'Deleted select customer']);
 
         $this->getJson(route('customers.options', ['q' => 'select customer']))

@@ -21,7 +21,7 @@ class CustomerListQueryTest extends TestCase
         $counts = $query->stateCounts();
 
         $this->assertSame(1, $customers->total());
-        $this->assertSame(['active' => 2, 'inactive' => 0, 'trashed' => 0], $counts);
+        $this->assertSame(['active' => 2, 'archived' => 0, 'trashed' => 0], $counts);
     }
 
     public function test_active_list_filters_out_deleted_customers(): void

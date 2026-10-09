@@ -32,7 +32,7 @@ class ListTransformerContractTest extends TestCase
         'rows',
     ];
 
-    private const COUNTED_TABS = ['active' => 2, 'inactive' => 1, 'trashed' => 3];
+    private const COUNTED_TABS = ['active' => 2, 'archived' => 1, 'trashed' => 3];
 
     /**
      * @return list<array{0: class-string, 1: 'active'|'archived'|'trash'}>
@@ -185,20 +185,32 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function payload(string $transformerClass, string $state, ?array $counts = null): array
     {
         return match (true) {
             $transformerClass === CustomerListTransformer::class => $this->customerState(
-                app(CustomerListTransformer::class), $this->customers(), $state, '', $counts,
+                app(CustomerListTransformer::class),
+                $this->customers(),
+                $state,
+                '',
+                $counts,
             ),
             $transformerClass === ProjectListTransformer::class => $this->projectState(
-                app(ProjectListTransformer::class), $this->projects(), $state, '', $counts,
+                app(ProjectListTransformer::class),
+                $this->projects(),
+                $state,
+                '',
+                $counts,
             ),
             default => $this->epicState(
-                app(EpicListTransformer::class), $this->epics(), $state, '', $counts,
+                app(EpicListTransformer::class),
+                $this->epics(),
+                $state,
+                '',
+                $counts,
             ),
         };
     }
@@ -214,17 +226,20 @@ class ListTransformerContractTest extends TestCase
             $transformerClass === CustomerListTransformer::class => $this->customerState(
                 app(CustomerListTransformer::class),
                 new LengthAwarePaginator([Customer::factory()->create()], 1, 15),
-                $state, '',
+                $state,
+                '',
             ),
             $transformerClass === ProjectListTransformer::class => $this->projectState(
                 app(ProjectListTransformer::class),
                 new LengthAwarePaginator([Project::factory()->create()], 1, 15),
-                $state, '',
+                $state,
+                '',
             ),
             default => $this->epicState(
                 app(EpicListTransformer::class),
                 new LengthAwarePaginator([Epic::factory()->create()], 1, 15),
-                $state, '',
+                $state,
+                '',
             ),
         };
     }
@@ -232,7 +247,7 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  LengthAwarePaginator<int, Customer>  $paginator
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function customerState(
@@ -255,7 +270,7 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  LengthAwarePaginator<int, Project>  $paginator
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function projectState(
@@ -278,7 +293,7 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  LengthAwarePaginator<int, Epic>  $paginator
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function epicState(

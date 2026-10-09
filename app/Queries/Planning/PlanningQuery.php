@@ -108,7 +108,7 @@ final class PlanningQuery extends ListQueryBase
 
     /**
      * Active projects whatever the state of their customer: deactivation does not cascade, so a
-     * project of an inactive customer is still active work, and its customer is who says whose.
+     * project of an archived customer is still active work, and its customer is who says whose.
      * Ids come back in id order, which is what fixes the order the pages are cut in.
      *
      * @return list<int>

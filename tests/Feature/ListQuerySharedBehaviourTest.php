@@ -180,7 +180,7 @@ class ListQuerySharedBehaviourTest extends TestCase
             DB::flushQueryLog();
         }
 
-        $this->assertSame(['active' => 2, 'inactive' => 0, 'trashed' => 1], $counts);
+        $this->assertSame(['active' => 2, 'archived' => 0, 'trashed' => 1], $counts);
         $this->assertCount($expectedQueries, $executed);
     }
 
@@ -200,14 +200,14 @@ class ListQuerySharedBehaviourTest extends TestCase
         DB::flushQueryLog();
 
         try {
-            $counts = $query->stateCounts(inactiveTotal: 0);
+            $counts = $query->stateCounts(archivedTotal: 0);
             $executed = DB::getQueryLog();
         } finally {
             DB::disableQueryLog();
             DB::flushQueryLog();
         }
 
-        $this->assertSame(['active' => 0, 'inactive' => 0, 'trashed' => 0], $counts);
+        $this->assertSame(['active' => 0, 'archived' => 0, 'trashed' => 0], $counts);
         $this->assertCount(2, $executed);
     }
 
