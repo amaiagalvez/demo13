@@ -16,7 +16,7 @@ class PackageViewsTest extends TestCase
 
     public function test_package_views_are_loaded(): void
     {
-        $providers = array_keys($this->app->getLoadedProviders());
+        $providers = data_get($this->app->getLoadedProviders(), []);
         $this->assertContains('Basics13\ServiceProvider', $providers, 'Basics13 ServiceProvider not loaded');
 
         $this->assertTrue(View::exists('basics13::components.list.create-action'));
@@ -62,7 +62,7 @@ class PackageViewsTest extends TestCase
 
     public function test_package_validation_translations_are_available_to_the_validator(): void
     {
-        $this->app->setLocale('eu');
+        optional($this->app)->setLocale('eu');
 
         $attributes = __('validation.attributes');
 
