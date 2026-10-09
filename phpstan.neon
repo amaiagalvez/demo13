@@ -1,3 +1,5 @@
+# PHPStan config that basics13 publishes to every application that uses it:
+#   php artisan vendor:publish --tag=basics13-tooling [--force]
 includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/nesbot/carbon/extension.neon

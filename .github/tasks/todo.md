@@ -9,9 +9,6 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 
 [] crea un plan: crear un nuevo paquete customers13 y pasar todo lo relacionado con Customer, la tabla pasa a llamarse PRO_projects, PRO_epics, PRO_epic_comments (cambiar migration, no esta en producción) todo lo que se pase al nuevo paquete quitar de demo13 y adaptar los namespaces y lo que sea necesario. este nuevo paquete dependara en DEV de basics13 para que puedan pasar los test
 
-
-
-
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------
