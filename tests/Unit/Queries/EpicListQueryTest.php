@@ -35,40 +35,42 @@ class EpicListQueryTest extends TestCase
 
     public function test_active_method_exists(): void
     {
-        $this->assertTrue(method_exists($this->query, 'active'));
+        $reflection = new \ReflectionClass($this->query);
+        $this->assertTrue($reflection->hasMethod('active'));
     }
 
     public function test_archived_method_exists(): void
     {
-        $this->assertTrue(method_exists($this->query, 'archived'));
+        $reflection = new \ReflectionClass($this->query);
+        $this->assertTrue($reflection->hasMethod('archived'));
     }
 
     public function test_trashed_method_exists(): void
     {
-        $this->assertTrue(method_exists($this->query, 'trashed'));
+        $reflection = new \ReflectionClass($this->query);
+        $this->assertTrue($reflection->hasMethod('trashed'));
     }
 
     public function test_find_trashed_by_name_method_exists(): void
     {
-        $this->assertTrue(method_exists($this->query, 'findTrashedByName'));
+        $reflection = new \ReflectionClass($this->query);
+        $this->assertTrue($reflection->hasMethod('findTrashedByName'));
     }
 
     public function test_state_counts_method_exists(): void
     {
-        $this->assertTrue(method_exists($this->query, 'stateCounts'));
+        $reflection = new \ReflectionClass($this->query);
+        $this->assertTrue($reflection->hasMethod('stateCounts'));
     }
 
     public function test_state_counts_returns_array_with_expected_keys(): void
     {
         $result = $this->query->stateCounts(10, 5, 3);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('active', $result);
-        $this->assertArrayHasKey('inactive', $result);
-        $this->assertArrayHasKey('trashed', $result);
-        $this->assertSame(10, $result['active']);
-        $this->assertSame(5, $result['inactive']);
-        $this->assertSame(3, $result['trashed']);
+        $this->assertSame(
+            ['active' => 10, 'inactive' => 5, 'trashed' => 3],
+            $result,
+        );
     }
 
     public function test_find_trashed_by_name_signature_accepts_project_id(): void

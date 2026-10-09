@@ -127,6 +127,7 @@ final class ListQueryBaseTest extends TestCase
         $reflection = new \ReflectionMethod($this->query, 'searchPattern');
         $reflection->setAccessible(true);
 
+        /** @var string */
         return $reflection->invoke($this->query, $search);
     }
 
@@ -140,6 +141,7 @@ final class ListQueryBaseTest extends TestCase
         $reflection = new \ReflectionMethod($this->query, 'whereMatches');
         $reflection->setAccessible(true);
 
+        /** @var Builder<Model> */
         return $reflection->invoke($this->query, $builder, $search, $searchColumns);
     }
 
@@ -151,12 +153,15 @@ final class ListQueryBaseTest extends TestCase
         $reflection = new \ReflectionMethod($this->query, 'firstTrashedByName');
         $reflection->setAccessible(true);
 
+        /** @var Model|null */
         return $reflection->invoke($this->query, $builder, $name);
     }
 }
 
 /**
  * Concrete implementation of ListQueryBase for testing.
+ *
+ * @extends ListQueryBase<Model>
  */
 class TestListQuery extends ListQueryBase
 {

@@ -190,7 +190,6 @@ final class TimelineQuery extends ListQueryBase
     {
         $projects = Project::query()
             ->whereIn('projects.id', $pageIds)
-            // @phpstan-ignore-next-line
             ->with([
                 'customer',
                 'epics' => static function (HasMany $epics): HasMany {
