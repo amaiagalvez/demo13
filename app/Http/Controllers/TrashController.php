@@ -53,8 +53,8 @@ abstract class TrashController extends Controller
         }
 
         $message = $request->boolean('resolve_name_conflict')
-            ? __('Record restored successfully. No new record was created with the repeated name.')
-            : __('Record restored successfully.');
+            ? __('basics13::messages.restored_no_new_record')
+            : __('basics13::messages.restored');
 
         // save() reports true whether it updated a row or not, so a restore whose row was
         // permanently deleted by a concurrent request would otherwise claim a success it did not
@@ -82,7 +82,7 @@ abstract class TrashController extends Controller
     private function restoreMissingResponse(): RedirectResponse
     {
         return to_route($this->trashRoute())
-            ->with('error', __('This record is no longer in the trash.'));
+            ->with('error', __('basics13::messages.not_in_trash'));
     }
 
     /**
@@ -97,7 +97,7 @@ abstract class TrashController extends Controller
                 ->with('error', __('Cannot be permanently deleted while it has related records.'));
         }
 
-        return to_route($this->trashRoute())->with('status', __('Record permanently deleted.'));
+        return to_route($this->trashRoute())->with('status', __('basics13::messages.permanently_deleted'));
     }
 
     /**
@@ -130,7 +130,7 @@ abstract class TrashController extends Controller
     private function restoreConflictResponse(): RedirectResponse
     {
         return to_route($this->trashRoute())
-            ->with('error', __('Cannot be restored because another record outside the trash uses this name.'));
+            ->with('error', __('basics13::messages.cannot_restore_name_taken'));
     }
 
     /**

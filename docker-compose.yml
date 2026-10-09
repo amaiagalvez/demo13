@@ -4,6 +4,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         ports:
             - "80:80"

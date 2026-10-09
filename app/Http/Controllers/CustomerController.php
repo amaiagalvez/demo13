@@ -64,7 +64,7 @@ class CustomerController extends Controller
             return response()->json($customer->only(['id', 'name']), 201);
         }
 
-        return to_route('customers.index')->with('status', __('Record created successfully.'));
+        return to_route('customers.index')->with('status', __('basics13::messages.created'));
     }
 
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse
@@ -75,7 +75,7 @@ class CustomerController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('customers.index')->with('status', __('Record updated successfully.'));
+        return to_route('customers.index')->with('status', __('basics13::messages.updated'));
     }
 
     public function destroy(Customer $customer): RedirectResponse
@@ -91,6 +91,6 @@ class CustomerController extends Controller
                 ->with('error', __('Cannot be deleted while it has related records.'));
         }
 
-        return to_route('customers.index')->with('status', __('Record moved to trash.'));
+        return to_route('customers.index')->with('status', __('basics13::messages.moved_to_trash'));
     }
 }

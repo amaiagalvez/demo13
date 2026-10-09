@@ -19,6 +19,12 @@ class ResourceActivationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('en');
+    }
+
     /**
      * @return array<string, array{class-string<Customer|Project|Epic>, string}>
      */
@@ -51,7 +57,7 @@ class ResourceActivationTest extends TestCase
         $cases = [];
 
         foreach (self::resources() as $resource => [$model]) {
-            foreach (['active' => '.index', 'inactive' => '.inactive.index', 'trash' => '.trash.index'] as $state => $suffix) {
+            foreach (['active' => '.index', 'inactive' => '.archived.index', 'trash' => '.trash.index'] as $state => $suffix) {
                 foreach ([
                     'unfiltered' => [2, '', 2, 3],
                     'empty' => [0, '', 0, 3],
@@ -130,7 +136,7 @@ class ResourceActivationTest extends TestCase
             ->assertDontSee('Inactive record')
             ->assertDontSee('Trashed active record');
 
-        $this->get(route($resource.'.inactive.index'))
+        $this->get(route($resource.'.archived.index'))
             ->assertOk()
             ->assertSee('Inactive record')
             ->assertDontSee('Active record')
@@ -157,7 +163,7 @@ class ResourceActivationTest extends TestCase
         $this->travelTo('2026-10-02 12:30:00');
         $record = $model::factory()->inactive()->create(['name' => 'Dormant record']);
 
-        $this->get(route($resource.'.inactive.index'))
+        $this->get(route($resource.'.archived.index'))
             ->assertOk()
             ->assertSeeInOrder(['<thead', __('Name')], false)
             ->assertSee('Dormant record')
@@ -178,17 +184,17 @@ class ResourceActivationTest extends TestCase
         $record = $model::factory()->create();
         $this->travelTo('2026-10-02 10:00:00');
 
-        $this->patch(route($resource.'.deactivate', $record))
+        $this->patch(route($resource.'.archive', $record))
             ->assertRedirect(route($resource.'.index'))
-            ->assertSessionHas('status', __('Record deactivated successfully.'));
+            ->assertSessionHas('status', __('basics13::messages.archived'));
 
         $record->refresh();
         $this->assertFalse($record->active);
         $this->assertSame('2026-10-02 10:00:00', $record->updated_at->toDateTimeString());
 
-        $this->patch(route($resource.'.inactive.reactivate', $record))
-            ->assertRedirect(route($resource.'.inactive.index'))
-            ->assertSessionHas('status', __('Record reactivated successfully.'));
+        $this->patch(route($resource.'.archived.activate', $record))
+            ->assertRedirect(route($resource.'.archived.index'))
+            ->assertSessionHas('status', __('basics13::messages.activated'));
 
         $this->assertTrue($record->refresh()->active);
     }
@@ -204,9 +210,9 @@ class ResourceActivationTest extends TestCase
         $active = $model::factory()->create();
 
         $this->patch(route($resource.'.deactivate', $inactive))
-            ->assertSessionHas('status', __('Record deactivated successfully.'));
-        $this->patch(route($resource.'.inactive.reactivate', $active))
-            ->assertSessionHas('status', __('Record reactivated successfully.'));
+            ->assertSessionHas('status', __('basics13::messages.archived'));
+        $this->patch(route($resource.'.archived.activate', $active))
+            ->assertSessionHas('status', __('basics13::messages.activated'));
 
         $this->assertFalse($inactive->refresh()->active);
         $this->assertTrue($active->refresh()->active);
@@ -223,7 +229,7 @@ class ResourceActivationTest extends TestCase
         $inactive = $model::factory()->inactive()->trashed()->create();
 
         $this->patch(route($resource.'.deactivate', $active->id))->assertNotFound();
-        $this->patch(route($resource.'.inactive.reactivate', $inactive->id))->assertNotFound();
+        $this->patch(route($resource.'.archived.activate', $inactive->id))->assertNotFound();
 
         $this->assertTrue($active->refresh()->active);
         $this->assertFalse($inactive->refresh()->active);
@@ -243,7 +249,7 @@ class ResourceActivationTest extends TestCase
         $record->refresh();
         $this->assertNotSoftDeleted($record);
         $this->assertFalse($record->active);
-        $this->get(route($resource.'.inactive.index'))->assertSee('Restored dormant record');
+        $this->get(route($resource.'.archived.index'))->assertSee('Restored dormant record');
         $this->get(route($resource.'.index'))->assertDontSee('Restored dormant record');
     }
 
@@ -256,9 +262,9 @@ class ResourceActivationTest extends TestCase
         $record = $model::factory()->create();
         $inactive = $model::factory()->inactive()->create();
 
-        $this->get(route($resource.'.inactive.index'))->assertRedirect(route('login'));
-        $this->patch(route($resource.'.deactivate', $record))->assertRedirect(route('login'));
-        $this->patch(route($resource.'.inactive.reactivate', $inactive))->assertRedirect(route('login'));
+        $this->get(route($resource.'.archived.index'))->assertRedirect(route('login'));
+        $this->patch(route($resource.'.archive', $record))->assertRedirect(route('login'));
+        $this->patch(route($resource.'.archived.activate', $inactive))->assertRedirect(route('login'));
 
         $this->assertTrue($record->refresh()->active);
         $this->assertFalse($inactive->refresh()->active);
@@ -273,7 +279,7 @@ class ResourceActivationTest extends TestCase
         $this->actingAs(User::factory()->unverified()->create());
         $record = $model::factory()->create();
 
-        $this->patch(route($resource.'.deactivate', $record))->assertRedirect(route('verification.notice'));
+        $this->patch(route($resource.'.archive', $record))->assertRedirect(route('verification.notice'));
 
         $this->assertTrue($record->refresh()->active);
     }
@@ -318,7 +324,7 @@ class ResourceActivationTest extends TestCase
         $projectFactory->create();
 
         $this->get(route('customers.index'))
-            ->assertSee('data-test="customer-deactivate-'.$customer->id.'"', false)
+            ->assertSee('data-test="customer-archive-'.$customer->id.'"', false)
             ->assertDontSee('data-test="customer-delete-'.$customer->id.'"', false);
     }
 
@@ -339,7 +345,7 @@ class ResourceActivationTest extends TestCase
         $epicFactory->create();
 
         $this->get(route('projects.index'))
-            ->assertSee('data-test="project-deactivate-'.$project->id.'"', false)
+            ->assertSee('data-test="project-archive-'.$project->id.'"', false)
             ->assertDontSee('data-test="project-delete-'.$project->id.'"', false);
     }
 
@@ -350,7 +356,7 @@ class ResourceActivationTest extends TestCase
 
         $this->get(route('epics.index'))
             ->assertSee('data-test="epic-delete-'.$epic->id.'"', false)
-            ->assertDontSee('data-test="epic-deactivate-'.$epic->id.'"', false);
+            ->assertDontSee('data-test="epic-archive-'.$epic->id.'"', false);
     }
 
     public function test_epics_with_comments_offer_deactivation_instead_of_deletion(): void
@@ -360,7 +366,7 @@ class ResourceActivationTest extends TestCase
         $comment = EpicComment::factory()->for($epic)->create();
 
         $this->get(route('epics.index'))
-            ->assertSee('data-test="epic-deactivate-'.$epic->id.'"', false)
+            ->assertSee('data-test="epic-archive-'.$epic->id.'"', false)
             ->assertDontSee('data-test="epic-delete-'.$epic->id.'"', false)
             ->assertSee(__('Cannot be deleted while it has related records.'));
 
@@ -368,9 +374,9 @@ class ResourceActivationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHas('error', __('Cannot be deleted while it has related records.'));
 
-        $this->patch(route('epics.deactivate', $epic))
+        $this->patch(route('epics.archive', $epic))
             ->assertRedirect(route('epics.index'))
-            ->assertSessionHas('status', __('Record deactivated successfully.'));
+            ->assertSessionHas('status', __('basics13::messages.archived'));
 
         $this->assertFalse($epic->refresh()->active);
         $this->assertModelExists($epic);
@@ -387,12 +393,12 @@ class ResourceActivationTest extends TestCase
         $this->travelTo('2026-07-15 10:00:00');
         $updatedCustomer->touch();
 
-        $this->get(route('customers.inactive.index', ['search' => 'Alpha']))
+        $this->get(route('customers.archived.index', ['search' => 'Alpha']))
             ->assertSee('Alpha Dormant')
             ->assertDontSee('Beta Dormant')
             ->assertDontSee('Alpha Active');
 
-        $this->get(route('customers.inactive.index', ['search' => '2026-07-15']))
+        $this->get(route('customers.archived.index', ['search' => '2026-07-15']))
             ->assertSee('Alpha Dormant')
             ->assertDontSee('Beta Dormant');
     }
@@ -409,12 +415,12 @@ class ResourceActivationTest extends TestCase
         $this->travelTo('2026-07-15 10:00:00');
         $otherProject->touch();
 
-        $this->get(route('projects.inactive.index', ['search' => 'Searchable Customer']))
+        $this->get(route('projects.archived.index', ['search' => 'Searchable Customer']))
             ->assertSee('Matching project')
             ->assertDontSee('Other project')
             ->assertDontSee('Active project');
 
-        $this->get(route('projects.inactive.index', ['search' => '2026-07-15']))
+        $this->get(route('projects.archived.index', ['search' => '2026-07-15']))
             ->assertSee('Other project')
             ->assertDontSee('Matching project');
     }
@@ -429,7 +435,7 @@ class ResourceActivationTest extends TestCase
         Epic::factory()->for($project)->create(['name' => 'Active epic']);
 
         foreach (['Epic Customer', 'Epic Project'] as $search) {
-            $this->get(route('epics.inactive.index', ['search' => $search]))
+            $this->get(route('epics.archived.index', ['search' => $search]))
                 ->assertSee('Matching epic')
                 ->assertDontSee('Other epic')
                 ->assertDontSee('Active epic');
@@ -449,7 +455,7 @@ class ResourceActivationTest extends TestCase
         $this->travelTo('2026-07-15 10:00:00');
         $updatedEpic->touch();
 
-        $response = $this->get(route('epics.inactive.index', ['search' => '2026-07-15']))
+        $response = $this->get(route('epics.archived.index', ['search' => '2026-07-15']))
             ->assertOk()
             ->assertSee('Alpha Dormant');
 
@@ -471,7 +477,7 @@ class ResourceActivationTest extends TestCase
         $this->actingAs(User::factory()->create());
         $model::factory()->inactive()->create(['name' => 'Fragment record']);
 
-        $this->get(route($resource.'.inactive.index'), ['X-List-Fragment' => 'true'])
+        $this->get(route($resource.'.archived.index'), ['X-List-Fragment' => 'true'])
             ->assertOk()
             ->assertSee('data-list-results', false)
             ->assertSee('Fragment record')
@@ -499,7 +505,7 @@ class ResourceActivationTest extends TestCase
 
         $model::factory()->inactive()->trashed()->create(['name' => 'Trashed inactive record']);
 
-        $firstPage = $this->get(route($resource.'.inactive.index'));
+        $firstPage = $this->get(route($resource.'.archived.index'));
         $firstPage
             ->assertOk()
             ->assertDontSee('Active record 1')
@@ -512,7 +518,7 @@ class ResourceActivationTest extends TestCase
             substr_count($firstPageContent, 'data-test="'.$testPrefix.'-reactivate-'),
         );
 
-        $secondPage = $this->get(route($resource.'.inactive.index', ['page' => 2]));
+        $secondPage = $this->get(route($resource.'.archived.index', ['page' => 2]));
         $secondPage
             ->assertOk()
             ->assertDontSee('Active record 1')
@@ -534,11 +540,11 @@ class ResourceActivationTest extends TestCase
 
         $this->get(route('customers.index'))
             ->assertSee('data-test="customer-delete-'.$customer->id.'"', false)
-            ->assertDontSee('data-test="customer-deactivate-'.$customer->id.'"', false);
+            ->assertDontSee('data-test="customer-archive-'.$customer->id.'"', false);
 
         $this->get(route('projects.index'))
             ->assertSee('data-test="project-delete-'.$project->id.'"', false)
-            ->assertDontSee('data-test="project-deactivate-'.$project->id.'"', false);
+            ->assertDontSee('data-test="project-archive-'.$project->id.'"', false);
     }
 
     public function test_deactivating_a_parent_does_not_cascade_to_children(): void
@@ -548,8 +554,8 @@ class ResourceActivationTest extends TestCase
         $project = $epic->project;
         $customer = $project->customer;
 
-        $this->patch(route('customers.deactivate', $customer));
-        $this->patch(route('projects.deactivate', $project));
+        $this->patch(route('customers.archive', $customer));
+        $this->patch(route('projects.archive', $project));
 
         $this->assertFalse($customer->refresh()->active);
         $this->assertFalse($project->refresh()->active);

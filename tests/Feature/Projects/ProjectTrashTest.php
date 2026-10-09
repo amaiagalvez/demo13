@@ -13,6 +13,12 @@ class ProjectTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('en');
+    }
+
     public function test_trash_preserves_index_columns_without_deletion_date(): void
     {
         $this->actingAs(User::factory()->create());
@@ -61,7 +67,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Record restored successfully.'),
+                __('basics13::messages.restored'),
             );
         $this->assertNotSoftDeleted($deletedProject);
 
@@ -75,7 +81,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.index'));
         $this->delete(route('projects.trash.destroy', $deletedProject->id))
             ->assertRedirect(route('projects.trash.index'))
-            ->assertSessionHas('status', __('Record permanently deleted.'));
+            ->assertSessionHas('status', __('basics13::messages.permanently_deleted'));
         $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
     }
 
@@ -101,7 +107,7 @@ class ProjectTrashTest extends TestCase
 
         $this->delete(route('projects.trash.destroy', $project->id))
             ->assertRedirect(route('projects.trash.index'))
-            ->assertSessionHas('error', __('Cannot be permanently deleted while it has related records.'));
+            ->assertSessionHas('error', __('basics13::messages.cannot_force_delete_related'));
 
         $this->assertSoftDeleted($project);
     }
@@ -128,7 +134,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Record restored successfully. No new record was created with the repeated name.'),
+                __('basics13::messages.restored_no_new_record'),
             );
 
         $this->assertDatabaseCount('projects', 1);
@@ -174,7 +180,8 @@ class ProjectTrashTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create(['name' => 'Archived customer match']);
         $matchingProject = Project::factory()->for($customer)->trashed()->create(['name' => 'First archived project']);
-        $otherProject = Project::factory()->trashed()->create(['name' => 'Second archived project']);
+        $otherCustomer = Customer::factory()->create(['name' => 'Other customer']);
+        $otherProject = Project::factory()->for($otherCustomer)->trashed()->create(['name' => 'Second archived project']);
 
         $this->get(route('projects.trash.index', ['search' => 'Archived customer match']))
             ->assertOk()
@@ -194,11 +201,11 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
+                __('basics13::messages.cannot_restore_name_taken'),
             );
 
         $this->get(route('projects.trash.index'))
-            ->assertSee(__('Cannot be restored because another record outside the trash uses this name.'));
+            ->assertSee(__('basics13::messages.cannot_restore_name_taken'));
 
         $this->assertModelExists($activeProject);
         $this->assertSoftDeleted($deletedProject);
@@ -219,7 +226,7 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
+                __('basics13::messages.cannot_restore_name_taken'),
             );
 
         $this->assertSoftDeleted($deletedProject);

@@ -14,12 +14,18 @@ class CustomerTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('en');
+    }
+
     public function test_empty_customer_trash_shows_its_empty_state(): void
     {
         $this->actingAs(User::factory()->create())
             ->get(route('customers.trash.index'))
             ->assertOk()
-            ->assertSee(__('Trash is empty.'));
+            ->assertSee(__('basics13::messages.trash_is_empty'));
     }
 
     public function test_trash_preserves_index_columns_without_deletion_date(): void
@@ -60,7 +66,7 @@ class CustomerTrashTest extends TestCase
 
         $this->patch(route('customers.trash.restore', $customer->id))
             ->assertRedirect(route('customers.trash.index'))
-            ->assertSessionHas('status', __('Record restored successfully.'));
+            ->assertSessionHas('status', __('basics13::messages.restored'));
 
         $this->assertNotSoftDeleted($customer);
     }
@@ -86,7 +92,7 @@ class CustomerTrashTest extends TestCase
         $this->patch(route('customers.trash.restore', $customer->id))
             ->assertRedirect(route('customers.trash.index'))
             ->assertSessionMissing('status')
-            ->assertSessionHas('error', __('This record is no longer in the trash.'));
+            ->assertSessionHas('error', __('basics13::messages.not_in_trash'));
 
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }
@@ -102,7 +108,7 @@ class CustomerTrashTest extends TestCase
             ->assertRedirect(route('customers.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Record restored successfully. No new record was created with the repeated name.'),
+                __('basics13::messages.restored_no_new_record'),
             );
 
         $this->assertDatabaseCount('customers', 1);
@@ -122,7 +128,7 @@ class CustomerTrashTest extends TestCase
             ->assertRedirect(route('customers.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
+                __('basics13::messages.cannot_restore_name_taken'),
             );
 
         $this->assertSoftDeleted($deletedCustomer);
@@ -139,7 +145,7 @@ class CustomerTrashTest extends TestCase
             ->assertRedirect(route('customers.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
+                __('basics13::messages.cannot_restore_name_taken'),
             );
 
         $this->assertSoftDeleted($deletedCustomer);
@@ -154,7 +160,7 @@ class CustomerTrashTest extends TestCase
 
         $this->delete(route('customers.trash.destroy', $customer->id))
             ->assertRedirect(route('customers.trash.index'))
-            ->assertSessionHas('status', __('Record permanently deleted.'));
+            ->assertSessionHas('status', __('basics13::messages.permanently_deleted'));
 
         $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }
@@ -167,7 +173,7 @@ class CustomerTrashTest extends TestCase
 
         $this->delete(route('customers.trash.destroy', $customer->id))
             ->assertRedirect(route('customers.trash.index'))
-            ->assertSessionHas('error', __('Cannot be permanently deleted while it has related records.'));
+            ->assertSessionHas('error', __('basics13::messages.cannot_force_delete_related'));
 
         $this->assertSoftDeleted($customer);
         $this->assertModelExists($project);

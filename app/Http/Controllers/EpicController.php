@@ -88,7 +88,7 @@ class EpicController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('epics.index')->with('status', __('Record created successfully.'));
+        return to_route('epics.index')->with('status', __('basics13::messages.created'));
     }
 
     public function update(EpicRequest $request, Epic $epic): RedirectResponse
@@ -102,7 +102,7 @@ class EpicController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('epics.index')->with('status', __('Record updated successfully.'));
+        return to_route('epics.index')->with('status', __('basics13::messages.updated'));
     }
 
     public function destroy(Epic $epic): RedirectResponse
@@ -117,6 +117,6 @@ class EpicController extends Controller
                 ->with('error', __('Cannot be deleted while it has related records.'));
         }
 
-        return to_route('epics.index')->with('status', __('Record moved to trash.'));
+        return to_route('epics.index')->with('status', __('basics13::messages.moved_to_trash'));
     }
 }

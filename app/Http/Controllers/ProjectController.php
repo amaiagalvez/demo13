@@ -70,7 +70,7 @@ class ProjectController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('projects.index')->with('status', __('Record created successfully.'));
+        return to_route('projects.index')->with('status', __('basics13::messages.created'));
     }
 
     public function update(ProjectRequest $request, Project $project): RedirectResponse
@@ -84,7 +84,7 @@ class ProjectController extends Controller
             UniqueConstraintViolation::rethrowAsValidationError($exception);
         }
 
-        return to_route('projects.index')->with('status', __('Record updated successfully.'));
+        return to_route('projects.index')->with('status', __('basics13::messages.updated'));
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -100,6 +100,6 @@ class ProjectController extends Controller
                 ->with('error', __('Cannot be deleted while it has related records.'));
         }
 
-        return to_route('projects.index')->with('status', __('Record moved to trash.'));
+        return to_route('projects.index')->with('status', __('basics13::messages.moved_to_trash'));
     }
 }

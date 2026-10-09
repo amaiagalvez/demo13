@@ -14,6 +14,12 @@ class EpicTrashTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('en');
+    }
+
     public function test_trash_preserves_index_columns_without_deletion_date(): void
     {
         $this->actingAs(User::factory()->create());
@@ -90,7 +96,9 @@ class EpicTrashTest extends TestCase
         $customer = Customer::factory()->create(['name' => 'Archived epic customer']);
         $project = Project::factory()->for($customer)->create(['name' => 'Archived epic project']);
         $matchingEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'First archived epic']);
-        $otherEpic = Epic::factory()->trashed()->create(['name' => 'Second archived epic']);
+        $otherCustomer = Customer::factory()->create(['name' => 'Other customer']);
+        $otherProject = Project::factory()->for($otherCustomer)->create(['name' => 'Other project']);
+        $otherEpic = Epic::factory()->for($otherProject)->trashed()->create(['name' => 'Second archived epic']);
 
         foreach (['Archived epic customer', 'Archived epic project'] as $search) {
             $this->get(route('epics.trash.index', ['search' => $search]))
@@ -118,13 +126,13 @@ class EpicTrashTest extends TestCase
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
             ->assertRedirect(route('epics.trash.index'))
-            ->assertSessionHas('status', __('Record restored successfully.'));
+            ->assertSessionHas('status', __('basics13::messages.restored'));
         $this->assertNotSoftDeleted($deletedEpic);
 
         $this->delete(route('epics.destroy', $activeEpic))->assertRedirect(route('epics.index'));
         $this->delete(route('epics.trash.destroy', $activeEpic->id))
             ->assertRedirect(route('epics.trash.index'))
-            ->assertSessionHas('status', __('Record permanently deleted.'));
+            ->assertSessionHas('status', __('basics13::messages.permanently_deleted'));
         $this->assertDatabaseMissing('epics', ['id' => $activeEpic->id]);
     }
 
@@ -147,11 +155,11 @@ class EpicTrashTest extends TestCase
 
         $this->get(route('epics.trash.index'))
             ->assertSee('data-test="epic-force-delete-blocked-'.$epic->id.'"', false)
-            ->assertSee(__('Cannot be permanently deleted while it has related records.'));
+            ->assertSee(__('basics13::messages.cannot_force_delete_related'));
 
         $this->delete(route('epics.trash.destroy', $epic->id))
             ->assertRedirect(route('epics.trash.index'))
-            ->assertSessionHas('error', __('Cannot be permanently deleted while it has related records.'));
+            ->assertSessionHas('error', __('basics13::messages.cannot_force_delete_related'));
 
         $this->assertModelExists($epic);
         $this->assertModelExists($comment);
@@ -169,7 +177,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
+                __('basics13::messages.cannot_restore_name_taken'),
             );
 
         $this->assertSoftDeleted($deletedEpic);
@@ -186,7 +194,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'error',
-                __('Cannot be restored because another record outside the trash uses this name.'),
+                __('basics13::messages.cannot_restore_name_taken'),
             );
 
         $this->assertSoftDeleted($deletedEpic);
@@ -197,11 +205,13 @@ class EpicTrashTest extends TestCase
     public function test_epic_can_be_restored_when_its_name_is_used_only_in_another_project(): void
     {
         $this->actingAs(User::factory()->create());
-        $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Repeated epic']);
-        Epic::factory()->create(['name' => 'Repeated epic']);
+        $projectA = Project::factory()->create();
+        $projectB = Project::factory()->create();
+        $deletedEpic = Epic::factory()->trashed()->create(['name' => 'Repeated epic', 'project_id' => $projectA->id]);
+        Epic::factory()->create(['name' => 'Repeated epic', 'project_id' => $projectB->id]);
 
         $this->patch(route('epics.trash.restore', $deletedEpic->id))
-            ->assertSessionHas('status', __('Record restored successfully.'));
+            ->assertSessionHas('status', __('basics13::messages.restored'));
 
         $this->assertNotSoftDeleted($deletedEpic);
     }
@@ -217,7 +227,7 @@ class EpicTrashTest extends TestCase
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas(
                 'status',
-                __('Record restored successfully. No new record was created with the repeated name.'),
+                __('basics13::messages.restored_no_new_record'),
             );
 
         $this->assertDatabaseCount('epics', 1);
