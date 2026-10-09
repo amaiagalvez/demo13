@@ -11,10 +11,12 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $this->call([
-            UserSeeder::class,
-            DevelopTableSeeder::class,
-            EdgeCaseSeeder::class,
-        ]);
+        if (app()->environment() !== 'production') {
+            $this->call([
+                UserSeeder::class,
+                DevelopTableSeeder::class,
+                EdgeCaseSeeder::class,
+            ]);
+        }
     }
 }
