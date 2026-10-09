@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
+use Basics13\Http\Controllers\ArchivedController;
 
 class CustomerArchivedController extends ArchivedController
 {
@@ -24,7 +25,7 @@ class CustomerArchivedController extends ArchivedController
             'list' => $transformer->archived(
                 $customers,
                 $search,
-                $query->stateCounts(archivedTotal: $search === '' ? $customers->total() : null),
+                $query->stateCounts(inactiveTotal: $search === '' ? $customers->total() : null),
             ),
         ]);
     }

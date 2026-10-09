@@ -11,6 +11,7 @@ use App\Queries\Customers\CustomerListQuery;
 use App\Http\Requests\CustomerDestroyRequest;
 use App\Http\Requests\CustomerRestoreRequest;
 use App\Transformers\CustomerListTransformer;
+use Basics13\Http\Controllers\TrashController;
 
 /**
  * @extends TrashController<Customer>

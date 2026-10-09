@@ -11,7 +11,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "/packages/basics13",
+            "url": "../packages/basics13",
             "options": {
                 "symlink": true
             }

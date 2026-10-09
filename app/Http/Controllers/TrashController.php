@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
-use App\Http\Requests\RestoreRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
+use Basics13\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Requests\TrashDestroyRequest;
-use App\Support\Database\UniqueConstraintViolation;
+use Basics13\Http\Requests\RestoreRequest;
+use Basics13\Http\Requests\TrashDestroyRequest;
+use Basics13\Support\Database\UniqueConstraintViolation;
 
 /**
  * Restores and permanently deletes a trashed record.

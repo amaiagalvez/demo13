@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CustomerRequest extends FormRequest

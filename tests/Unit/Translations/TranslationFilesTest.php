@@ -20,6 +20,22 @@ class TranslationFilesTest extends TestCase
         'validation.string',
         'validation.unique',
         'validation.attributes',
+        'Delete record?',
+        'Everything',
+        'List views',
+        'Must be later than :field.',
+        'Must be on or after :field.',
+        'Must be unique.',
+        'Permanently delete record?',
+        'Required when :field is filled in.',
+        'Restore record?',
+        ':count results',
+        'Search record',
+        'Search results updated. Results: :count',
+        'This action cannot be undone.',
+        'Use at least :min characters.',
+        'Use at most :max characters.',
+        'Use between :min and :max characters.',
     ];
 
     /**

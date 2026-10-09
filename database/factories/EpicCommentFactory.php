@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\EpicComment;
+use Basics13\Database\Factories\HasStates;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

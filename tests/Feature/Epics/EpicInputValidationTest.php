@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\TestWith;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

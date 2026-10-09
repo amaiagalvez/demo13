@@ -3,7 +3,7 @@
 namespace Tests\Unit\Queries;
 
 use Tests\TestCase;
-use App\Queries\ListQueryBase;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 

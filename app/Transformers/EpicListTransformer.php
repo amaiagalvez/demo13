@@ -4,6 +4,7 @@ namespace App\Transformers;
 
 use App\Models\Epic;
 use Illuminate\Database\Eloquent\Model;
+use Basics13\Transformers\ListTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -13,7 +14,7 @@ class EpicListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function active(LengthAwarePaginator $epics, string $search, ?array $counts = null): array
@@ -38,7 +39,7 @@ class EpicListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function archived(LengthAwarePaginator $epics, string $search, ?array $counts = null): array
@@ -55,7 +56,7 @@ class EpicListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Epic>  $epics
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function trash(LengthAwarePaginator $epics, string $search, ?array $counts = null): array

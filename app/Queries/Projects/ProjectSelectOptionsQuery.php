@@ -3,8 +3,8 @@
 namespace App\Queries\Projects;
 
 use App\Models\Project;
-use App\Queries\ListQueryBase;
 use Illuminate\Support\Collection;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3519983d92fbea7f1b3ab65e05a0eb0a",
+    "content-hash": "248a046bfd0f4a941367b471b21dd17a",
     "packages": [
         {
             "name": "amaia/basics13",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
-                "url": "/packages/basics13",
-                "reference": "9f55885241744a5ad44c1dd3cf0eb26aa054013f"
+                "url": "../packages/basics13",
+                "reference": "cfab9c92b08878dc7d70eceb23aa37f2fdbecd61"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -58,7 +58,7 @@
             "description": "Generic Laravel 13 components: audit traits, base controllers, requests, queries, transformers, and view components for resource CRUD with soft deletes, archive, and trash.",
             "transport-options": {
                 "symlink": true,
-                "relative": false
+                "relative": true
             }
         },
         {

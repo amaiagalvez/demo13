@@ -11,11 +11,12 @@ use App\Http\Requests\ProjectRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\ProjectListRequest;
+use Basics13\Http\Controllers\Controller;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
 use App\Http\Requests\ProjectSelectOptionsRequest;
 use App\Queries\Projects\ProjectSelectOptionsQuery;
-use App\Support\Database\UniqueConstraintViolation;
+use Basics13\Support\Database\UniqueConstraintViolation;
 
 class ProjectController extends Controller
 {

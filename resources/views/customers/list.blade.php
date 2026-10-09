@@ -51,22 +51,22 @@
         @elseif ($list['create'] && request()->boolean('create'))
             x-init="createCustomer(); $nextTick(() => $dispatch('modal-show', { name: 'customer-form' }))" @endif
         class="flex flex-col gap-y-2 sm:gap-y-3">
-        <x-list.page-header :list="$list" prefix="customer">
+        <x-basics13::list.page-header :list="$list" prefix="customer">
             <x-slot:actions>
                 @if ($list['create'])
-                    <x-list.create-action prefix="customer" :label="__('New customer')"
+                    <x-basics13::list.create-action prefix="customer" :label="__('New customer')"
                         click="createCustomer()" />
                 @endif
             </x-slot:actions>
-        </x-list.page-header>
+        </x-basics13::list.page-header>
 
-        <x-list.flash prefix="customer" />
+        <x-basics13::list.flash prefix="customer" />
 
         @fragment('list-results')
-            <x-list.searchable-results :search="$list['search']" :total="$customers->total()">
-                <x-list.search :search="$list['search']" prefix="customer" />
+            <x-basics13::list.searchable-results :search="$list['search']" :total="$customers->total()">
+                <x-basics13::list.search :search="$list['search']" prefix="customer" />
 
-                <x-list.table prefix="customer" :paginator="$customers">
+                <x-basics13::list.table prefix="customer" :paginator="$customers">
                     <flux:table.columns>
                         <flux:table.column scope="col">{{ __('Name') }}</flux:table.column>
                         <flux:table.column scope="col">{{ __('Projects') }}</flux:table.column>
@@ -87,30 +87,30 @@
                                         data-test="customer-name-{{ $row['id'] }}">{{ $row['name'] }}</span>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.count icon="briefcase" :count="$row['projectsCount']"
+                                    <x-basics13::list.count icon="briefcase" :count="$row['projectsCount']"
                                         :url="$row['projectsUrl']"
                                         :label="__('View :count projects', ['count' => $row['projectsCount']])"
                                         data-test="customer-projects-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.count icon="flag" :count="$row['epicsCount']"
+                                    <x-basics13::list.count icon="flag" :count="$row['epicsCount']"
                                         :label="__('Epics: :count', ['count' => $row['epicsCount']])"
                                         data-test="customer-epics-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.count icon="chat-bubble-left" :count="$row['commentsCount']"
+                                    <x-basics13::list.count icon="chat-bubble-left" :count="$row['commentsCount']"
                                         :label="__('Comments: :count', ['count' => $row['commentsCount']])"
                                         data-test="customer-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell align="end" sticky
                                     class="bg-white dark:bg-zinc-900">
-                                    <x-list.row-actions :actions="$row['actions']" prefix="customer"
+                                    <x-basics13::list.row-actions :actions="$row['actions']" prefix="customer"
                                         payload-key="customer" edit-handler="editCustomer"
                                         :blocked-hint="$row['actionHint'] ?? null" />
                                 </flux:table.cell>
                             </flux:table.row>
                         @empty
-                            <x-list.empty-state :colspan="5" :message="$list['emptyMessage']">
+                            <x-basics13::list.empty-state :colspan="5" :message="$list['emptyMessage']">
                                 @if ($list['create'] && $list['search']['value'] === '')
                                     <flux:modal.trigger name="customer-form">
                                         <flux:button size="sm" variant="primary" icon="plus"
@@ -120,11 +120,11 @@
                                         </flux:button>
                                     </flux:modal.trigger>
                                 @endif
-                            </x-list.empty-state>
+                            </x-basics13::list.empty-state>
                         @endforelse
                     </flux:table.rows>
-                </x-list.table>
-            </x-list.searchable-results>
+                </x-basics13::list.table>
+            </x-basics13::list.searchable-results>
         @endfragment
 
         @if ($list['create'])
@@ -137,7 +137,7 @@
             </flux:modal>
 
             @if ($deletedCustomerConflict)
-                <x-name-conflict-modal name="customer-name-conflict" :title="__('Record Name already in trash')"
+                <x-basics13::name-conflict-modal name="customer-name-conflict" :title="__('Record Name already in trash')"
                     :message="__('A deleted record already uses the name :name.', [
                         'name' => $deletedCustomerConflict['name'],
                     ])" :create-action="route('customers.store')" :restore-action="route('customers.trash.restore', $deletedCustomerConflict['id'])" :create-fields="['name' => old('name', $deletedCustomerConflict['name'])]"
@@ -146,6 +146,6 @@
             @endif
         @endif
 
-        <x-list.confirm-modal prefix="customer" />
+        <x-basics13::list.confirm-modal prefix="customer" />
     </div>
 </x-layouts::app>

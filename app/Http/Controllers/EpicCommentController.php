@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicCommentRequest;
+use Basics13\Http\Controllers\Controller;
 
 class EpicCommentController extends Controller
 {

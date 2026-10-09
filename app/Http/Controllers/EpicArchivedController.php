@@ -8,6 +8,7 @@ use App\Queries\Epics\EpicListQuery;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use App\Transformers\EpicListTransformer;
+use Basics13\Http\Controllers\ArchivedController;
 
 class EpicArchivedController extends ArchivedController
 {
@@ -24,7 +25,7 @@ class EpicArchivedController extends ArchivedController
             'list' => $transformer->archived(
                 $epics,
                 $search,
-                $query->stateCounts(archivedTotal: $search === '' ? $epics->total() : null),
+                $query->stateCounts(inactiveTotal: $search === '' ? $epics->total() : null),
             ),
         ]);
     }

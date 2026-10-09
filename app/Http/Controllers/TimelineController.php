@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\View\View;
 use App\Queries\Timeline\TimelineQuery;
+use Basics13\Http\Controllers\Controller;
 use App\Http\Requests\TimelineListRequest;
 
 class TimelineController extends Controller

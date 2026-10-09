@@ -4,7 +4,7 @@ namespace App\Queries\Customers;
 
 use App\Models\Customer;
 use App\Models\EpicComment;
-use App\Queries\ListQueryBase;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -62,14 +62,14 @@ final class CustomerListQuery extends ListQueryBase
     /**
      * Number of records in each list state, shown as the badge of the state tabs.
      *
-     * @return array{active: int, archived: int, trashed: int}
+     * @return array{active: int, inactive: int, trashed: int}
      */
     public function stateCounts(
         ?int $activeTotal = null,
-        ?int $archivedTotal = null,
+        ?int $inactiveTotal = null,
         ?int $trashedTotal = null,
     ): array {
-        return $this->countStates(Customer::class, $activeTotal, $archivedTotal, $trashedTotal);
+        return $this->countStates(Customer::class, $activeTotal, $inactiveTotal, $trashedTotal);
     }
 
     /**

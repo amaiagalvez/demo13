@@ -21,7 +21,7 @@
 --}}
 
 @php
-    $validations = new \App\Support\Validation\FieldHints($request, $labels);
+    $validations = new \Basics13\Support\Validation\FieldHints($request, $labels);
     $tooltip = trim(implode(' ', [...$validations->for($field), ...array_filter($notices)]));
 @endphp
 

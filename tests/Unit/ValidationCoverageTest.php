@@ -10,9 +10,9 @@ use App\Models\Customer;
 use App\Models\EpicComment;
 use App\Http\Requests\EpicRequest;
 use App\Http\Requests\ProjectRequest;
-use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\EpicCommentRequest;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 

@@ -214,14 +214,14 @@ class ArchitectureTest extends TestCase
             $form = (string) file_get_contents(resource_path("views/{$plural}/form.blade.php"));
 
             $this->assertStringContainsString(
-                '<x-list.table',
+                '<x-basics13::list.table',
                 $list,
-                "{$plural}/list.blade.php must use <x-list.table> instead of its own table markup",
+                "{$plural}/list.blade.php must use <x-basics13::list.table> instead of its own table markup",
             );
             $this->assertStringContainsString(
-                '<x-forms.tracked-resource',
+                '<x-basics13::forms.tracked-resource',
                 $form,
-                "{$plural}/form.blade.php must use <x-forms.tracked-resource>",
+                "{$plural}/form.blade.php must use <x-basics13::forms.tracked-resource>",
             );
         }
     }
@@ -244,7 +244,7 @@ class ArchitectureTest extends TestCase
         // published file to add one of our own still fails here.
         $this->assertSame([
             resource_path('views/pages/settings/⚡two-factor-setup-modal.blade.php') => 1,
-            resource_path('views/vendor/pagination/tailwind.blade.php') => 8,
+
         ], $rawEchoesByFile);
     }
 

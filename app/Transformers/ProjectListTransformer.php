@@ -4,6 +4,7 @@ namespace App\Transformers;
 
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
+use Basics13\Transformers\ListTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -13,7 +14,7 @@ class ProjectListTransformer extends ListTransformer
 {
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function active(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
@@ -38,7 +39,7 @@ class ProjectListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function archived(LengthAwarePaginator $projects, string $search, ?array $counts = null): array
@@ -55,7 +56,7 @@ class ProjectListTransformer extends ListTransformer
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $projects
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     public function trash(LengthAwarePaginator $projects, string $search, ?array $counts = null): array

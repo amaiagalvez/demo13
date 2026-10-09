@@ -186,13 +186,13 @@
     @elseif ($deletedEpicConflict)
         x-init="$nextTick(() => $dispatch('modal-show', { name: 'epic-name-conflict' }))" @endif
         class="flex flex-col gap-y-2 sm:gap-y-3">
-        <x-list.page-header :list="$list" prefix="epic">
+        <x-basics13::list.page-header :list="$list" prefix="epic">
             <x-slot:actions>
                 @if ($list['create'])
-                    <x-list.create-action prefix="epic" :label="__('New epic')" click="createEpic()" />
+                    <x-basics13::list.create-action prefix="epic" :label="__('New epic')" click="createEpic()" />
                 @endif
             </x-slot:actions>
-        </x-list.page-header>
+        </x-basics13::list.page-header>
 
         @if ($list['create'] && ! ($hasProjects ?? false))
             <flux:callout icon="exclamation-triangle" variant="warning">
@@ -207,13 +207,13 @@
             </flux:callout>
         @endif
 
-        <x-list.flash prefix="epic" />
+        <x-basics13::list.flash prefix="epic" />
 
         @fragment('list-results')
-            <x-list.searchable-results :search="$list['search']" :total="$epics->total()">
-                <x-list.search :search="$list['search']" prefix="epic" />
+            <x-basics13::list.searchable-results :search="$list['search']" :total="$epics->total()">
+                <x-basics13::list.search :search="$list['search']" prefix="epic" />
 
-                <x-list.table prefix="epic" :paginator="$epics">
+                <x-basics13::list.table prefix="epic" :paginator="$epics">
                     <flux:table.columns>
                         <flux:table.column scope="col">{{ __('Name') }}</flux:table.column>
                         <flux:table.column scope="col">{{ __('Project') }}</flux:table.column>
@@ -244,29 +244,29 @@
                                     {{ $row['customer'] }}
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.local-time :datetime="$row['startDate']" format="date" />
+                                    <x-basics13::list.local-time :datetime="$row['startDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.local-time :datetime="$row['endDate']" format="date" />
+                                    <x-basics13::list.local-time :datetime="$row['endDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.count icon="chat-bubble-left" :count="$row['commentsCount']"
+                                    <x-basics13::list.count icon="chat-bubble-left" :count="$row['commentsCount']"
                                         :label="__('Comments: :count', ['count' => $row['commentsCount']])"
                                         data-test="epic-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell align="end" sticky
                                     class="bg-white dark:bg-zinc-900">
-                                    <x-list.row-actions :actions="$row['actions']" prefix="epic"
+                                    <x-basics13::list.row-actions :actions="$row['actions']" prefix="epic"
                                         payload-key="epic" edit-handler="editEpic"
                                         :blocked-hint="$row['actionHint'] ?? null" />
                                 </flux:table.cell>
                             </flux:table.row>
                         @empty
-                            <x-list.empty-state :colspan="7" :message="$list['emptyMessage']" />
+                            <x-basics13::list.empty-state :colspan="7" :message="$list['emptyMessage']" />
                         @endforelse
                     </flux:table.rows>
-                </x-list.table>
-            </x-list.searchable-results>
+                </x-basics13::list.table>
+            </x-basics13::list.searchable-results>
         @endfragment
 
         @if ($list['create'])
@@ -279,7 +279,7 @@
             </flux:modal>
 
             @if ($deletedEpicConflict)
-                <x-name-conflict-modal name="epic-name-conflict" :title="__('Record Name already in trash')"
+                <x-basics13::name-conflict-modal name="epic-name-conflict" :title="__('Record Name already in trash')"
                     :message="__('A deleted record already uses the name :name.', [
                         'name' => $deletedEpicConflict['name'],
                     ])" :create-action="route('epics.store')" :restore-action="route('epics.trash.restore', $deletedEpicConflict['id'])" :create-fields="[
@@ -293,6 +293,6 @@
             @endif
         @endif
 
-        <x-list.confirm-modal prefix="epic" />
+        <x-basics13::list.confirm-modal prefix="epic" />
     </div>
 </x-layouts::app>

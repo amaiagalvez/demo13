@@ -13,7 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
-use App\Support\Database\UniqueConstraintViolation;
+use Basics13\Http\Controllers\Controller;
+use Basics13\Support\Database\UniqueConstraintViolation;
 
 class EpicController extends Controller
 {

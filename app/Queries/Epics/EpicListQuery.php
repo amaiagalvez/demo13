@@ -3,7 +3,7 @@
 namespace App\Queries\Epics;
 
 use App\Models\Epic;
-use App\Queries\ListQueryBase;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -91,14 +91,14 @@ final class EpicListQuery extends ListQueryBase
     /**
      * Number of records in each list state, shown as the badge of the state tabs.
      *
-     * @return array{active: int, archived: int, trashed: int}
+     * @return array{active: int, inactive: int, trashed: int}
      */
     public function stateCounts(
         ?int $activeTotal = null,
-        ?int $archivedTotal = null,
+        ?int $inactiveTotal = null,
         ?int $trashedTotal = null,
     ): array {
-        return $this->countStates(Epic::class, $activeTotal, $archivedTotal, $trashedTotal);
+        return $this->countStates(Epic::class, $activeTotal, $inactiveTotal, $trashedTotal);
     }
 
     /**

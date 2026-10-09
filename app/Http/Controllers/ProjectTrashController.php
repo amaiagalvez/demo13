@@ -11,6 +11,7 @@ use App\Queries\Projects\ProjectListQuery;
 use App\Http\Requests\ProjectDestroyRequest;
 use App\Http\Requests\ProjectRestoreRequest;
 use App\Transformers\ProjectListTransformer;
+use Basics13\Http\Controllers\TrashController;
 
 /**
  * @extends TrashController<Project>

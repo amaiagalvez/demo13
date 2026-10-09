@@ -7,9 +7,9 @@ use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\EpicComment;
-use App\Queries\ListQueryBase;
+use Basics13\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCommentTest extends TestCase
@@ -100,14 +100,13 @@ class EpicCommentTest extends TestCase
 
     public function test_comment_endpoint_shows_deleted_user_when_the_author_is_trashed(): void
     {
-        $this->actingAs(User::factory()->create());
+        $actingUser = User::factory()->create();
+        // The author must be a user of its own: the factory picks whichever user it finds
+        // first, which is the signed-in one, and deleting it would end the request.
+        $author = User::factory()->create();
+        $this->actingAs($actingUser);
         $epic = Epic::factory()->create();
-        $comment = EpicComment::factory()->for($epic)->create(['body' => 'Comment by deleted user']);
-        $author = $comment->user;
-
-        if ($author === null) {
-            self::fail('The comment must have an author.');
-        }
+        $comment = EpicComment::factory()->for($epic)->for($author, 'user')->create(['body' => 'Comment by deleted user']);
 
         $author->delete();
 

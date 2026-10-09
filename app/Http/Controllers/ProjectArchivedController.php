@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\ProjectListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use App\Transformers\ProjectListTransformer;
+use Basics13\Http\Controllers\ArchivedController;
 
 class ProjectArchivedController extends ArchivedController
 {
@@ -24,7 +25,7 @@ class ProjectArchivedController extends ArchivedController
             'list' => $transformer->archived(
                 $projects,
                 $search,
-                $query->stateCounts(archivedTotal: $search === '' ? $projects->total() : null),
+                $query->stateCounts(inactiveTotal: $search === '' ? $projects->total() : null),
             ),
         ]);
     }

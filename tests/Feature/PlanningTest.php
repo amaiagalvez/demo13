@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
  * The planning screen: the active projects and epics ordered by deadline and grouped by quarter,
@@ -18,7 +18,7 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
  */
 class PlanningTest extends TestCase
 {
-    use LazilyRefreshDatabase;
+    use RefreshDatabase;
 
     public function test_guests_are_redirected_to_the_login_page(): void
     {

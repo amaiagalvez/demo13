@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\QueryException;
 use App\Transformers\ProjectListTransformer;
 use Illuminate\Database\Events\QueryExecuted;
@@ -19,6 +19,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class ProjectCrudTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('en');
+    }
 
     public function test_has_customers_is_true_when_an_active_customer_exists(): void
     {
@@ -357,16 +363,16 @@ class ProjectCrudTest extends TestCase
             ->assertSeeInOrder([
                 'data-test="project-active-link"',
                 'aria-current="page"',
-                'data-test="project-inactive-link"',
+                'data-test="project-archived-link"',
                 'data-test="project-trash-link"',
             ], false)
             ->assertSeeInOrder(['data-test="project-active-link"', '>2</span>'], false)
-            ->assertSeeInOrder(['data-test="project-inactive-link"', '>1</span>'], false)
+            ->assertSeeInOrder(['data-test="project-archived-link"', '>1</span>'], false)
             ->assertSeeInOrder(['data-test="project-trash-link"', '>3</span>'], false);
 
-        $this->get(route('projects.inactive.index'))
+        $this->get(route('projects.archived.index'))
             ->assertOk()
-            ->assertSeeInOrder([__('Dashboard'), __('Projects'), __('Inactive')], false);
+            ->assertSeeInOrder([__('Dashboard'), __('Projects'), __('Archived')], false);
 
         $this->get(route('projects.trash.index'))
             ->assertOk()
@@ -396,7 +402,7 @@ class ProjectCrudTest extends TestCase
             ->assertSee('data-test="project-comments-count-'.$lonelyProject->id.'"></span>', false)
             ->assertSee(__('Cannot be deleted while it has related records.'))
             ->assertDontSee('data-test="project-delete-'.$project->id.'"', false)
-            ->assertSee('data-test="project-deactivate-'.$project->id.'"', false)
+            ->assertSee('data-test="project-archive-'.$project->id.'"', false)
             ->assertSee('data-test="project-delete-'.$lonelyProject->id.'"', false);
     }
 

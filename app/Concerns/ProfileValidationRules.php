@@ -4,7 +4,7 @@ namespace App\Concerns;
 
 use App\Models\User;
 use Illuminate\Validation\Rule;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 trait ProfileValidationRules

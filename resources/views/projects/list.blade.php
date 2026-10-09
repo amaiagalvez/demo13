@@ -65,14 +65,14 @@
         @elseif ($list['create'] && request()->boolean('create'))
             x-init="createProject(); $nextTick(() => $dispatch('modal-show', { name: 'project-form' }))" @endif
         class="flex flex-col gap-y-2 sm:gap-y-3">
-        <x-list.page-header :list="$list" prefix="project">
+        <x-basics13::list.page-header :list="$list" prefix="project">
             <x-slot:actions>
                 @if ($list['create'])
-                    <x-list.create-action prefix="project" :label="__('New project')"
+                    <x-basics13::list.create-action prefix="project" :label="__('New project')"
                         click="createProject()" />
                 @endif
             </x-slot:actions>
-        </x-list.page-header>
+        </x-basics13::list.page-header>
 
         @if ($list['create'] && ! ($hasCustomers ?? false))
             <flux:callout icon="exclamation-triangle" variant="warning">
@@ -87,13 +87,13 @@
             </flux:callout>
         @endif
 
-        <x-list.flash prefix="project" />
+        <x-basics13::list.flash prefix="project" />
 
         @fragment('list-results')
-            <x-list.searchable-results :search="$list['search']" :total="$projects->total()">
-                <x-list.search :search="$list['search']" prefix="project" />
+            <x-basics13::list.searchable-results :search="$list['search']" :total="$projects->total()">
+                <x-basics13::list.search :search="$list['search']" prefix="project" />
 
-                <x-list.table prefix="project" :paginator="$projects">
+                <x-basics13::list.table prefix="project" :paginator="$projects">
                     <flux:table.columns>
                         <flux:table.column scope="col">{{ __('Name') }}</flux:table.column>
                         <flux:table.column scope="col">{{ __('Customer') }}</flux:table.column>
@@ -120,35 +120,35 @@
                                     {{ $row['customer'] }}
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.local-time :datetime="$row['startDate']" format="date" />
+                                    <x-basics13::list.local-time :datetime="$row['startDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.local-time :datetime="$row['endDate']" format="date" />
+                                    <x-basics13::list.local-time :datetime="$row['endDate']" format="date" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.count icon="flag" :count="$row['epicsCount']"
+                                    <x-basics13::list.count icon="flag" :count="$row['epicsCount']"
                                         :url="$row['epicsUrl']"
                                         :label="__('View :count epics', ['count' => $row['epicsCount']])"
                                         data-test="project-epics-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <x-list.count icon="chat-bubble-left" :count="$row['commentsCount']"
+                                    <x-basics13::list.count icon="chat-bubble-left" :count="$row['commentsCount']"
                                         :label="__('Comments: :count', ['count' => $row['commentsCount']])"
                                         data-test="project-comments-count-{{ $row['id'] }}" />
                                 </flux:table.cell>
                                 <flux:table.cell align="end" sticky
                                     class="bg-white dark:bg-zinc-900">
-                                    <x-list.row-actions :actions="$row['actions']" prefix="project"
+                                    <x-basics13::list.row-actions :actions="$row['actions']" prefix="project"
                                         payload-key="project" edit-handler="editProject"
                                         :blocked-hint="$row['actionHint'] ?? null" />
                                 </flux:table.cell>
                             </flux:table.row>
                         @empty
-                            <x-list.empty-state :colspan="7" :message="$list['emptyMessage']" />
+                            <x-basics13::list.empty-state :colspan="7" :message="$list['emptyMessage']" />
                         @endforelse
                     </flux:table.rows>
-                </x-list.table>
-            </x-list.searchable-results>
+                </x-basics13::list.table>
+            </x-basics13::list.searchable-results>
         @endfragment
 
         @if ($list['create'])
@@ -161,7 +161,7 @@
             </flux:modal>
 
             @if ($deletedProjectConflict)
-                <x-name-conflict-modal name="project-name-conflict" :title="__('Record Name already in trash')"
+                <x-basics13::name-conflict-modal name="project-name-conflict" :title="__('Record Name already in trash')"
                     :message="__('A deleted record already uses the name :name.', [
                         'name' => $deletedProjectConflict['name'],
                     ])" :create-action="route('projects.store')" :restore-action="route('projects.trash.restore', $deletedProjectConflict['id'])" :create-fields="[
@@ -175,6 +175,6 @@
             @endif
         @endif
 
-        <x-list.confirm-modal prefix="project" />
+        <x-basics13::list.confirm-modal prefix="project" />
     </div>
 </x-layouts::app>

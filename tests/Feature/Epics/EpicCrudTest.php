@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use App\Queries\ListQueryBase;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\QueryException;
 use App\Transformers\EpicListTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -18,11 +18,25 @@ class EpicCrudTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('en');
+    }
+
     public function test_authenticated_users_can_create_update_and_delete_epics(): void
     {
         $this->actingAs(User::factory()->create());
-        $project = Project::factory()->create();
-        $otherProject = Project::factory()->create();
+        // The epic dates below are fixed, so the projects they are validated against need a window
+        // that always covers them: the factory would otherwise randomise them away.
+        $project = Project::factory()->create([
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+        ]);
+        $otherProject = Project::factory()->create([
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-12-31',
+        ]);
 
         $this->post(route('epics.store'), [
             'name' => '  Checkout flow  ',
@@ -169,7 +183,10 @@ class EpicCrudTest extends TestCase
         $project = Project::factory()->create();
         $deletedEpic = Epic::factory()->for($project)->trashed()->create(['name' => 'Shared epic']);
         $activeEpic = Epic::factory()->for($project)->create(['name' => 'Shared epic']);
-        $otherProjectEpic = Epic::factory()->create(['name' => 'Shared epic']);
+        // The third epic needs a project of its own: the factory adopts whichever project it
+        // finds first, which would make the name collide inside the project above.
+        $otherProject = Project::factory()->create(['name' => 'Other project']);
+        $otherProjectEpic = Epic::factory()->for($otherProject)->create(['name' => 'Shared epic']);
 
         $this->assertSoftDeleted($deletedEpic);
         $this->assertModelExists($activeEpic);
@@ -219,8 +236,11 @@ class EpicCrudTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create(['name' => 'Northwind Studio']);
+        $otherCustomer = Customer::factory()->create(['name' => 'Southwind Studio']);
         Epic::factory()->for(Project::factory()->for($customer)->state(['name' => 'Website']))->create(['name' => 'Matching epic']);
-        Epic::factory()->create(['name' => 'Other epic']);
+        // Both parents are pinned: the factories adopt whichever record they find first, which
+        // would hang the other epic off Northwind as well.
+        Epic::factory()->for(Project::factory()->for($otherCustomer)->state(['name' => 'Other project']))->create(['name' => 'Other epic']);
 
         $this->get(route('epics.index', ['search' => 'Northwind']))
             ->assertOk()
@@ -349,16 +369,16 @@ class EpicCrudTest extends TestCase
             ->assertSeeInOrder([
                 'data-test="epic-active-link"',
                 'aria-current="page"',
-                'data-test="epic-inactive-link"',
+                'data-test="epic-archived-link"',
                 'data-test="epic-trash-link"',
             ], false)
             ->assertSeeInOrder(['data-test="epic-active-link"', '>2</span>'], false)
-            ->assertSeeInOrder(['data-test="epic-inactive-link"', '>1</span>'], false)
+            ->assertSeeInOrder(['data-test="epic-archived-link"', '>1</span>'], false)
             ->assertSeeInOrder(['data-test="epic-trash-link"', '>3</span>'], false);
 
-        $this->get(route('epics.inactive.index'))
+        $this->get(route('epics.archived.index'))
             ->assertOk()
-            ->assertSeeInOrder([__('Dashboard'), __('Epics'), __('Inactive')], false);
+            ->assertSeeInOrder([__('Dashboard'), __('Epics'), __('Archived')], false);
 
         $this->get(route('epics.trash.index'))
             ->assertOk()

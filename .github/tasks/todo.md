@@ -6,8 +6,8 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
     1. si el formulario se abre en modo create, en el select o select2 solo se mostrarán los que tengan active=1
     2. si el formulario se abre en modo edición, en el select o select2 se mostraran el elemento sseleccionado (tenga o no active=1) y el resto de elementos seran solo los que tengan acitive=1 
 [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
-[] crear un nuevo paquete customers13 y pasar todo lo relacionado con Customer, la tabla pasa a llamarse CUM_customers (cambiar migration, no esta en producción)
-[] crear un nuevo paquete projects13 y pasar todo lo relacionado con Projects y Epics, las tablas pasan a llamarse PRO_projects, PRO_epics, PRO_epic_comments (cambiar migration, no esta en producción)
+
+[] crea un plan: crear un nuevo paquete customers13 y pasar todo lo relacionado con Customer, la tabla pasa a llamarse PRO_projects, PRO_epics, PRO_epic_comments (cambiar migration, no esta en producción) todo lo que se pase al nuevo paquete quitar de demo13 y adaptar los namespaces y lo que sea necesario. este nuevo paquete dependara en DEV de basics13 para que puedan pasar los test
 
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)

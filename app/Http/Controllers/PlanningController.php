@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\View\View;
 use App\Queries\Planning\PlanningQuery;
+use Basics13\Http\Controllers\Controller;
 use App\Http\Requests\PlanningListRequest;
 
 class PlanningController extends Controller

@@ -58,9 +58,7 @@ class ConcurrentNameInsertTest extends TestCase
             ->post(route($singular.'s.store'), $payload)
             ->assertRedirect(route($indexRoute))
             ->assertSessionHasErrors([
-                'name' => __('validation.unique', [
-                    'attribute' => __('validation.attributes')['name'],
-                ]),
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
             ]);
 
         // Only the competitor survives: the request's own insert was rejected by the index.
@@ -92,9 +90,7 @@ class ConcurrentNameInsertTest extends TestCase
             ->put(route($singular.'s.update', $existing), $payload)
             ->assertRedirect(route($indexRoute))
             ->assertSessionHasErrors([
-                'name' => __('validation.unique', [
-                    'attribute' => __('validation.attributes')['name'],
-                ]),
+                'name' => __('validation.unique', ['attribute' => __('Name')]),
             ]);
 
         $this->assertDatabaseHas($singular.'s', ['id' => $existing->id, 'name' => 'Original '.$singular]);
@@ -126,7 +122,7 @@ class ConcurrentNameInsertTest extends TestCase
 
         $this->patch(route($singular.'s.trash.restore', $deleted->id))
             ->assertRedirect(route($singular.'s.trash.index'))
-            ->assertSessionHas('error', __('Cannot be restored because another record outside the trash uses this name.'));
+            ->assertSessionHas('error', __('basics13::messages.cannot_restore_name_taken'));
 
         $this->assertSoftDeleted($deleted);
         $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);

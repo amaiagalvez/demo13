@@ -7,7 +7,7 @@ use App\Models\Project;
 use Tests\DuskTestCase;
 use App\Models\Customer;
 use Laravel\Dusk\Browser;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use Facebook\WebDriver\Chrome\ChromeDevToolsDriver;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 

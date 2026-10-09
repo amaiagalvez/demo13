@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

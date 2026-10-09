@@ -4,8 +4,8 @@ namespace Tests\Unit\Validation;
 
 use Tests\TestCase;
 use Illuminate\Routing\Route;
-use App\Support\Validation\MaxLength;
 use App\Http\Requests\EpicCommentRequest;
+use Basics13\Support\Validation\MaxLength;
 
 class EpicCommentRequestTest extends TestCase
 {

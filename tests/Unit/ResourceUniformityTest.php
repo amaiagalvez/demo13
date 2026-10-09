@@ -12,14 +12,13 @@ use App\Models\Project;
 use App\Models\Customer;
 use App\Policies\EpicPolicy;
 use Illuminate\Routing\Route;
-use App\Queries\ListQueryBase;
 use App\Policies\ProjectPolicy;
 use App\Policies\CustomerPolicy;
 use App\Http\Requests\EpicRequest;
+use Basics13\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Support\Facades\File;
 use App\Http\Requests\ProjectRequest;
-use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\Eloquent\Model;
@@ -28,13 +27,16 @@ use App\Transformers\EpicListTransformer;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Projects\ProjectListQuery;
+use Basics13\Http\Requests\RestoreRequest;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Requests\SearchableListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\ProjectListTransformer;
 use App\Transformers\CustomerListTransformer;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Basics13\Http\Requests\TrashDestroyRequest;
+use Basics13\Http\Requests\SearchableListRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ResourceUniformityTest extends TestCase
@@ -142,6 +144,15 @@ class ResourceUniformityTest extends TestCase
         $models = ['Customer', 'Project', 'Epic'];
         $byResource = array_fill_keys($models, '');
         $shared = '';
+
+        foreach ([
+            RestoreRequest::class,
+            TrashDestroyRequest::class,
+        ] as $requestClass) {
+            $path = (new ReflectionClass($requestClass))->getFileName();
+            $this->assertIsString($path);
+            $shared .= File::get($path);
+        }
 
         foreach (File::allFiles(app_path('Http')) as $file) {
             $contents = (string) file_get_contents($file->getPathname());

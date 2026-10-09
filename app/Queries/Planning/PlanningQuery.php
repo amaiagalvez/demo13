@@ -6,7 +6,7 @@ use App\Models\Epic;
 use App\Models\Project;
 use App\Models\Customer;
 use Carbon\CarbonImmutable;
-use App\Queries\ListQueryBase;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;

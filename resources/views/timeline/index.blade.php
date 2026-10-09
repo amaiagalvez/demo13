@@ -22,7 +22,7 @@
             </flux:button>
         </div>
 
-        <x-list.search :search="$search" prefix="timeline" />
+        <x-basics13::list.search :search="$search" prefix="timeline" />
 
         <x-timeline.board :entries="$timeline['entries']" :timeline="$timeline['timeline']"
             :paginator="$timeline['paginator']" :message="$emptyMessage">

@@ -37,6 +37,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             HOME: /tmp
@@ -64,6 +65,7 @@ services:
         profiles: ["composer"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public
@@ -86,6 +88,7 @@ services:
         profiles: ["reformat"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public
@@ -99,6 +102,7 @@ services:
         profiles: ["review"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public
@@ -112,6 +116,7 @@ services:
         profiles: ["npm-all"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         ports:
             - "3000:3000"
         working_dir: /docker
@@ -136,6 +141,7 @@ services:
         profiles: ["npm"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         ports:
             - "3000:3000"
         working_dir: /docker
@@ -158,6 +164,7 @@ services:
         profiles: ["migrate-all"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public
@@ -180,6 +187,7 @@ services:
         profiles: ["migrate"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public
@@ -202,6 +210,7 @@ services:
         profiles: ["phpunit"]
         volumes:
             - ./:/docker
+            - ../packages:/packages
         working_dir: /docker
         environment:
             WEB_DOCUMENT_ROOT: /docker/public

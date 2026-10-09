@@ -34,7 +34,7 @@ class EpicPolicyTest extends TestCase
     public function test_update_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->update($user, $epic));
     }
@@ -42,7 +42,7 @@ class EpicPolicyTest extends TestCase
     public function test_comment_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->comment($user, $epic));
     }
@@ -50,7 +50,7 @@ class EpicPolicyTest extends TestCase
     public function test_delete_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->delete($user, $epic));
     }
@@ -58,7 +58,7 @@ class EpicPolicyTest extends TestCase
     public function test_restore_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->restore($user, $epic));
     }
@@ -66,7 +66,7 @@ class EpicPolicyTest extends TestCase
     public function test_force_delete_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->forceDelete($user, $epic));
     }
@@ -74,7 +74,7 @@ class EpicPolicyTest extends TestCase
     public function test_archive_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->archive($user, $epic));
     }
@@ -82,7 +82,7 @@ class EpicPolicyTest extends TestCase
     public function test_activate_returns_true(): void
     {
         $user = User::factory()->make();
-        $epic = Epic::factory()->make();
+        $epic = new Epic(['name' => 'Epic under test']);
 
         $this->assertTrue($this->policy->activate($user, $epic));
     }

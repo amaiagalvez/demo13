@@ -34,7 +34,7 @@ class CustomerPolicyTest extends TestCase
     public function test_update_returns_true(): void
     {
         $user = User::factory()->make();
-        $customer = Customer::factory()->make();
+        $customer = new Customer(['name' => 'Customer under test']);
 
         $this->assertTrue($this->policy->update($user, $customer));
     }
@@ -42,7 +42,7 @@ class CustomerPolicyTest extends TestCase
     public function test_delete_returns_true(): void
     {
         $user = User::factory()->make();
-        $customer = Customer::factory()->make();
+        $customer = new Customer(['name' => 'Customer under test']);
 
         $this->assertTrue($this->policy->delete($user, $customer));
     }
@@ -50,7 +50,7 @@ class CustomerPolicyTest extends TestCase
     public function test_restore_returns_true(): void
     {
         $user = User::factory()->make();
-        $customer = Customer::factory()->make();
+        $customer = new Customer(['name' => 'Customer under test']);
 
         $this->assertTrue($this->policy->restore($user, $customer));
     }
@@ -58,7 +58,7 @@ class CustomerPolicyTest extends TestCase
     public function test_force_delete_returns_true(): void
     {
         $user = User::factory()->make();
-        $customer = Customer::factory()->make();
+        $customer = new Customer(['name' => 'Customer under test']);
 
         $this->assertTrue($this->policy->forceDelete($user, $customer));
     }
@@ -66,7 +66,7 @@ class CustomerPolicyTest extends TestCase
     public function test_archive_returns_true(): void
     {
         $user = User::factory()->make();
-        $customer = Customer::factory()->make();
+        $customer = new Customer(['name' => 'Customer under test']);
 
         $this->assertTrue($this->policy->archive($user, $customer));
     }
@@ -74,7 +74,7 @@ class CustomerPolicyTest extends TestCase
     public function test_activate_returns_true(): void
     {
         $user = User::factory()->make();
-        $customer = Customer::factory()->make();
+        $customer = new Customer(['name' => 'Customer under test']);
 
         $this->assertTrue($this->policy->activate($user, $customer));
     }

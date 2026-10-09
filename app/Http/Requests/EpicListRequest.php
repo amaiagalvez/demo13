@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Epic;
+use Basics13\Http\Requests\SearchableListRequest;
 
 class EpicListRequest extends SearchableListRequest
 {

@@ -5,7 +5,7 @@ namespace Tests\Feature\Settings;
 use Tests\TestCase;
 use App\Models\User;
 use Livewire\Livewire;
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProfileUpdateTest extends TestCase

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\Eloquent\Model;
+use Basics13\Http\Controllers\Controller;
 
 /**
  * Archives and activates a record.

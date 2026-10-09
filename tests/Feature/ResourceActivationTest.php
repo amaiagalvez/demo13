@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -167,10 +167,10 @@ class ResourceActivationTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder(['<thead', __('Name')], false)
             ->assertSee('Dormant record')
-            ->assertSee('data-test="'.$prefix.'-reactivate-'.$record->id.'"', false)
+            ->assertSee('data-test="'.$prefix.'-activate-'.$record->id.'"', false)
             ->assertDontSee('data-test="'.$prefix.'-edit-'.$record->id.'"', false)
             ->assertDontSee('data-test="'.$prefix.'-delete-'.$record->id.'"', false)
-            ->assertDontSee('data-test="'.$prefix.'-deactivate-'.$record->id.'"', false);
+            ->assertDontSee('data-test="'.$prefix.'-archive-'.$record->id.'"', false);
     }
 
     /**
@@ -209,7 +209,7 @@ class ResourceActivationTest extends TestCase
         $inactive = $model::factory()->inactive()->create();
         $active = $model::factory()->create();
 
-        $this->patch(route($resource.'.deactivate', $inactive))
+        $this->patch(route($resource.'.archive', $inactive))
             ->assertSessionHas('status', __('basics13::messages.archived'));
         $this->patch(route($resource.'.archived.activate', $active))
             ->assertSessionHas('status', __('basics13::messages.activated'));
@@ -228,7 +228,7 @@ class ResourceActivationTest extends TestCase
         $active = $model::factory()->trashed()->create();
         $inactive = $model::factory()->inactive()->trashed()->create();
 
-        $this->patch(route($resource.'.deactivate', $active->id))->assertNotFound();
+        $this->patch(route($resource.'.archive', $active->id))->assertNotFound();
         $this->patch(route($resource.'.archived.activate', $inactive->id))->assertNotFound();
 
         $this->assertTrue($active->refresh()->active);
@@ -289,8 +289,8 @@ class ResourceActivationTest extends TestCase
         $user = User::factory()->create();
 
         foreach ([Customer::factory()->create(), Project::factory()->create(), Epic::factory()->create()] as $record) {
-            $this->assertTrue($user->can('deactivate', $record));
-            $this->assertTrue($user->can('reactivate', $record));
+            $this->assertTrue($user->can('archive', $record));
+            $this->assertTrue($user->can('activate', $record));
         }
     }
 
@@ -408,9 +408,10 @@ class ResourceActivationTest extends TestCase
         $this->actingAs(User::factory()->create());
         $this->travelTo('2026-03-01 10:00:00');
         $customer = Customer::factory()->create(['name' => 'Searchable Customer']);
+        $otherCustomer = Customer::factory()->create(['name' => 'Other Customer']);
         $dates = ['start_date' => '2026-01-01', 'end_date' => '2026-02-01'];
         Project::factory()->for($customer)->inactive()->create(['name' => 'Matching project', ...$dates]);
-        $otherProject = Project::factory()->inactive()->create(['name' => 'Other project', ...$dates]);
+        $otherProject = Project::factory()->for($otherCustomer)->inactive()->create(['name' => 'Other project', ...$dates]);
         Project::factory()->for($customer)->create(['name' => 'Active project']);
         $this->travelTo('2026-07-15 10:00:00');
         $otherProject->touch();
@@ -430,8 +431,10 @@ class ResourceActivationTest extends TestCase
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create(['name' => 'Epic Customer']);
         $project = Project::factory()->for($customer)->create(['name' => 'Epic Project']);
+        $otherProject = Project::factory()->for(Customer::factory()->create(['name' => 'Other Customer']))
+            ->create(['name' => 'Other Project']);
         Epic::factory()->for($project)->inactive()->create(['name' => 'Matching epic']);
-        Epic::factory()->inactive()->create(['name' => 'Other epic']);
+        Epic::factory()->for($otherProject)->inactive()->create(['name' => 'Other epic']);
         Epic::factory()->for($project)->create(['name' => 'Active epic']);
 
         foreach (['Epic Customer', 'Epic Project'] as $search) {
@@ -515,7 +518,7 @@ class ResourceActivationTest extends TestCase
         $this->assertIsString($firstPageContent);
         $this->assertSame(
             ListQueryBase::PER_PAGE,
-            substr_count($firstPageContent, 'data-test="'.$testPrefix.'-reactivate-'),
+            substr_count($firstPageContent, 'data-test="'.$testPrefix.'-activate-'),
         );
 
         $secondPage = $this->get(route($resource.'.archived.index', ['page' => 2]));
@@ -528,7 +531,7 @@ class ResourceActivationTest extends TestCase
         $this->assertIsString($secondPageContent);
         $this->assertSame(
             1,
-            substr_count($secondPageContent, 'data-test="'.$testPrefix.'-reactivate-'),
+            substr_count($secondPageContent, 'data-test="'.$testPrefix.'-activate-'),
         );
     }
 
@@ -536,7 +539,9 @@ class ResourceActivationTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $customer = Customer::factory()->create();
-        $project = Project::factory()->create();
+        // The project needs a customer of its own: ProjectFactory adopts whichever customer the
+        // factory finds first, which would make the childless customer below a parent after all.
+        $project = Project::factory()->for(Customer::factory()->create())->create();
 
         $this->get(route('customers.index'))
             ->assertSee('data-test="customer-delete-'.$customer->id.'"', false)

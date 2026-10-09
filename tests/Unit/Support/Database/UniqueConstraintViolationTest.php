@@ -5,7 +5,7 @@ namespace Tests\Unit\Support\Database;
 use PDOException;
 use PHPUnit\Framework\TestCase;
 use Illuminate\Database\QueryException;
-use App\Support\Database\UniqueConstraintViolation;
+use Basics13\Support\Database\UniqueConstraintViolation;
 
 class UniqueConstraintViolationTest extends TestCase
 {

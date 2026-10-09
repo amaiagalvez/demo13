@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Epic;
 use App\Models\Project;
 use Carbon\CarbonImmutable;
+use Basics13\Database\Factories\HasStates;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,10 +30,18 @@ class EpicFactory extends Factory
         $earliestStart = $projectStart;
         $latestStart = $projectEnd->subDay(); // At least 1 day before project end for end_date to fit
 
+        // The window vanishes when the project carries no room between its own dates, which the
+        // domain allows: both bounds collapse onto the project start so faker never sees an
+        // inverted range. Tests that pin their own dates discard these values anyway.
+        if ($latestStart->lessThan($earliestStart)) {
+            $latestStart = $earliestStart;
+        }
+
         $startDate = fake()->dateTimeBetween($earliestStart, $latestStart)->format('Y-m-d');
 
         // Epic end must be after epic start and before project end
-        $endDate = fake()->dateTimeBetween($startDate . ' +1 day', $projectEnd)->format('Y-m-d');
+        $endFloor = CarbonImmutable::parse($startDate)->addDay();
+        $endDate = fake()->dateTimeBetween($endFloor, $projectEnd->max($endFloor))->format('Y-m-d');
 
         return [
             'name' => fake()->unique()->sentence(3),

@@ -6,11 +6,11 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\Project;
 use App\Queries\Epics\EpicListQuery;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicListQueryTest extends TestCase
 {
-    use LazilyRefreshDatabase;
+    use RefreshDatabase;
 
     public function test_active_list_includes_epics_with_trashed_projects(): void
     {

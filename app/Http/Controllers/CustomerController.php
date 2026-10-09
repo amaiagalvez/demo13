@@ -9,12 +9,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\CustomerRequest;
 use Illuminate\Database\QueryException;
+use Basics13\Http\Controllers\Controller;
 use App\Http\Requests\CustomerListRequest;
 use App\Queries\Customers\CustomerListQuery;
 use App\Transformers\CustomerListTransformer;
 use App\Http\Requests\CustomerSelectOptionsRequest;
-use App\Support\Database\UniqueConstraintViolation;
 use App\Queries\Customers\CustomerSelectOptionsQuery;
+use Basics13\Support\Database\UniqueConstraintViolation;
 
 class CustomerController extends Controller
 {

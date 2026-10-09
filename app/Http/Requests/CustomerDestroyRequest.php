@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Customer;
 use Illuminate\Database\Eloquent\Model;
+use Basics13\Http\Requests\TrashDestroyRequest;
 
 /**
  * @extends TrashDestroyRequest<Customer>

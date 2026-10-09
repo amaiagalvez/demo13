@@ -32,7 +32,7 @@ class ListTransformerContractTest extends TestCase
         'rows',
     ];
 
-    private const COUNTED_TABS = ['active' => 2, 'archived' => 1, 'trashed' => 3];
+    private const COUNTED_TABS = ['active' => 2, 'inactive' => 1, 'trashed' => 3];
 
     /**
      * @return list<array{0: class-string, 1: 'active'|'archived'|'trash'}>
@@ -65,6 +65,7 @@ class ListTransformerContractTest extends TestCase
     #[DataProvider('listStates')]
     public function test_every_state_payload_has_the_expected_keys(string $transformerClass, string $state): void
     {
+        app()->setLocale('en');
         $list = $this->payload($transformerClass, $state);
 
         $this->assertSame(self::ENVELOPE_KEYS, array_keys($list));
@@ -126,7 +127,7 @@ class ListTransformerContractTest extends TestCase
      * A row exposes the same action envelope in every state.
      *
      * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
-     * @param  'active'|'inactive'|'trash'  $state
+     * @param  'active'|'archived'|'trash'  $state
      */
     #[DataProvider('listStates')]
     public function test_rows_carry_the_shared_action_envelope_in_every_state(string $transformerClass, string $state): void
@@ -183,7 +184,7 @@ class ListTransformerContractTest extends TestCase
 
     /**
      * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
-     * @param  'active'|'inactive'|'trash'  $state
+     * @param  'active'|'archived'|'trash'  $state
      * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
@@ -204,7 +205,7 @@ class ListTransformerContractTest extends TestCase
 
     /**
      * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
-     * @param  'active'|'inactive'|'trash'  $state
+     * @param  'active'|'archived'|'trash'  $state
      * @return array<string, mixed>
      */
     private function payloadWithOneRecord(string $transformerClass, string $state): array
@@ -231,7 +232,7 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  LengthAwarePaginator<int, Customer>  $paginator
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function customerState(
@@ -254,7 +255,7 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  LengthAwarePaginator<int, Project>  $paginator
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function projectState(
@@ -277,7 +278,7 @@ class ListTransformerContractTest extends TestCase
     /**
      * @param  LengthAwarePaginator<int, Epic>  $paginator
      * @param  'active'|'archived'|'trash'  $state
-     * @param  array{active: int, archived: int, trashed: int}|null  $counts
+     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function epicState(

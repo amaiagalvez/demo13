@@ -35,8 +35,8 @@ class ResourceWriteAccessTest extends TestCase
             $routes["{$singular} store"] = [$singular, $plural.'.store'];
             $routes["{$singular} update"] = [$singular, $plural.'.update'];
             $routes["{$singular} destroy"] = [$singular, $plural.'.destroy'];
-            $routes["{$singular} deactivate"] = [$singular, $plural.'.deactivate'];
-            $routes["{$singular} reactivate"] = [$singular, $plural.'.inactive.reactivate'];
+            $routes["{$singular} deactivate"] = [$singular, $plural.'.archive'];
+            $routes["{$singular} reactivate"] = [$singular, $plural.'.archived.activate'];
             $routes["{$singular} restore"] = [$singular, $plural.'.trash.restore'];
             $routes["{$singular} force delete"] = [$singular, $plural.'.trash.destroy'];
         }

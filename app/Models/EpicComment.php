@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Carbon\CarbonImmutable;
-use App\Concerns\TracksAuditColumns;
 use Illuminate\Database\Eloquent\Model;
+use Basics13\Concerns\TracksAuditColumns;
 use Database\Factories\EpicCommentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

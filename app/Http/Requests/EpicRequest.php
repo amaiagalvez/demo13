@@ -5,9 +5,9 @@ namespace App\Http\Requests;
 use App\Models\Epic;
 use App\Models\Project;
 use Illuminate\Validation\Rule;
-use App\Support\Validation\MaxLength;
 use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Rules\Unique;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EpicRequest extends FormRequest

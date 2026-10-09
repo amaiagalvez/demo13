@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Support\Validation\MaxLength;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EpicCommentRequest extends FormRequest

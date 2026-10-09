@@ -6,10 +6,10 @@ use Tests\TestCase;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\EpicRequest;
 use App\Http\Requests\ProjectRequest;
-use App\Support\Validation\MaxLength;
 use App\Http\Requests\CustomerRequest;
-use App\Support\Validation\FieldHints;
 use App\Http\Requests\EpicCommentRequest;
+use Basics13\Support\Validation\MaxLength;
+use Basics13\Support\Validation\FieldHints;
 use Illuminate\Foundation\Http\FormRequest;
 
 class FieldHintsTest extends TestCase

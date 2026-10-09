@@ -5,7 +5,9 @@ namespace Tests\Unit\Validation;
 use Tests\TestCase;
 use Illuminate\Routing\Route;
 use App\Http\Requests\ProjectRequest;
-use App\Support\Validation\MaxLength;
+use Illuminate\Validation\Rules\Exists;
+use Illuminate\Validation\Rules\Unique;
+use Basics13\Support\Validation\MaxLength;
 
 class ProjectRequestTest extends TestCase
 {
@@ -205,7 +207,7 @@ class ProjectRequestTest extends TestCase
         $rules = $request->rules();
 
         $nameRules = $rules['name'];
-        $uniqueRules = array_filter($nameRules, static fn (string $rule): bool => str_starts_with($rule, 'unique:'));
+        $uniqueRules = array_filter($nameRules, static fn (mixed $rule): bool => $rule instanceof Unique);
         $this->assertNotEmpty($uniqueRules, 'name rule must contain unique rule');
     }
 
@@ -215,12 +217,13 @@ class ProjectRequestTest extends TestCase
         $rules = $request->rules();
 
         $customerIdRules = $rules['customer_id'];
-        $existsRules = array_filter($customerIdRules, static fn (string $rule): bool => str_starts_with($rule, 'exists:'));
+        $existsRules = array_filter($customerIdRules, static fn (mixed $rule): bool => $rule instanceof Exists);
         $this->assertNotEmpty($existsRules, 'customer_id rule must contain exists rule');
 
         // The rule should reference the customers table
         $existsRule = reset($existsRules);
-        $this->assertStringContainsString('customers', $existsRule);
+        $this->assertInstanceOf(Exists::class, $existsRule);
+        $this->assertStringContainsString('customers', (string) $existsRule);
     }
 
     public function test_authorize_returns_false_when_user_cannot_create(): void

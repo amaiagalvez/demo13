@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use App\Policies\ProjectPolicy;
-use App\Concerns\TracksAuditColumns;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Model;
+use Basics13\Concerns\TracksAuditColumns;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

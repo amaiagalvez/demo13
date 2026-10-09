@@ -129,7 +129,7 @@ new class extends Component { // @phpstan-ignore expr.resultUnused (Volt require
             </div>
 
             <flux:textarea wire:model="notes" :label="__('Notes')" rows="3"
-                maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
+                maxlength="{{ \Basics13\Support\Validation\MaxLength::longText() }}"
                 data-test="profile-notes" />
 
             <div class="flex items-center gap-4">

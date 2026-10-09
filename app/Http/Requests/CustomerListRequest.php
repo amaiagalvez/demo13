@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Customer;
+use Basics13\Http\Requests\SearchableListRequest;
 
 class CustomerListRequest extends SearchableListRequest
 {

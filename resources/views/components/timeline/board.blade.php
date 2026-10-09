@@ -129,14 +129,14 @@
                                 @if ($row['start'] || $row['end'])
                                     <span class="whitespace-nowrap">
                                         @if ($row['start'])
-                                            <x-list.local-time :datetime="$row['start']->toDateString()"
+                                            <x-basics13::list.local-time :datetime="$row['start']->toDateString()"
                                                 format="date" />
                                         @else
                                             <span class="text-zinc-400 dark:text-zinc-500">—</span>
                                         @endif
                                         <span aria-hidden="true" class="mx-1 text-zinc-400">–</span>
                                         @if ($row['end'])
-                                            <x-list.local-time :datetime="$row['end']->toDateString()"
+                                            <x-basics13::list.local-time :datetime="$row['end']->toDateString()"
                                                 format="date" />
                                         @else
                                             <span class="text-zinc-400 dark:text-zinc-500">—</span>

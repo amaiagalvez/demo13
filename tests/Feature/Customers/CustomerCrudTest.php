@@ -8,11 +8,11 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Customer;
 use App\Models\EpicComment;
-use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;
+use Basics13\Queries\ListQueryBase;
 use Illuminate\Support\Facades\Gate;
-use App\Support\Validation\MaxLength;
 use Illuminate\Database\QueryException;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,6 +31,8 @@ class CustomerCrudTest extends TestCase
 
     public function test_authenticated_users_can_create_update_and_delete_customers(): void
     {
+        app()->setLocale('en');
+
         $this->actingAs(User::factory()->create());
 
         $this->post(route('customers.store'), ['name' => 'Ane Bezeroa'])
@@ -154,6 +156,8 @@ class CustomerCrudTest extends TestCase
 
     public function test_customer_list_header_offers_the_state_tabs_with_the_record_count_of_each_one(): void
     {
+        app()->setLocale('en');
+
         $this->actingAs(User::factory()->create());
         Customer::factory()->count(2)->create();
         Customer::factory()->inactive()->create();
@@ -171,16 +175,16 @@ class CustomerCrudTest extends TestCase
             ->assertSeeInOrder([
                 'data-test="customer-active-link"',
                 'aria-current="page"',
-                'data-test="customer-inactive-link"',
+                'data-test="customer-archived-link"',
                 'data-test="customer-trash-link"',
             ], false)
             ->assertSeeInOrder(['data-test="customer-active-link"', '>2</span>'], false)
-            ->assertSeeInOrder(['data-test="customer-inactive-link"', '>1</span>'], false)
+            ->assertSeeInOrder(['data-test="customer-archived-link"', '>1</span>'], false)
             ->assertSeeInOrder(['data-test="customer-trash-link"', '>3</span>'], false);
 
-        $this->get(route('customers.inactive.index'))
+        $this->get(route('customers.archived.index'))
             ->assertOk()
-            ->assertSeeInOrder([__('Dashboard'), __('Customers'), __('Inactive')], false);
+            ->assertSeeInOrder([__('Dashboard'), __('Customers'), __('Archived')], false);
 
         $this->get(route('customers.trash.index'))
             ->assertOk()
@@ -251,6 +255,8 @@ class CustomerCrudTest extends TestCase
 
     public function test_json_customer_store_reports_deleted_name_conflicts(): void
     {
+        app()->setLocale('en');
+
         $this->actingAs(User::factory()->create());
         Customer::factory()->trashed()->create(['name' => 'Deleted Select2 Customer']);
 

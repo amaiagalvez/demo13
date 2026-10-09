@@ -1,4 +1,4 @@
-<x-forms.tracked-resource prefix="project" context-field="_project_form" id-field="_project_id"
+<x-basics13::forms.tracked-resource prefix="project" context-field="_project_form" id-field="_project_id"
     submit-disabled="isSubmitting || !isDirty || form.customerCreating">
     <flux:field>
         <x-forms.field-label :request="\App\Http\Requests\ProjectRequest::class" field="name"
@@ -6,7 +6,7 @@
             {{ __('Name') }}
         </x-forms.field-label>
         <flux:input name="name" x-model="form.name" minlength="4"
-            maxlength="{{ \App\Support\Validation\MaxLength::string() }}" required
+            maxlength="{{ \Basics13\Support\Validation\MaxLength::string() }}" required
             autofocus id="project-name" data-test="project-name" />
         <flux:error name="name" />
     </flux:field>
@@ -70,8 +70,8 @@
             {{ __('Notes') }}
         </x-forms.field-label>
         <flux:textarea name="notes" x-model="form.notes" rows="3"
-            maxlength="{{ \App\Support\Validation\MaxLength::longText() }}"
+            maxlength="{{ \Basics13\Support\Validation\MaxLength::longText() }}"
             id="project-notes" data-test="project-notes" />
         <flux:error name="notes" />
     </flux:field>
-</x-forms.tracked-resource>
+</x-basics13::forms.tracked-resource>

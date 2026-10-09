@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\EpicDestroyRequest;
 use App\Http\Requests\EpicRestoreRequest;
 use App\Transformers\EpicListTransformer;
+use Basics13\Http\Controllers\TrashController;
 
 /**
  * @extends TrashController<Epic>

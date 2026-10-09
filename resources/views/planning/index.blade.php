@@ -42,7 +42,7 @@
             <form method="GET" action="{{ $search['action'] }}" class="w-full sm:max-w-md">
                 <div class="relative">
                     <flux:input name="search" :aria-label="__('Search')" :placeholder="$search['placeholder']"
-                        :value="$search['value']" maxlength="{{ \App\Support\Validation\MaxLength::string() }}"
+                        :value="$search['value']" maxlength="{{ \Basics13\Support\Validation\MaxLength::string() }}"
                         icon="magnifying-glass" class="w-full" data-test="planning-search" />
                     @if ($search['value'] !== '')
                         <div class="absolute inset-e-1 top-1/2 z-10 -translate-y-1/2">
@@ -54,7 +54,7 @@
                 <input type="hidden" name="view" value="{{ $timeline ? 'timeline' : 'roadmap' }}">
             </form>
 
-            <x-list.tabs :tabs="$views" prefix="planning" :label="__('Layout')" />
+            <x-basics13::list.tabs :tabs="$views" prefix="planning" :label="__('Layout')" />
         </div>
 
         <x-planning.board :groups="$planning['groups']" :timeline="$timeline"

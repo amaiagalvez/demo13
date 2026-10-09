@@ -5,8 +5,8 @@ namespace App\Http\Requests;
 use App\Models\Project;
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
-use App\Support\Validation\MaxLength;
 use Illuminate\Validation\Rules\Exists;
+use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProjectRequest extends FormRequest
