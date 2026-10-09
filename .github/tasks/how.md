@@ -28,7 +28,7 @@ Lo único que cambia en el flujo: no hay `applyTo`, así que el agente tiene que
 `.opencode/` está en `.gitignore` (son enlaces, no contenido). **En un ordenador nuevo, después de clonar, ejecuta:**
 
 ```
-./docker/link-opencode-assets.sh
+bash /packages/basics13/tooling/link-opencode-assets.sh
 ```
 
 Es idempotente: puedes ejecutarlo cada vez que clones o añadas un agente. Sin él, OpenCode arranca sin agentes. También avisa si el sistema no soporta symlinks y limpia enlaces colgantes de agentes que hayas borrado.
@@ -98,7 +98,7 @@ Al correr `php artisan test` (y en la CI) pasan también cuatro tests de arquite
 
 El resto del automatismo:
 * `composer ci:check` = `config:clear` + pint --test + PHPStan (nivel 9) + suite completa con cobertura mínima del 80% y Clover en `storage/logs/coverage.xml` (el mismo umbral que exige la CI).
-* Tests en paralelo en local: `DX php artisan test --parallel --compact <ruta>` — los flags van **antes** de la ruta. Nunca en CI: los jobs comparten una BD. Requiere el grant `laravel\_test\_%` (ya aplicado, y en `docker/mysql/init/02-parallel-test-databases.sql` para volúmenes nuevos).
+* Tests en paralelo en local: `DX php artisan test --parallel --compact <ruta>` — los flags van **antes** de la ruta. Nunca en CI: los jobs comparten una BD. Requiere el grant `laravel\_test\_%` (ya aplicado, y en `packages/basics13/tooling/mysql/init/02-parallel-test-databases.sql` para volúmenes nuevos).
 * Restaurar desde la papelera ya pide `XRestoreRequest` (policy + `resolve_name_conflict` validado). Si añades un endpoint con input, la validación va en su FormRequest, nunca en el controller.
 * CI (master y PRs): cache de Composer y npm, job Dusk, y se salta entera si el diff solo toca `.md`. Dependabot cubre composer y npm.
 

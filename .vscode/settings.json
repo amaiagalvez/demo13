@@ -10,7 +10,7 @@
         "php"
     ],
     "LaravelExtraIntellisense.phpCommand": "docker compose exec -T -e XDEBUG_MODE=off laravel13 php -r \"{code}\"",
-    "LaravelExtraIntellisense.basePathForCode": "/docker",
+    "LaravelExtraIntellisense.basePathForCode": "/app-docker",
     "chat.tools.terminal.autoApprove": {
         "/pint --dirty --format agent$/": {
             "approve": true,

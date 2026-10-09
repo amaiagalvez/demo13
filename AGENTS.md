@@ -23,7 +23,7 @@ Customers → Projects → Epics (+ epic comments). Soft deletes, trash list, re
 - Prefer Boost MCP tools over shell: `database-query` (read-only), `database-schema`, `get-absolute-url`, `browser-logs`, `search-docs`.
 - `search-docs` before version-specific Laravel-ecosystem APIs (skip for copy/styling). Broad topic queries, no package names in the query, scope with `packages`. Reuse earlier results.
 - Zone rules live in `.github/instructions/*.instructions.md` (`models`, `http`, `views`, `tests`): Copilot injects them automatically by `applyTo`; any other agent reads the one matching the paths it edits before touching them.
-- Reviewer agents have a single copy in `.github/agents/`; `.opencode/agents/` are gitignored symlinks to them. Edit the source, never the symlink. Never add a `tools:` key there (OpenCode drops the whole file). Rebuild the links with `docker/link-opencode-assets.sh`.
+- Reviewer agents have a single copy in `.github/agents/`; `.opencode/agents/` are gitignored symlinks to them. Edit the source, never the symlink. Never add a `tools:` key there (OpenCode drops the whole file). Rebuild the links with `bash /packages/basics13/tooling/link-opencode-assets.sh` from the application root.
 - Guided flows (new-feature, new-resource, full-review, fix-review, fix-tests, consistency-review, ux-implement) are skills in `.github/skills/<name>/SKILL.md`, not `/commands`: activate them by skill, not with a slash command.
 - Activate the matching skill in `.github/skills` for its domain. No verification scripts/tinker when tests cover it.
 
