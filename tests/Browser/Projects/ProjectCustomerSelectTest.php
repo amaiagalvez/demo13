@@ -5,7 +5,7 @@ namespace Tests\Browser\Projects;
 use App\Models\User;
 use App\Models\Project;
 use Tests\DuskTestCase;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
 use Illuminate\Foundation\Testing\DatabaseMigrations;

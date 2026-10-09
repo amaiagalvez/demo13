@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Basics13\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\DataProvider;

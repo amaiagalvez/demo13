@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use ReflectionClass;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Models\EpicComment;
 use App\Http\Requests\EpicRequest;
 use App\Http\Requests\ProjectRequest;

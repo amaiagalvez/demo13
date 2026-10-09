@@ -4,7 +4,7 @@ namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Queries\Projects\ProjectListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

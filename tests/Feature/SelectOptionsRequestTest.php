@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Support\Facades\Validator;
 use Basics13\Support\Validation\MaxLength;

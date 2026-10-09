@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Models\EpicComment;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\QueryException;

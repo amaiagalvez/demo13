@@ -7,6 +7,7 @@ use App\Policies\ProjectPolicy;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Model;
 use Basics13\Concerns\TracksAuditColumns;
+use Customers13\Models\Customer;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -65,7 +66,7 @@ class Project extends Model
      */
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class)->withTrashed();
+        return $this->belongsTo(Customers13\Models\Customer::class)->withTrashed();
     }
 
     /**

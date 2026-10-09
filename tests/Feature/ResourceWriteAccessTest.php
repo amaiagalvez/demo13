@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;

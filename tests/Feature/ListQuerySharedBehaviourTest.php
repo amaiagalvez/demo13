@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\Epic;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Basics13\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;

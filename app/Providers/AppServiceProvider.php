@@ -6,10 +6,7 @@ use App\Models\Epic;
 use App\Models\User;
 use Livewire\Livewire;
 use App\Models\Project;
-/* @chisel-password-confirmation */
-use App\Models\Customer;
-use Carbon\CarbonImmutable;
-/* @end-chisel-password-confirmation */
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
@@ -32,52 +29,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->blockDeletionWithChildren();
-
         $this->configureDefaults();
         $this->authorizeLogViewer();
         /* @chisel-password-confirmation */
         Livewire::addPersistentMiddleware([RequirePasswordForLivewire::class]);
         /* @end-chisel-password-confirmation */
-    }
-
-    /**
-     * A customer cannot reach the trash while it has projects, a project cannot while it has epics,
-     * and an epic cannot be deleted while it has comments; trashed children count too. The row is
-     * locked inside the guard's own transaction, so a child that appears between the check and the
-     * delete makes the delete wait and then fail.
-     *
-     * The hook is what makes this safe, not the caller: it holds the guarantee for every path that
-     * soft deletes a record, including a plain `$model->delete()` outside a controller.
-     */
-    protected function blockDeletionWithChildren(): void
-    {
-        Customer::deleting(function (Customer $customer): bool {
-            $locked = DB::transaction(static fn (): Customer => Customer::withTrashed()
-                ->whereKey($customer->getKey())
-                ->lockForUpdate()
-                ->firstOrFail());
-
-            return ! $locked->projects()->withTrashed()->exists();
-        });
-
-        Project::deleting(function (Project $project): bool {
-            $locked = DB::transaction(static fn (): Project => Project::withTrashed()
-                ->whereKey($project->getKey())
-                ->lockForUpdate()
-                ->firstOrFail());
-
-            return ! $locked->epics()->withTrashed()->exists();
-        });
-
-        Epic::deleting(function (Epic $epic): bool {
-            $locked = DB::transaction(static fn (): Epic => Epic::withTrashed()
-                ->whereKey($epic->getKey())
-                ->lockForUpdate()
-                ->firstOrFail());
-
-            return ! $locked->comments()->exists();
-        });
     }
 
     /**

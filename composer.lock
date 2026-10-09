@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf0babd11e5024d19fbb8d95fc81a1f1",
+    "content-hash": "93ac50a7d2a5f339b0cdec676db05a0b",
     "packages": [
         {
             "name": "amaia/basics13",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packages/basics13",
-                "reference": "906f2260034f2296ae288776ef6e231a323f4108"
+                "reference": "2264efd40cc216e8e07636433966c5240055bdff"
             },
             "require": {
                 "laravel/boost": "^2.10",
@@ -60,6 +60,61 @@
                 }
             ],
             "description": "Generic Laravel 13 components: audit traits, base controllers, requests, queries, transformers, and view components for resource CRUD with soft deletes, archive, and trash.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "amaia/customers13",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../packages/customers13",
+                "reference": "da95b545445bf746b23522803ea8519cd9761eec"
+            },
+            "require": {
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "amaia/basics13": "*",
+                "larastan/larastan": "^3.9",
+                "laravel/dusk": "^8.7",
+                "laravel/pint": "^1.27",
+                "mockery/mockery": "^1.6",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Customers13\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Customers13\\": "src/"
+                },
+                "files": [
+                    "src/Database/helpers_global.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Customers13\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Amaia",
+                    "email": "amaia@example.com"
+                }
+            ],
+            "description": "Customer management for Laravel 13: CRUD, soft deletes, archive, trash, select options, and planning chips with Flux.",
             "transport-options": {
                 "symlink": true,
                 "relative": true

@@ -9,7 +9,7 @@ use App\Models\User;
 use ReflectionClass;
 use ReflectionMethod;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Policies\EpicPolicy;
 use Illuminate\Routing\Route;
 use App\Policies\ProjectPolicy;

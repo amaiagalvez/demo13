@@ -3,13 +3,12 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Models\Epic;
+use App\Models\Project;
 use App\Models\User;
+use App\Models\Epic;
+use App\Models\EpicComment;
 use ReflectionClass;
 use ReflectionMethod;
-use App\Models\Project;
-use App\Models\Customer;
-use App\Models\EpicComment;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,7 +23,6 @@ class ArchitectureTest extends TestCase
      * @var array<string, class-string>
      */
     private const RESOURCES = [
-        'Customer' => Customer::class,
         'Project' => Project::class,
         'Epic' => Epic::class,
     ];
@@ -209,7 +207,7 @@ class ArchitectureTest extends TestCase
 
     public function test_views_follow_the_canonical_patterns(): void
     {
-        foreach (['customers', 'projects', 'epics'] as $plural) {
+        foreach (['projects', 'epics'] as $plural) {
             $list = (string) file_get_contents(resource_path("views/{$plural}/list.blade.php"));
             $form = (string) file_get_contents(resource_path("views/{$plural}/form.blade.php"));
 

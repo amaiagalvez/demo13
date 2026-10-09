@@ -7,7 +7,7 @@ use App\Models\Epic;
 use App\Models\User;
 use ReflectionClass;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Models\EpicComment;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\SoftDeletes;
