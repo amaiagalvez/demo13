@@ -23,6 +23,20 @@ class TranslationFilesTest extends TestCase
     ];
 
     /**
+     * App-specific keys that are not in the basics13 package but are used by the application.
+     *
+     * @var list<string>
+     */
+    private const APP_SPECIFIC_KEYS = [
+        'Deactivate',
+        'Deactivate record?',
+        'Reactivate',
+        'Reactivate record?',
+        'Record deactivated successfully.',
+        'Record reactivated successfully.',
+    ];
+
+    /**
      * Customers, projects and epics share the outcome wording of their lifecycle actions, so a
      * resource name in one of these keys would mean translating the very same sentence again.
      */
@@ -80,6 +94,7 @@ class TranslationFilesTest extends TestCase
         foreach (array_keys($this->translations('en')) as $key) {
             if (
                 ! in_array($key, self::FRAMEWORK_KEYS, true)
+                && ! in_array($key, self::APP_SPECIFIC_KEYS, true)
                 && ! $this->translationIsReferenced($key, $sources)
             ) {
                 $unusedKeys[] = $key;

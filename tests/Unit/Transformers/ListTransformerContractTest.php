@@ -32,17 +32,17 @@ class ListTransformerContractTest extends TestCase
         'rows',
     ];
 
-    private const COUNTED_TABS = ['active' => 2, 'inactive' => 1, 'trashed' => 3];
+    private const COUNTED_TABS = ['active' => 2, 'archived' => 1, 'trashed' => 3];
 
     /**
-     * @return list<array{0: class-string, 1: 'active'|'inactive'|'trash'}>
+     * @return list<array{0: class-string, 1: 'active'|'archived'|'trash'}>
      */
     public static function listStates(): array
     {
         $cases = [];
 
         foreach (self::transformerClasses() as $transformer) {
-            foreach (['active', 'inactive', 'trash'] as $state) {
+            foreach (['active', 'archived', 'trash'] as $state) {
                 $cases[] = [$transformer, $state];
             }
         }
@@ -60,7 +60,7 @@ class ListTransformerContractTest extends TestCase
 
     /**
      * @param  class-string<CustomerListTransformer|ProjectListTransformer|EpicListTransformer>  $transformerClass
-     * @param  'active'|'inactive'|'trash'  $state
+     * @param  'active'|'archived'|'trash'  $state
      */
     #[DataProvider('listStates')]
     public function test_every_state_payload_has_the_expected_keys(string $transformerClass, string $state): void
@@ -72,7 +72,7 @@ class ListTransformerContractTest extends TestCase
         $this->assertSame(
             match ($state) {
                 'active' => __('Created at'),
-                'inactive' => __('Updated at'),
+                'archived' => __('Updated at'),
                 'trash' => __('Deleted at'),
             },
             $list['extraDateHeading'],
@@ -107,7 +107,7 @@ class ListTransformerContractTest extends TestCase
     #[DataProvider('transformers')]
     public function test_each_state_marks_only_its_own_tab_as_current(string $transformerClass): void
     {
-        foreach (['active', 'inactive', 'trash'] as $state) {
+        foreach (['active', 'archived', 'trash'] as $state) {
             /** @var array<string, mixed> $list */
             $list = $this->payload($transformerClass, $state);
 
@@ -115,7 +115,7 @@ class ListTransformerContractTest extends TestCase
             $tabs = $list['tabs'];
 
             $this->assertSame(
-                [$state === 'active', $state === 'inactive', $state === 'trash'],
+                [$state === 'active', $state === 'archived', $state === 'trash'],
                 array_column($tabs, 'current'),
                 "{$transformerClass}: only the tab of [{$state}] may be current",
             );
@@ -230,8 +230,8 @@ class ListTransformerContractTest extends TestCase
 
     /**
      * @param  LengthAwarePaginator<int, Customer>  $paginator
-     * @param  'active'|'inactive'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  'active'|'archived'|'trash'  $state
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function customerState(
@@ -244,7 +244,7 @@ class ListTransformerContractTest extends TestCase
         /** @var array<string, mixed> $list */
         $list = match ($state) {
             'active' => $transformer->active($paginator, $search, $counts),
-            'inactive' => $transformer->inactive($paginator, $search, $counts),
+            'archived' => $transformer->archived($paginator, $search, $counts),
             default => $transformer->trash($paginator, $search, $counts),
         };
 
@@ -253,8 +253,8 @@ class ListTransformerContractTest extends TestCase
 
     /**
      * @param  LengthAwarePaginator<int, Project>  $paginator
-     * @param  'active'|'inactive'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  'active'|'archived'|'trash'  $state
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function projectState(
@@ -267,7 +267,7 @@ class ListTransformerContractTest extends TestCase
         /** @var array<string, mixed> $list */
         $list = match ($state) {
             'active' => $transformer->active($paginator, $search, $counts),
-            'inactive' => $transformer->inactive($paginator, $search, $counts),
+            'archived' => $transformer->archived($paginator, $search, $counts),
             default => $transformer->trash($paginator, $search, $counts),
         };
 
@@ -276,8 +276,8 @@ class ListTransformerContractTest extends TestCase
 
     /**
      * @param  LengthAwarePaginator<int, Epic>  $paginator
-     * @param  'active'|'inactive'|'trash'  $state
-     * @param  array{active: int, inactive: int, trashed: int}|null  $counts
+     * @param  'active'|'archived'|'trash'  $state
+     * @param  array{active: int, archived: int, trashed: int}|null  $counts
      * @return array<string, mixed>
      */
     private function epicState(
@@ -290,7 +290,7 @@ class ListTransformerContractTest extends TestCase
         /** @var array<string, mixed> $list */
         $list = match ($state) {
             'active' => $transformer->active($paginator, $search, $counts),
-            'inactive' => $transformer->inactive($paginator, $search, $counts),
+            'archived' => $transformer->archived($paginator, $search, $counts),
             default => $transformer->trash($paginator, $search, $counts),
         };
 
