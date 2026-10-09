@@ -7,16 +7,7 @@
         "laravel",
         "framework"
     ],
-    "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../packages/basics13",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
+    "license": "MIT",   
     "require": {
         "php": "^8.3",
         "amaia/basics13": "*",
@@ -25,15 +16,16 @@
         "livewire/livewire": "^4.1"
     },
     "require-dev": {
-        "laravel/tinker": "^3.0",
         "brianium/paratest": "^7.20",
         "fakerphp/faker": "^1.24",        
+        "fruitcake/laravel-debugbar": "^4.4",
         "larastan/larastan": "^3.9",
         "laravel/dusk": "^8.7",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
         "laravel/sail": "^1.53",
+        "laravel/tinker": "^3.0",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9.3",
         "phpunit/phpunit": "^12.5.23"
@@ -127,5 +119,14 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../packages/basics13",
+            "options": {
+                "symlink": true
+            }
+        }
+    ]
 }
