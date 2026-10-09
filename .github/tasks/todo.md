@@ -6,7 +6,6 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
     1. si el formulario se abre en modo create, en el select o select2 solo se mostrarán los que tengan active=1
     2. si el formulario se abre en modo edición, en el select o select2 se mostraran el elemento sseleccionado (tenga o no active=1) y el resto de elementos seran solo los que tengan acitive=1 
 [] cachear listados select public function selectOptions y Observer para limpiar la cache ante cualquier modificación en el original
-[] test sin db prioridad
 
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)

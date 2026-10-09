@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class EpicCommentFactory extends Factory
 {
+    use HasStates;
+
     /**
      * Define the model's default state.
      *
@@ -20,9 +22,9 @@ class EpicCommentFactory extends Factory
     public function definition(): array
     {
         return [
-            'epic_id' => Epic::factory(),
-            'user_id' => User::factory(),
             'body' => fake()->paragraph(),
+            'user_id' => static::getRecord(User::class),
+            'epic_id' => static::getRecord(Epic::class),
         ];
     }
 }

@@ -14,19 +14,16 @@ class ProjectFactory extends Factory
     use HasStates;
 
     /**
-     * Define the model's default state. The end date may equal the start date per ProjectRequest.
+     * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $startDate = fake()->dateTimeBetween('-1 year', 'now')->format('Y-m-d');
-
         return [
             'name' => fake()->unique()->sentence(3),
-            'start_date' => $startDate,
-            'end_date' => fake()->dateTimeBetween($startDate, '+1 year')->format('Y-m-d'),
-            'customer_id' => Customer::factory(),
+            ...$this->getDateRange(-1, 1),
+            'customer_id' => static::getRecord(Customer::class)
         ];
     }
 }

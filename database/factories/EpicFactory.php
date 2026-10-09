@@ -15,14 +15,11 @@ class EpicFactory extends Factory
     use HasStates;
 
     /**
-     * Define the model's default state. The end date must be later than the start date per EpicRequest.
-     * Dates must also fall within the project's date range.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $project = Project::inRandomOrder()->first() ?? Project::factory()->create();
+        $project = static::getRecord(Project::class);
 
         // Epic dates must be within project dates
         $projectStart = CarbonImmutable::parse($project->start_date);
@@ -35,7 +32,7 @@ class EpicFactory extends Factory
         $startDate = fake()->dateTimeBetween($earliestStart, $latestStart)->format('Y-m-d');
 
         // Epic end must be after epic start and before project end
-        $endDate = fake()->dateTimeBetween($startDate.' +1 day', $projectEnd)->format('Y-m-d');
+        $endDate = fake()->dateTimeBetween($startDate . ' +1 day', $projectEnd)->format('Y-m-d');
 
         return [
             'name' => fake()->unique()->sentence(3),
