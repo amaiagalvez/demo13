@@ -3,16 +3,16 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\Epic;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Basics13\Queries\ListQueryBase;
-use App\Queries\Epics\EpicListQuery;
-use App\Queries\Projects\ProjectListQuery;
-use Customers13\Queries\Customers\CustomerListQuery;
+use Projects13\Queries\Epics\EpicListQuery;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Projects13\Queries\Projects\ProjectListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Customers13\Queries\Customers\CustomerListQuery;
 
 /**
  * Behaviour that comes from ListQueryBase, so it must hold for every resource that extends it.

@@ -4,7 +4,7 @@ namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
 use Basics13\Support\Validation\MaxLength;

@@ -4,7 +4,7 @@ namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +44,7 @@ class ProjectInputValidationTest extends TestCase
                 'min' => 4,
             ]));
 
-        $this->assertDatabaseMissing('projects', ['name' => 'Abc']);
+        $this->assertDatabaseMissing('PRO_projects', ['name' => 'Abc']);
     }
 
     public function test_project_name_cannot_exceed_the_configured_maximum_over_http(): void
@@ -61,7 +61,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('projects', 0);
+        $this->assertDatabaseCount('PRO_projects', 0);
     }
 
     public function test_project_name_must_be_a_string_over_http(): void
@@ -78,7 +78,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('projects', 0);
+        $this->assertDatabaseCount('PRO_projects', 0);
     }
 
     public function test_project_name_must_be_unique(): void
@@ -95,7 +95,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseCount('PRO_projects', 1);
     }
 
     public function test_store_trims_project_name_before_unique_validation(): void
@@ -112,7 +112,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseCount('PRO_projects', 1);
     }
 
     public function test_project_name_can_be_kept_when_updating_the_same_project(): void
@@ -126,7 +126,7 @@ class ProjectInputValidationTest extends TestCase
             'customer_id' => $project->customer_id,
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $project->id,
             'name' => 'Existing project',
         ]);
@@ -143,7 +143,7 @@ class ProjectInputValidationTest extends TestCase
             'customer_id' => $project->customer_id,
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $project->id,
             'name' => 'Trimmed project',
         ]);
@@ -164,7 +164,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $projectToUpdate->id,
             'name' => 'Project to update',
         ]);
@@ -203,7 +203,7 @@ class ProjectInputValidationTest extends TestCase
             'reuse_deleted_name' => '1',
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'name' => 'Deleted project',
             'deleted_at' => null,
         ]);
@@ -222,7 +222,7 @@ class ProjectInputValidationTest extends TestCase
             'customer_id' => $existingProject->customer_id,
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $existingProject->id,
             'name' => 'Deleted project',
             'deleted_at' => null,
@@ -244,7 +244,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseCount('PRO_projects', 1);
     }
 
     public function test_project_can_be_created_without_an_end_date(): void
@@ -259,7 +259,7 @@ class ProjectInputValidationTest extends TestCase
             'customer_id' => $customer->id,
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'name' => self::OPEN_ENDED_PROJECT,
             'start_date' => self::START_DATE,
             'end_date' => null,
@@ -283,7 +283,7 @@ class ProjectInputValidationTest extends TestCase
             'customer_id' => $customer->id,
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'name' => 'One-day project',
             'start_date' => self::START_DATE,
             'end_date' => self::START_DATE,
@@ -324,7 +324,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['customer_id']);
 
-        $this->assertDatabaseMissing('projects', ['name' => 'Project without an active customer']);
+        $this->assertDatabaseMissing('PRO_projects', ['name' => 'Project without an active customer']);
     }
 
     /**
@@ -347,7 +347,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $project->id,
             'name' => 'Renamed project',
             'customer_id' => $customer->id,
@@ -370,7 +370,7 @@ class ProjectInputValidationTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHasErrors(['customer_id']);
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $project->id,
             'customer_id' => $project->customer_id,
         ]);

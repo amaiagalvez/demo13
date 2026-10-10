@@ -3,9 +3,9 @@
 namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -75,14 +75,14 @@ class ProjectTrashTest extends TestCase
             ->assertRedirect(route('projects.index'));
         $this->delete(route('projects.trash.destroy', $activeProject->id))
             ->assertRedirect(route('projects.trash.index'));
-        $this->assertDatabaseMissing('projects', ['id' => $activeProject->id]);
+        $this->assertDatabaseMissing('PRO_projects', ['id' => $activeProject->id]);
 
         $this->delete(route('projects.destroy', $deletedProject))
             ->assertRedirect(route('projects.index'));
         $this->delete(route('projects.trash.destroy', $deletedProject->id))
             ->assertRedirect(route('projects.trash.index'))
             ->assertSessionHas('status', __('basics13::messages.permanently_deleted'));
-        $this->assertDatabaseMissing('projects', ['id' => $deletedProject->id]);
+        $this->assertDatabaseMissing('PRO_projects', ['id' => $deletedProject->id]);
     }
 
     public function test_active_project_is_not_found_through_trash_actions(): void
@@ -137,7 +137,7 @@ class ProjectTrashTest extends TestCase
                 __('basics13::messages.restored_no_new_record'),
             );
 
-        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseCount('PRO_projects', 1);
         $this->assertNotSoftDeleted($deletedProject);
     }
 

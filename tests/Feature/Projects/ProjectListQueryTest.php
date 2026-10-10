@@ -3,9 +3,9 @@
 namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
-use App\Models\Project;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Queries\Projects\ProjectListQuery;
+use Projects13\Queries\Projects\ProjectListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectListQueryTest extends TestCase

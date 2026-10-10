@@ -3,12 +3,12 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
 use ReflectionClass;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Models\EpicComment;
+use Projects13\Models\EpicComment;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Testing\RefreshDatabase;

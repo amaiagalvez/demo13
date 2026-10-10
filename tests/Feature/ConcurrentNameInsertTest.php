@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Tests\Support\RacesNameInsert;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -48,7 +48,11 @@ class ConcurrentNameInsertTest extends TestCase
         $payload = $this->payloadFor($singular, $name);
         $parentId = $this->parentIdFromPayload($payload);
         $routePrefix = substr($indexRoute, 0, -strlen('.index'));
-        $table = $singular === 'customer' ? (new Customer)->getTable() : $singular.'s';
+        $table = match ($singular) {
+            'customer' => (new Customer)->getTable(),
+            'project' => (new Project)->getTable(),
+            'epic' => (new Epic)->getTable(),
+        };
 
         RacesNameInsert::afterUniquenessSelect(
             $table,

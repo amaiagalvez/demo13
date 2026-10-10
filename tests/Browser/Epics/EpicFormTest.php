@@ -2,12 +2,12 @@
 
 namespace Tests\Browser\Epics;
 
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class EpicFormTest extends DuskTestCase
@@ -74,7 +74,7 @@ class EpicFormTest extends DuskTestCase
                 ->waitFor('[data-test="epic-status"]');
         });
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'name' => $epicName,
             'project_id' => $project->id,
         ]);

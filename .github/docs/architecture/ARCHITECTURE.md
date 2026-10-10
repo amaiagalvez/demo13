@@ -16,15 +16,15 @@ deleted from a trash view.
 
 ## Main Modules / Domains
 
-- Customer management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, archived list, and trash list.
-- Project management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, archived list, and trash list. Each project belongs to one customer;
-  a customer may have many projects.
-- Epic management: controllers, Form Requests, policy, query object, transformer,
-  Eloquent model, active list, archived list, and trash list. Each epic belongs to one project;
-  a project may have many epics. Epics have comments (author and creation time),
-  added from the epic edit drawer.
+- `customers13`: customer controllers, Form Requests, policy, queries, transformers,
+  Eloquent model, views, routes and migrations. A customer may have many projects.
+- `projects13`: project and epic controllers, Form Requests, policies, queries,
+  transformers, Eloquent models, factories, views, routes and migrations. Each project
+  belongs to one customer; each epic belongs to one project. Epics have comments
+  (author and creation time), added from the epic edit drawer. Planning and timeline
+  views are part of this package.
+- The host application retains authentication, account settings, shared shell/navigation,
+  and integration tests for the installed packages.
 - Authentication and account settings: Laravel Fortify, email verification, passkeys,
   two-factor authentication, profile and password management.
 
@@ -81,9 +81,8 @@ deleted. Epic comments are removed when their epic is permanently deleted and ke
 a null author when the user is deleted.
 
 Important transactions: no multi-step business transaction or queued write flow exists
-currently. The one transaction boundary that does exist is the delete guard: each
-`deleting` hook in `AppServiceProvider::blockDeletionWithChildren()` locks the row with
-`lockForUpdate()` inside its own `DB::transaction()`, so a child created between the
+currently. The delete guards in `customers13` and `projects13` lock their parent row with
+`lockForUpdate()` inside their own `DB::transaction()`, so a child created between the
 check and the delete makes the delete wait and then fail.
 
 ---

@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
-use Customers13\Models\Customer;
-use App\Models\EpicComment;
 use Carbon\CarbonImmutable;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Illuminate\Database\Seeder;
-use Database\Factories\EpicFactory;
-use Database\Factories\ProjectFactory;
+use Customers13\Models\Customer;
+use Projects13\Models\EpicComment;
+use Projects13\Database\Factories\EpicFactory;
+use Projects13\Database\Factories\ProjectFactory;
 use Customers13\Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -153,6 +153,10 @@ class TranslationFilesTest extends TestCase
         $directories = [
             'app',
             'resources',
+            '../packages/customers13/src',
+            '../packages/customers13/resources',
+            '../packages/projects13/src',
+            '../packages/projects13/resources',
             'vendor/laravel/framework/src',
             'vendor/laravel/fortify/src',
             'vendor/laravel/passkeys/src',

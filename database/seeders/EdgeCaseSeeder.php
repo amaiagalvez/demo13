@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Epic;
-use App\Models\Project;
-use Customers13\Models\Customer;
 use Carbon\CarbonImmutable;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Illuminate\Database\Seeder;
+use Customers13\Models\Customer;
 
 class EdgeCaseSeeder extends Seeder
 {

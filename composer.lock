@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93ac50a7d2a5f339b0cdec676db05a0b",
+    "content-hash": "efabd6d28a5f6fa4a2c76f3ff8b3efb9",
     "packages": [
         {
             "name": "amaia/basics13",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packages/basics13",
-                "reference": "2264efd40cc216e8e07636433966c5240055bdff"
+                "reference": "c109baa7a8ca2ffd91a5544b7b683522c403f76d"
             },
             "require": {
                 "laravel/boost": "^2.10",
@@ -42,7 +42,7 @@
                     "Basics13\\": "src/"
                 },
                 "files": [
-                    "src/Support/Database/helpers_global.php"
+                    "src/Support/Database/helpers.php"
                 ]
             },
             "autoload-dev": {
@@ -71,17 +71,17 @@
             "dist": {
                 "type": "path",
                 "url": "../packages/customers13",
-                "reference": "da95b545445bf746b23522803ea8519cd9761eec"
+                "reference": "aac44b92e2046f274450ae40b9f54613c3ce2a1c"
             },
             "require": {
+                "amaia/basics13": "^1.0",
                 "php": "^8.3"
             },
             "require-dev": {
-                "amaia/basics13": "*",
                 "larastan/larastan": "^3.9",
-                "laravel/dusk": "^8.7",
                 "laravel/pint": "^1.27",
                 "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.3",
                 "phpunit/phpunit": "^12.0"
             },
             "type": "library",
@@ -95,13 +95,12 @@
             "autoload": {
                 "psr-4": {
                     "Customers13\\": "src/"
-                },
-                "files": [
-                    "src/Database/helpers_global.php"
-                ]
+                }
             },
             "autoload-dev": {
                 "psr-4": {
+                    "App\\": "tests/Fixtures/App/",
+                    "Projects13\\Models\\": "tests/Fixtures/Projects13/Models/",
                     "Customers13\\Tests\\": "tests/"
                 }
             },
@@ -115,6 +114,60 @@
                 }
             ],
             "description": "Customer management for Laravel 13: CRUD, soft deletes, archive, trash, select options, and planning chips with Flux.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "amaia/projects13",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../packages/projects13",
+                "reference": "c6a395012eb9114e133fff2cc6020d4cad0c149c"
+            },
+            "require": {
+                "amaia/basics13": "^1.0",
+                "amaia/customers13": "^1.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.9",
+                "laravel/pint": "^1.27",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.3",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Projects13\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Projects13\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "App\\": "tests/Fixtures/App/",
+                    "Projects13\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Amaia",
+                    "email": "amaia@example.com"
+                }
+            ],
+            "description": "Project and epic management for Laravel 13.",
             "transport-options": {
                 "symlink": true,
                 "relative": true

@@ -3,13 +3,13 @@
 namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
-use App\Models\EpicComment;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
+use Projects13\Models\EpicComment;
 use Basics13\Queries\ListQueryBase;
-use App\Queries\Epics\EpicListQuery;
 use Basics13\Support\Validation\MaxLength;
+use Projects13\Queries\Epics\EpicListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCommentTest extends TestCase
@@ -163,7 +163,7 @@ class EpicCommentTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrorsIn('comment', ['body']);
 
-        $this->assertDatabaseCount('epic_comments', 0);
+        $this->assertDatabaseCount('PRO_epic_comments', 0);
     }
 
     public function test_comment_notes_are_optional_and_saved(): void
@@ -182,7 +182,7 @@ class EpicCommentTest extends TestCase
             'notes' => 'Mentioned in the stand-up',
         ])->assertRedirect(route('epics.index'));
 
-        $this->assertDatabaseHas('epic_comments', [
+        $this->assertDatabaseHas('PRO_epic_comments', [
             'body' => 'Comment with notes',
             'notes' => 'Mentioned in the stand-up',
         ]);
@@ -201,7 +201,7 @@ class EpicCommentTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrorsIn('comment', ['notes']);
 
-        $this->assertDatabaseCount('epic_comments', 0);
+        $this->assertDatabaseCount('PRO_epic_comments', 0);
     }
 
     public function test_comment_body_at_the_configured_maximum_is_accepted_over_http(): void
@@ -215,7 +215,7 @@ class EpicCommentTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epic_comments', ['epic_id' => $epic->id, 'body' => $body]);
+        $this->assertDatabaseHas('PRO_epic_comments', ['epic_id' => $epic->id, 'body' => $body]);
     }
 
     public function test_comment_body_longer_than_the_configured_maximum_is_rejected_over_http(): void
@@ -230,7 +230,7 @@ class EpicCommentTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrorsIn('comment', ['body']);
 
-        $this->assertDatabaseCount('epic_comments', 0);
+        $this->assertDatabaseCount('PRO_epic_comments', 0);
     }
 
     public function test_deleted_epics_cannot_receive_comments(): void
@@ -241,7 +241,7 @@ class EpicCommentTest extends TestCase
         $this->post(route('epics.comments.store', $epic), ['body' => 'Late comment'])
             ->assertNotFound();
 
-        $this->assertDatabaseCount('epic_comments', 0);
+        $this->assertDatabaseCount('PRO_epic_comments', 0);
     }
 
     public function test_guests_cannot_comment(): void
@@ -251,7 +251,7 @@ class EpicCommentTest extends TestCase
         $this->post(route('epics.comments.store', $epic), ['body' => 'Anonymous'])
             ->assertRedirect(route('login'));
 
-        $this->assertDatabaseCount('epic_comments', 0);
+        $this->assertDatabaseCount('PRO_epic_comments', 0);
     }
 
     public function test_guests_cannot_load_epic_comments(): void

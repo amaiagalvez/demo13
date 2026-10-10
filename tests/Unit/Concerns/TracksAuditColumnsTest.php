@@ -3,11 +3,11 @@
 namespace Tests\Unit\Concerns;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Models\EpicComment;
+use Projects13\Models\EpicComment;
 use Illuminate\Database\QueryException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;

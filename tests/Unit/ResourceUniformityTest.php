@@ -4,40 +4,40 @@ namespace Tests\Unit;
 
 use Closure;
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
 use ReflectionClass;
 use ReflectionMethod;
-use App\Models\Project;
-use Customers13\Models\Customer;
-use App\Policies\EpicPolicy;
+use Projects13\Models\Epic;
 use Illuminate\Routing\Route;
-use App\Policies\ProjectPolicy;
-use Customers13\Policies\CustomerPolicy;
-use App\Http\Requests\EpicRequest;
+use Projects13\Models\Project;
+use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
-use App\Queries\Epics\EpicListQuery;
+use Projects13\Policies\EpicPolicy;
 use Illuminate\Support\Facades\File;
-use App\Http\Requests\ProjectRequest;
-use Customers13\Http\Requests\CustomerRequest;
-use App\Http\Requests\EpicListRequest;
+use Projects13\Policies\ProjectPolicy;
 use Illuminate\Database\Eloquent\Model;
-use App\Http\Requests\ProjectListRequest;
-use App\Transformers\EpicListTransformer;
+use Customers13\Policies\CustomerPolicy;
 use Illuminate\Support\Facades\Validator;
-use Customers13\Http\Requests\CustomerListRequest;
-use App\Queries\Projects\ProjectListQuery;
+use Projects13\Http\Requests\EpicRequest;
 use Basics13\Http\Requests\RestoreRequest;
 use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
-use Customers13\Queries\Customers\CustomerListQuery;
-use App\Transformers\ProjectListTransformer;
-use Customers13\Transformers\CustomerListTransformer;
+use Projects13\Queries\Epics\EpicListQuery;
+use Projects13\Http\Requests\ProjectRequest;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Projects13\Http\Requests\EpicListRequest;
+use Customers13\Http\Requests\CustomerRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Basics13\Http\Requests\TrashDestroyRequest;
+use Projects13\Http\Requests\ProjectListRequest;
+use Projects13\Transformers\EpicListTransformer;
 use Basics13\Http\Requests\SearchableListRequest;
+use Projects13\Queries\Projects\ProjectListQuery;
+use Customers13\Http\Requests\CustomerListRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Projects13\Transformers\ProjectListTransformer;
+use Customers13\Queries\Customers\CustomerListQuery;
+use Customers13\Transformers\CustomerListTransformer;
 
 class ResourceUniformityTest extends TestCase
 {
@@ -158,23 +158,29 @@ class ResourceUniformityTest extends TestCase
 
         $customerRequestPath = (new ReflectionClass(CustomerRequest::class))->getFileName();
         $this->assertIsString($customerRequestPath);
-        $httpPaths = [app_path('Http'), dirname($customerRequestPath, 2)];
+        $projectRequestPath = (new ReflectionClass(ProjectRequest::class))->getFileName();
+        $this->assertIsString($projectRequestPath);
+        $httpPaths = [
+            app_path('Http'),
+            dirname($customerRequestPath, 2),
+            dirname($projectRequestPath, 2),
+        ];
 
         foreach ($httpPaths as $httpPath) {
             foreach (File::allFiles($httpPath) as $file) {
-            $contents = (string) file_get_contents($file->getPathname());
-            $matched = false;
+                $contents = (string) file_get_contents($file->getPathname());
+                $matched = false;
 
-            foreach ($models as $model) {
-                if (str_contains($file->getFilename(), $model)) {
-                    $byResource[$model] .= $contents;
-                    $matched = true;
+                foreach ($models as $model) {
+                    if (str_contains($file->getFilename(), $model)) {
+                        $byResource[$model] .= $contents;
+                        $matched = true;
+                    }
                 }
-            }
 
-            if (! $matched) {
-                $shared .= $contents;
-            }
+                if (! $matched) {
+                    $shared .= $contents;
+                }
             }
         }
 

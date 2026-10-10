@@ -11,14 +11,13 @@ crear un nuevo archivo de configuracion y configurar la ruta register, por defec
 
 [] composer.json require y require-dev pasar a basics los que se pueda (debugbar no)
 
-
 ----------------------------------------------------------------------------------
 [] cladue => diseinuarena pendiente (tokenak berreskuratu arte)
 ----------------------------------------------------------------------------------
 
 # REVIEWS
-[ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejorass que se te ocurran. escribe un task en .github
-[ ] @full-review analiza demo13 basics13 customer13 y testing13 busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github b
+[ ] eres un cliente muy esquisito, repasa la apliación en busca de fallos y propon todas las mejoras que se te ocurran. escribe un task en .github
+[ ] @full-review analiza demo13 basics13 customer13 y testing13 busca incongruencias entre los modelos, que tienen de diferente, que se gestiona de forma diferente en un modelo que en otro, que está testeado en uno si y en otro no, que código tienen repetido, donde hay sobreingenieria. escribe un task en .github 
 [ ] skill fix-review .github/reviews/<fecha>/CODE-REVIEW.md antes de modificar pide confirmación y al terminar marca la tarea como realizada
 
 [ ] Repasar los errores que da el SonarQube y buscar una posible solucion. Preguntar antes de cambiar nada

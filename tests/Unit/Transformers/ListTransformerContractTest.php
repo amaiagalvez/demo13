@@ -3,15 +3,15 @@
 namespace Tests\Unit\Transformers;
 
 use Tests\TestCase;
-use App\Models\Epic;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Transformers\EpicListTransformer;
-use App\Transformers\ProjectListTransformer;
-use Customers13\Transformers\CustomerListTransformer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Projects13\Transformers\EpicListTransformer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Projects13\Transformers\ProjectListTransformer;
+use Customers13\Transformers\CustomerListTransformer;
 
 class ListTransformerContractTest extends TestCase
 {

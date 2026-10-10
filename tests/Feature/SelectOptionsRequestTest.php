@@ -4,14 +4,14 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Support\Facades\Validator;
 use Basics13\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\DataProvider;
-use App\Http\Requests\ProjectSelectOptionsRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Projects13\Http\Requests\ProjectSelectOptionsRequest;
 use Customers13\Http\Requests\CustomerSelectOptionsRequest;
 
 /**

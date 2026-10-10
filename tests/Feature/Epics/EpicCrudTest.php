@@ -3,15 +3,15 @@
 namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Models\EpicComment;
+use Projects13\Models\EpicComment;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\QueryException;
-use App\Transformers\EpicListTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Projects13\Transformers\EpicListTransformer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicCrudTest extends TestCase
@@ -72,7 +72,7 @@ class EpicCrudTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHas('status', __('Record updated successfully.'));
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'id' => $epic->id,
             'name' => 'Payment flow',
             'start_date' => null,
@@ -99,15 +99,15 @@ class EpicCrudTest extends TestCase
             'created_at' => '2000-01-01 00:00:00',
         ])->assertRedirect(route('epics.index'));
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'name' => 'Validated epic',
             'project_id' => $project->id,
         ]);
-        $this->assertDatabaseMissing('epics', [
+        $this->assertDatabaseMissing('PRO_epics', [
             'name' => 'Validated epic',
             'id' => 999999,
         ]);
-        $this->assertDatabaseMissing('epics', [
+        $this->assertDatabaseMissing('PRO_epics', [
             'name' => 'Validated epic',
             'created_at' => '2000-01-01 00:00:00',
         ]);
@@ -153,7 +153,7 @@ class EpicCrudTest extends TestCase
         $project->forceDelete();
 
         $this->assertModelExists($epic);
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'id' => $epic->id,
             'project_id' => $project->id,
         ]);
@@ -277,7 +277,7 @@ class EpicCrudTest extends TestCase
             'project_id' => $project->id,
         ])->assertRedirect(route('epics.index'));
 
-        $this->assertDatabaseHas('epics', ['name' => $name, 'project_id' => $project->id]);
+        $this->assertDatabaseHas('PRO_epics', ['name' => $name, 'project_id' => $project->id]);
 
         $this->get(route('epics.index', ['search' => $name]))
             ->assertOk()
@@ -424,8 +424,8 @@ class EpicCrudTest extends TestCase
         $this->delete(route('epics.destroy', $epic))
             ->assertRedirect(route('login'));
 
-        $this->assertDatabaseCount('epics', 1);
-        $this->assertDatabaseHas('epics', ['id' => $epic->id, 'name' => 'Existing epic']);
+        $this->assertDatabaseCount('PRO_epics', 1);
+        $this->assertDatabaseHas('PRO_epics', ['id' => $epic->id, 'name' => 'Existing epic']);
         $this->assertNotSoftDeleted($epic);
     }
 }

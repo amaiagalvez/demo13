@@ -50,7 +50,7 @@ La migración del paquete crea `CUM_customers` (ver `packages/customers13/src/Da
 
 `packages/customers13/src/Database/Migrations/2026_09_25_000000_create_cum_customers_table.php:17`:
 ```php
-Helpers::addUniqueActiveNameIndex('CUM_customers');
+addUniqueActiveNameIndex('CUM_customers');
 ```
 En `basics13/src/Support/Database/Helpers.php:77` crea columna `active_name` como `GENERATED ALWAYS AS (IF(deleted_at IS NULL, name, NULL)) STORED`.
 

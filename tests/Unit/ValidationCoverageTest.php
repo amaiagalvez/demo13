@@ -3,17 +3,17 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use ReflectionClass;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Models\EpicComment;
-use App\Http\Requests\EpicRequest;
-use App\Http\Requests\ProjectRequest;
-use Customers13\Http\Requests\CustomerRequest;
-use App\Http\Requests\EpicCommentRequest;
+use Projects13\Models\EpicComment;
+use Projects13\Http\Requests\EpicRequest;
 use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
+use Projects13\Http\Requests\ProjectRequest;
+use Customers13\Http\Requests\CustomerRequest;
+use Projects13\Http\Requests\EpicCommentRequest;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
 class ValidationCoverageTest extends TestCase
@@ -54,7 +54,12 @@ class ValidationCoverageTest extends TestCase
      */
     public function test_direct_literal_string_and_boolean_inputs_have_form_request_rules(): void
     {
-        foreach (glob(app_path('Http/Controllers/*.php')) ?: [] as $file) {
+        $controllerFiles = [
+            ...(glob(app_path('Http/Controllers/*.php')) ?: []),
+            ...(glob(base_path('../packages/projects13/src/Http/Controllers/*.php')) ?: []),
+        ];
+
+        foreach ($controllerFiles as $file) {
             if (basename($file) === 'Controller.php') {
                 continue;
             }
@@ -77,7 +82,14 @@ class ValidationCoverageTest extends TestCase
                     );
                 }
 
-                $rules = $this->rulesOf('App\\Http\\Requests\\'.$request[1]);
+                if (preg_match('/^namespace\s+([^;]+);/m', $source, $namespace) !== 1) {
+                    $this->fail('Missing namespace declaration in '.basename($file));
+                }
+
+                $requestNamespace = str_starts_with($namespace[1], 'Projects13\\')
+                    ? 'Projects13\\Http\\Requests'
+                    : 'App\\Http\\Requests';
+                $rules = $this->rulesOf($requestNamespace.'\\'.$request[1]);
 
                 foreach (array_unique($keys[1]) as $key) {
                     $this->assertArrayHasKey(
@@ -100,7 +112,11 @@ class ValidationCoverageTest extends TestCase
     {
         $literals = [];
 
-        foreach ([app_path('Http/Requests'), app_path('Concerns')] as $directory) {
+        foreach ([
+            app_path('Http/Requests'),
+            base_path('../packages/projects13/src/Http/Requests'),
+            app_path('Concerns'),
+        ] as $directory) {
             foreach (glob($directory.'/*.php') ?: [] as $path) {
                 preg_match_all('/\'(max:\d+)\'/', (string) file_get_contents($path), $matches);
 

@@ -2,12 +2,12 @@
 
 namespace Tests\Browser\Epics;
 
-use App\Models\Epic;
 use App\Models\User;
 use Tests\DuskTestCase;
 use Laravel\Dusk\Browser;
-use App\Models\EpicComment;
 use Illuminate\Support\Str;
+use Projects13\Models\Epic;
+use Projects13\Models\EpicComment;
 use Facebook\WebDriver\Chrome\ChromeDevToolsDriver;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
@@ -49,7 +49,7 @@ class EpicCommentTest extends DuskTestCase
                 ->assertSeeIn('[data-test="epic-comments-count-'.$epic->id.'"]', '2');
         });
 
-        $this->assertDatabaseHas('epic_comments', [
+        $this->assertDatabaseHas('PRO_epic_comments', [
             'epic_id' => $epic->id,
             'user_id' => $user->id,
             'body' => $commentBody,

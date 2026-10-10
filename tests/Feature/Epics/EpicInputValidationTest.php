@@ -3,9 +3,9 @@
 namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Basics13\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\TestWith;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,7 +36,7 @@ class EpicInputValidationTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'name' => 'Undated epic',
             'start_date' => null,
             'end_date' => null,
@@ -57,7 +57,7 @@ class EpicInputValidationTest extends TestCase
                 ]),
             ]);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_epic_name_cannot_exceed_the_configured_maximum_over_http(): void
@@ -73,7 +73,7 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_epic_name_must_be_a_string_over_http(): void
@@ -89,7 +89,7 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_epic_name_must_be_unique_within_the_project(): void
@@ -102,7 +102,7 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('epics', 1);
+        $this->assertDatabaseCount('PRO_epics', 1);
     }
 
     public function test_store_trims_epic_name_before_unique_validation(): void
@@ -118,7 +118,7 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseCount('epics', 1);
+        $this->assertDatabaseCount('PRO_epics', 1);
     }
 
     public function test_epic_name_can_repeat_in_another_project(): void
@@ -131,7 +131,7 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseCount('epics', 2);
+        $this->assertDatabaseCount('PRO_epics', 2);
     }
 
     public function test_epic_name_cannot_be_changed_to_another_epic_name_in_the_same_project(): void
@@ -149,7 +149,7 @@ class EpicInputValidationTest extends TestCase
             ])
             ->assertSessionHasErrors(['name']);
 
-        $this->assertDatabaseHas('epics', ['id' => $epicToUpdate->id, 'name' => 'Epic to update']);
+        $this->assertDatabaseHas('PRO_epics', ['id' => $epicToUpdate->id, 'name' => 'Epic to update']);
     }
 
     public function test_epic_name_can_be_kept_when_updating_the_same_epic(): void
@@ -175,7 +175,7 @@ class EpicInputValidationTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'id' => $epic->id,
             'name' => 'Trimmed epic',
         ]);
@@ -197,7 +197,7 @@ class EpicInputValidationTest extends TestCase
             ])
             ->assertSessionHasErrors(['end_date']);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_end_date_requires_a_start_date(): void
@@ -213,7 +213,7 @@ class EpicInputValidationTest extends TestCase
             ])
             ->assertSessionHasErrors(['start_date']);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_start_date_can_be_set_without_end_date(): void
@@ -230,7 +230,7 @@ class EpicInputValidationTest extends TestCase
             'project_id' => $project->id,
         ])->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', ['name' => 'Open-ended epic', 'end_date' => null]);
+        $this->assertDatabaseHas('PRO_epics', ['name' => 'Open-ended epic', 'end_date' => null]);
     }
 
     public function test_archived_projects_cannot_receive_epics(): void
@@ -242,7 +242,7 @@ class EpicInputValidationTest extends TestCase
             ->post(route('epics.store'), ['name' => 'Orphan epic', 'project_id' => $project->id])
             ->assertSessionHasErrors(['project_id']);
 
-        $this->assertDatabaseMissing('epics', ['name' => 'Orphan epic']);
+        $this->assertDatabaseMissing('PRO_epics', ['name' => 'Orphan epic']);
     }
 
     /**
@@ -263,7 +263,7 @@ class EpicInputValidationTest extends TestCase
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'id' => $epic->id,
             'name' => 'Renamed epic',
             'project_id' => $project->id,
@@ -283,7 +283,7 @@ class EpicInputValidationTest extends TestCase
             ])
             ->assertSessionHasErrors(['project_id']);
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'id' => $epic->id,
             'project_id' => $epic->project_id,
         ]);
@@ -364,13 +364,13 @@ class EpicInputValidationTest extends TestCase
             ->assertSee('aria-labelledby="epic-name-conflict-heading"', false)
             ->assertSee('id="epic-name-conflict-heading"', false);
 
-        $this->assertDatabaseCount('epics', 1);
+        $this->assertDatabaseCount('PRO_epics', 1);
 
         $this->post(route('epics.store'), [...$payload, 'reuse_deleted_name' => '1'])
             ->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', ['name' => 'Deleted epic', 'deleted_at' => null]);
+        $this->assertDatabaseHas('PRO_epics', ['name' => 'Deleted epic', 'deleted_at' => null]);
         $this->assertSoftDeleted($deletedEpic);
     }
 
@@ -388,7 +388,7 @@ class EpicInputValidationTest extends TestCase
             ])
             ->assertSessionHasErrors(['start_date']);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_epic_start_date_can_equal_project_start_date(): void
@@ -404,7 +404,7 @@ class EpicInputValidationTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', ['name' => 'Epic at project start']);
+        $this->assertDatabaseHas('PRO_epics', ['name' => 'Epic at project start']);
     }
 
     public function test_epic_end_date_cannot_be_after_project_end_date(): void
@@ -424,7 +424,7 @@ class EpicInputValidationTest extends TestCase
             ])
             ->assertSessionHasErrors(['end_date']);
 
-        $this->assertDatabaseCount('epics', 0);
+        $this->assertDatabaseCount('PRO_epics', 0);
     }
 
     public function test_epic_end_date_can_equal_project_end_date(): void
@@ -440,7 +440,7 @@ class EpicInputValidationTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', ['name' => 'Epic at project end']);
+        $this->assertDatabaseHas('PRO_epics', ['name' => 'Epic at project end']);
     }
 
     public function test_epic_end_date_not_validated_when_project_has_no_end_date(): void
@@ -456,7 +456,7 @@ class EpicInputValidationTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', ['name' => 'Epic in open-ended project']);
+        $this->assertDatabaseHas('PRO_epics', ['name' => 'Epic in open-ended project']);
     }
 
     public function test_epic_dates_must_be_within_project_when_updating(): void
@@ -495,7 +495,7 @@ class EpicInputValidationTest extends TestCase
         ])->assertRedirect(route('epics.index'))
             ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'id' => $epic->id,
             'start_date' => null,
             'end_date' => null,

@@ -6,7 +6,6 @@ use Tests\TestCase;
 use App\Models\User;
 use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
-use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CustomerSelectOptionsTest extends TestCase
@@ -40,54 +39,5 @@ class CustomerSelectOptionsTest extends TestCase
             ->assertSee(__('Open customer form'))
             ->assertSee('href="'.route('customers.index', ['create' => 1]).'"', false)
             ->assertSee('project-no-customer-form-button');
-    }
-
-    public function test_customer_options_are_searchable_and_limited_to_the_shared_page_size(): void
-    {
-        $this->actingAs(User::factory()->create());
-
-        $total = ListQueryBase::PER_PAGE + 1;
-
-        for ($index = 1; $index <= $total; $index++) {
-            Customer::factory()->create([
-                'name' => sprintf('Search result %02d', $index),
-            ]);
-        }
-
-        $response = $this->getJson(route('customers.options', ['q' => 'Search result']));
-
-        $response->assertOk()
-            ->assertJsonCount(ListQueryBase::PER_PAGE, 'results')
-            ->assertJsonPath('results.0.text', 'Search result 01')
-            ->assertJsonMissing(['text' => sprintf('Search result %02d', $total)]);
-    }
-
-    public function test_customer_options_only_include_active_customers(): void
-    {
-        $this->actingAs(User::factory()->create());
-        Customer::factory()->create(['name' => 'Active select customer']);
-        Customer::factory()->archived()->create(['name' => 'Inactive select customer']);
-        Customer::factory()->trashed()->create(['name' => 'Deleted select customer']);
-
-        $this->getJson(route('customers.options', ['q' => 'select customer']))
-            ->assertOk()
-            ->assertJsonCount(1, 'results')
-            ->assertJsonPath('results.0.text', 'Active select customer');
-    }
-
-    public function test_customer_options_reject_search_terms_over_the_configured_maximum(): void
-    {
-        $this->actingAs(User::factory()->create());
-
-        $term = str_repeat('a', MaxLength::string() + 1);
-
-        $this->getJson(route('customers.options', ['q' => $term]))
-            ->assertJsonValidationErrors('q');
-    }
-
-    public function test_guests_are_redirected_when_requesting_customer_options(): void
-    {
-        $this->get(route('customers.options'))
-            ->assertRedirect(route('login'));
     }
 }

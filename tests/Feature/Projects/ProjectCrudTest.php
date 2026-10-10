@@ -3,18 +3,18 @@
 namespace Tests\Feature\Projects;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Models\EpicComment;
 use Illuminate\Support\Facades\DB;
+use Projects13\Models\EpicComment;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\QueryException;
-use App\Transformers\ProjectListTransformer;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Projects13\Transformers\ProjectListTransformer;
 
 class ProjectCrudTest extends TestCase
 {
@@ -97,7 +97,7 @@ class ProjectCrudTest extends TestCase
             ->assertRedirect(route('projects.index'))
             ->assertSessionHas('status', __('Record updated successfully.'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $project->id,
             'name' => 'Updated website',
             'start_date' => '2026-10-15',
@@ -125,15 +125,15 @@ class ProjectCrudTest extends TestCase
             'created_at' => '2000-01-01 00:00:00',
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'name' => 'Validated project',
             'customer_id' => $customer->id,
         ]);
-        $this->assertDatabaseMissing('projects', [
+        $this->assertDatabaseMissing('PRO_projects', [
             'name' => 'Validated project',
             'id' => 999999,
         ]);
-        $this->assertDatabaseMissing('projects', [
+        $this->assertDatabaseMissing('PRO_projects', [
             'name' => 'Validated project',
             'created_at' => '2000-01-01 00:00:00',
         ]);
@@ -216,7 +216,7 @@ class ProjectCrudTest extends TestCase
             'customer_id' => $customer->id,
         ])->assertRedirect(route('projects.index'));
 
-        $this->assertDatabaseHas('projects', ['name' => $name, 'customer_id' => $customer->id]);
+        $this->assertDatabaseHas('PRO_projects', ['name' => $name, 'customer_id' => $customer->id]);
 
         $this->get(route('projects.index', ['search' => $name]))
             ->assertOk()
@@ -443,7 +443,7 @@ class ProjectCrudTest extends TestCase
             if (
                 $competitorCreated
                 || ! str_starts_with(strtolower(ltrim($query->sql)), 'select')
-                || ! str_contains(strtolower($query->sql), 'projects')
+                || ! str_contains(strtolower($query->sql), 'pro_projects')
                 || ! str_contains(strtolower($query->sql), 'for update')
                 || ! in_array($project->id, $query->bindings, true)
             ) {
@@ -460,7 +460,7 @@ class ProjectCrudTest extends TestCase
 
         $this->assertTrue($competitorCreated);
         $this->assertNotSoftDeleted($project);
-        $this->assertDatabaseHas('epics', [
+        $this->assertDatabaseHas('PRO_epics', [
             'project_id' => $project->id,
             'deleted_at' => null,
         ]);
@@ -503,7 +503,7 @@ class ProjectCrudTest extends TestCase
         $customer->forceDelete();
 
         $this->assertModelExists($project);
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'id' => $project->id,
             'customer_id' => $customer->id,
         ]);
@@ -543,8 +543,8 @@ class ProjectCrudTest extends TestCase
         $this->delete(route('projects.destroy', $project))
             ->assertRedirect(route('login'));
 
-        $this->assertDatabaseCount('projects', 1);
-        $this->assertDatabaseHas('projects', ['id' => $project->id, 'name' => 'Existing project']);
+        $this->assertDatabaseCount('PRO_projects', 1);
+        $this->assertDatabaseHas('PRO_projects', ['id' => $project->id, 'name' => 'Existing project']);
         $this->assertNotSoftDeleted($project);
     }
 }

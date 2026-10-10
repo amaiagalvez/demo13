@@ -3,9 +3,9 @@
 namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
-use App\Models\Epic;
-use App\Models\Project;
-use App\Queries\Epics\EpicListQuery;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
+use Projects13\Queries\Epics\EpicListQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicListQueryTest extends TestCase

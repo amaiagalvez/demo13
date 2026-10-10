@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use Basics13\Support\Validation\MaxLength;
@@ -22,8 +22,8 @@ class ResourceNotesTest extends TestCase
     {
         return [
             'customers' => ['CUM_customers', 'customers', 'customer', 'Customer notes'],
-            'projects' => ['projects', 'projects', 'project', 'Project notes'],
-            'epics' => ['epics', 'epics', 'epic', 'Epic notes'],
+            'projects' => ['PRO_projects', 'projects', 'project', 'Project notes'],
+            'epics' => ['PRO_epics', 'epics', 'epic', 'Epic notes'],
         ];
     }
 

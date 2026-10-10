@@ -3,11 +3,11 @@
 namespace Tests\Browser\Projects;
 
 use App\Models\User;
-use App\Models\Project;
 use Tests\DuskTestCase;
-use Customers13\Models\Customer;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
+use Projects13\Models\Project;
+use Customers13\Models\Customer;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ProjectCustomerSelectTest extends DuskTestCase
@@ -111,7 +111,7 @@ class ProjectCustomerSelectTest extends DuskTestCase
 
         $customer = Customer::query()->where('name', $newCustomerName)->firstOrFail();
 
-        $this->assertDatabaseHas('projects', [
+        $this->assertDatabaseHas('PRO_projects', [
             'name' => $projectName,
             'customer_id' => $customer->id,
         ]);

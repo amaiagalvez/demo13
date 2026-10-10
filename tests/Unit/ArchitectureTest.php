@@ -3,12 +3,13 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Models\Project;
 use App\Models\User;
-use App\Models\Epic;
-use App\Models\EpicComment;
 use ReflectionClass;
 use ReflectionMethod;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
+use Customers13\Models\Customer;
+use Projects13\Models\EpicComment;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,15 +36,15 @@ class ArchitectureTest extends TestCase
             $plural = strtolower($resource).'s';
 
             $classes = [
-                "App\\Http\\Controllers\\{$resource}Controller",
-                "App\\Http\\Controllers\\{$resource}TrashController",
-                "App\\Http\\Requests\\{$resource}Request",
-                "App\\Http\\Requests\\{$resource}ListRequest",
-                "App\\Http\\Requests\\{$resource}RestoreRequest",
-                "App\\Policies\\{$resource}Policy",
-                "App\\Queries\\{$resource}s\\{$resource}ListQuery",
-                "App\\Transformers\\{$resource}ListTransformer",
-                "Database\\Factories\\{$resource}Factory",
+                "Projects13\\Http\\Controllers\\{$resource}Controller",
+                "Projects13\\Http\\Controllers\\{$resource}TrashController",
+                "Projects13\\Http\\Requests\\{$resource}Request",
+                "Projects13\\Http\\Requests\\{$resource}ListRequest",
+                "Projects13\\Http\\Requests\\{$resource}RestoreRequest",
+                "Projects13\\Policies\\{$resource}Policy",
+                "Projects13\\Queries\\{$resource}s\\{$resource}ListQuery",
+                "Projects13\\Transformers\\{$resource}ListTransformer",
+                "Projects13\\Database\\Factories\\{$resource}Factory",
             ];
 
             foreach ($classes as $class) {
@@ -57,7 +58,7 @@ class ArchitectureTest extends TestCase
             );
 
             foreach (['list', 'form'] as $view) {
-                $this->assertFileExists(resource_path("views/{$plural}/{$view}.blade.php"));
+                $this->assertFileExists(base_path("../packages/projects13/resources/views/{$plural}/{$view}.blade.php"));
             }
         }
     }
@@ -65,7 +66,7 @@ class ArchitectureTest extends TestCase
     public function test_resource_view_abilities_match_show_routes(): void
     {
         foreach (self::RESOURCES as $resource => $modelClass) {
-            $policy = new ReflectionClass("App\\Policies\\{$resource}Policy");
+            $policy = new ReflectionClass("Projects13\\Policies\\{$resource}Policy");
             $hasShowRoute = Route::has(strtolower($resource).'s.show');
 
             $this->assertSame(
@@ -78,14 +79,8 @@ class ArchitectureTest extends TestCase
 
     public function test_soft_deletable_models_declare_a_policy(): void
     {
-        foreach (glob(app_path('Models/*.php')) ?: [] as $file) {
-            $class = 'App\\Models\\'.basename($file, '.php');
-
-            if (
-                ! class_exists($class)
-                || $class === User::class
-                || ! in_array(SoftDeletes::class, class_uses_recursive($class), true)
-            ) {
+        foreach ([Customer::class, Project::class, Epic::class] as $class) {
+            if (! in_array(SoftDeletes::class, class_uses_recursive($class), true)) {
                 continue;
             }
 
@@ -106,13 +101,8 @@ class ArchitectureTest extends TestCase
     {
         $withoutPolicy = [];
 
-        foreach (glob(app_path('Models/*.php')) ?: [] as $file) {
-            $class = 'App\\Models\\'.basename($file, '.php');
-
-            if (
-                ! class_exists($class)
-                || ! in_array(SoftDeletes::class, class_uses_recursive($class), true)
-            ) {
+        foreach ([Customer::class, Project::class, Epic::class, User::class] as $class) {
+            if (! in_array(SoftDeletes::class, class_uses_recursive($class), true)) {
                 continue;
             }
 
@@ -173,7 +163,10 @@ class ArchitectureTest extends TestCase
     public function test_input_endpoints_declare_a_form_request(): void
     {
         foreach ($this->controllerFiles() as $file) {
-            $class = 'App\\Http\\Controllers\\'.basename($file, '.php');
+            $namespace = str_contains($file, '/packages/projects13/src/')
+                ? 'Projects13'
+                : 'App';
+            $class = $namespace.'\\Http\\Controllers\\'.basename($file, '.php');
 
             if (! class_exists($class)) {
                 $this->fail("Missing class {$class}");
@@ -208,8 +201,8 @@ class ArchitectureTest extends TestCase
     public function test_views_follow_the_canonical_patterns(): void
     {
         foreach (['projects', 'epics'] as $plural) {
-            $list = (string) file_get_contents(resource_path("views/{$plural}/list.blade.php"));
-            $form = (string) file_get_contents(resource_path("views/{$plural}/form.blade.php"));
+            $list = (string) file_get_contents(base_path("../packages/projects13/resources/views/{$plural}/list.blade.php"));
+            $form = (string) file_get_contents(base_path("../packages/projects13/resources/views/{$plural}/form.blade.php"));
 
             $this->assertStringContainsString(
                 '<x-basics13::list.table',
@@ -248,8 +241,17 @@ class ArchitectureTest extends TestCase
 
     public function test_form_requests_expose_rules_and_authorize(): void
     {
-        foreach (glob(app_path('Http/Requests/*.php')) ?: [] as $file) {
-            $class = 'App\\Http\\Requests\\'.basename($file, '.php');
+        $requestFiles = [
+            ...(glob(app_path('Http/Requests/*.php')) ?: []),
+            ...(glob(base_path('../packages/projects13/src/Http/Requests/*.php')) ?: []),
+        ];
+
+        foreach ($requestFiles as $file) {
+            if (preg_match('/^namespace\s+([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
+                $this->fail("Missing namespace declaration in {$file}");
+            }
+
+            $class = $namespace[1].'\\'.basename($file, '.php');
 
             if (! class_exists($class)) {
                 $this->fail("Missing class {$class}");
@@ -280,7 +282,10 @@ class ArchitectureTest extends TestCase
      */
     private function controllerFiles(): array
     {
-        $files = glob(app_path('Http/Controllers/*.php')) ?: [];
+        $files = [
+            ...(glob(app_path('Http/Controllers/*.php')) ?: []),
+            ...(glob(base_path('../packages/projects13/src/Http/Controllers/*.php')) ?: []),
+        ];
 
         return array_values(array_filter(
             $files,

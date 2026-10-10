@@ -3,11 +3,11 @@
 namespace Tests\Browser\Projects;
 
 use App\Models\User;
-use App\Models\Project;
 use Tests\DuskTestCase;
-use Customers13\Models\Customer;
 use Laravel\Dusk\Browser;
 use Illuminate\Support\Str;
+use Projects13\Models\Project;
+use Customers13\Models\Customer;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ProjectCrudTest extends DuskTestCase
@@ -126,6 +126,6 @@ class ProjectCrudTest extends DuskTestCase
         });
 
         $this->assertNotNull($projectId);
-        $this->assertSoftDeleted('projects', ['id' => $projectId]);
+        $this->assertSoftDeleted('PRO_projects', ['id' => $projectId]);
     }
 }

@@ -3,11 +3,11 @@
 namespace Tests\Feature\Epics;
 
 use Tests\TestCase;
-use App\Models\Epic;
 use App\Models\User;
-use App\Models\Project;
+use Projects13\Models\Epic;
+use Projects13\Models\Project;
 use Customers13\Models\Customer;
-use App\Models\EpicComment;
+use Projects13\Models\EpicComment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EpicTrashTest extends TestCase
@@ -133,7 +133,7 @@ class EpicTrashTest extends TestCase
         $this->delete(route('epics.trash.destroy', $activeEpic->id))
             ->assertRedirect(route('epics.trash.index'))
             ->assertSessionHas('status', __('basics13::messages.permanently_deleted'));
-        $this->assertDatabaseMissing('epics', ['id' => $activeEpic->id]);
+        $this->assertDatabaseMissing('PRO_epics', ['id' => $activeEpic->id]);
     }
 
     public function test_active_epics_are_not_found_through_trash_actions(): void
@@ -230,7 +230,7 @@ class EpicTrashTest extends TestCase
                 __('basics13::messages.restored_no_new_record'),
             );
 
-        $this->assertDatabaseCount('epics', 1);
+        $this->assertDatabaseCount('PRO_epics', 1);
         $this->assertNotSoftDeleted($deletedEpic);
     }
 }
