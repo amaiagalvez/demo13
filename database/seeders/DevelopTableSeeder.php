@@ -5,13 +5,13 @@ namespace Database\Seeders;
 use App\Models\Epic;
 use App\Models\User;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Models\EpicComment;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Database\Factories\EpicFactory;
 use Database\Factories\ProjectFactory;
-use Database\Factories\CustomerFactory;
+use Customers13\Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DevelopTableSeeder extends Seeder

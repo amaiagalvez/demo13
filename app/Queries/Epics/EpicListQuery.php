@@ -3,6 +3,7 @@
 namespace App\Queries\Epics;
 
 use App\Models\Epic;
+use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -113,7 +114,7 @@ final class EpicListQuery extends ListQueryBase
         return $query
             ->with(['project:id,name,customer_id', 'project.customer:id,name'])
             ->join('projects as epic_projects', 'epic_projects.id', '=', 'epics.project_id')
-            ->join('customers as epic_customers', 'epic_customers.id', '=', 'epic_projects.customer_id')
+            ->join((new Customer)->getTable().' as epic_customers', 'epic_customers.id', '=', 'epic_projects.customer_id')
             ->select('epics.*')
             ->withCount('comments');
     }

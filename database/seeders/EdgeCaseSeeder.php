@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Epic;
 use App\Models\Project;
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 

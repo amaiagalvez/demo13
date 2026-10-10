@@ -16,7 +16,7 @@ class PackageViewsTest extends TestCase
 
     public function test_package_views_are_loaded(): void
     {
-        $providers = data_get($this->app->getLoadedProviders(), []);
+        $providers = array_keys($this->app->getLoadedProviders());
         $this->assertContains('Basics13\ServiceProvider', $providers, 'Basics13 ServiceProvider not loaded');
 
         $this->assertTrue(View::exists('basics13::components.list.create-action'));

@@ -12,7 +12,7 @@ use Basics13\Support\Validation\MaxLength;
 use PHPUnit\Framework\Attributes\DataProvider;
 use App\Http\Requests\ProjectSelectOptionsRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Http\Requests\CustomerSelectOptionsRequest;
+use Customers13\Http\Requests\CustomerSelectOptionsRequest;
 
 /**
  * Both select-options endpoints share one request base, so their validation behaves the same. The

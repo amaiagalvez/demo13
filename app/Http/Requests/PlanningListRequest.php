@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Illuminate\Validation\Rule;
 use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;

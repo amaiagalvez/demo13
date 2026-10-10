@@ -56,7 +56,7 @@ class ResourceActivationTest extends TestCase
     {
         $cases = [];
 
-        foreach (self::resources() as $resource => [$model]) {
+        foreach (self::resources() as $resource => [$model, $routePrefix]) {
             foreach (['active' => '.index', 'archived' => '.archived.index', 'trash' => '.trash.index'] as $state => $suffix) {
                 foreach (
                     [
@@ -69,7 +69,7 @@ class ResourceActivationTest extends TestCase
                     $cases[$resource.' '.$state.' '.$scenario] = [
                         $model,
                         $resource,
-                        $resource.$suffix,
+                        $routePrefix.$suffix,
                         $count,
                         $search,
                         $total,
@@ -107,7 +107,7 @@ class ResourceActivationTest extends TestCase
             $countQueries = collect(DB::getQueryLog())->filter(
                 static fn (array $query): bool => str_starts_with(
                     str_replace(['`', '"'], '', $query['query']),
-                    'select count(*) as aggregate from '.$resource.' ',
+                    'select count(*) as aggregate from '.(new $model)->getTable().' ',
                 ),
             );
         } finally {
@@ -583,6 +583,6 @@ class ResourceActivationTest extends TestCase
         $this->post(route('customers.store'), ['name' => 'Reserved name'])
             ->assertSessionHasErrors('name');
 
-        $this->assertDatabaseCount('customers', 1);
+        $this->assertDatabaseCount((new Customer)->getTable(), 1);
     }
 }

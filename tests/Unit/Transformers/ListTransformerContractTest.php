@@ -8,7 +8,7 @@ use App\Models\Project;
 use Customers13\Models\Customer;
 use App\Transformers\EpicListTransformer;
 use App\Transformers\ProjectListTransformer;
-use App\Transformers\CustomerListTransformer;
+use Customers13\Transformers\CustomerListTransformer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;

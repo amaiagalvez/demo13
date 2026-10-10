@@ -3,6 +3,7 @@
 namespace App\Queries\Projects;
 
 use App\Models\Project;
+use Customers13\Models\Customer;
 use Basics13\Queries\ListQueryBase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -110,7 +111,7 @@ final class ProjectListQuery extends ListQueryBase
     {
         return $query
             ->with('customer:id,name')
-            ->join('customers as project_customers', 'project_customers.id', '=', 'projects.customer_id')
+            ->join((new Customer)->getTable().' as project_customers', 'project_customers.id', '=', 'projects.customer_id')
             ->select('projects.*');
     }
 }

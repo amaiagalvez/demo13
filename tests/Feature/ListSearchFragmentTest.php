@@ -48,7 +48,8 @@ class ListSearchFragmentTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         foreach (['customer', 'project', 'epic'] as $prefix) {
-            $this->get(route($prefix.'s.index'), ['X-List-Fragment' => 'true'])
+            $routePrefix = $prefix === 'customer' ? 'customers' : $prefix.'s';
+            $this->get(route($routePrefix.'.index'), ['X-List-Fragment' => 'true'])
                 ->assertOk()
                 ->assertSee('data-test="'.$prefix.'-search"', false)
                 ->assertDontSee('data-test="'.$prefix.'-breadcrumbs"', false)
@@ -62,13 +63,14 @@ class ListSearchFragmentTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         foreach (['customer', 'project', 'epic'] as $prefix) {
-            $this->get(route($prefix.'s.index'))
+            $routePrefix = $prefix === 'customer' ? 'customers' : $prefix.'s';
+            $this->get(route($routePrefix.'.index'))
                 ->assertOk()
                 ->assertSee('data-test="'.$prefix.'-breadcrumbs"', false)
                 ->assertSee('data-test="'.$prefix.'-tabs"', false)
                 ->assertSee('data-test="'.$prefix.'-create-button"', false);
 
-            $this->get(route($prefix.'s.trash.index'))
+            $this->get(route($routePrefix.'.trash.index'))
                 ->assertOk()
                 ->assertSee('data-test="'.$prefix.'-tabs"', false)
                 ->assertDontSee('data-test="'.$prefix.'-create-button"', false);

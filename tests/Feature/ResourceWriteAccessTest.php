@@ -30,7 +30,7 @@ class ResourceWriteAccessTest extends TestCase
         $routes = [];
 
         foreach (['customer', 'project', 'epic'] as $singular) {
-            $plural = $singular.'s';
+            $plural = $singular === 'customer' ? 'customers' : $singular.'s';
 
             $routes["{$singular} store"] = [$singular, $plural.'.store'];
             $routes["{$singular} update"] = [$singular, $plural.'.update'];

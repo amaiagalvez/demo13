@@ -13,7 +13,7 @@
  *     php storage/app/perf/customer-list-bench.php [runs] [warmups]
  */
 
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use App\Queries\Customers\CustomerListQuery;
 use App\Queries\ListQueryBase;
 use Illuminate\Support\Facades\DB;

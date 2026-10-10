@@ -13,26 +13,26 @@ use Customers13\Models\Customer;
 use App\Policies\EpicPolicy;
 use Illuminate\Routing\Route;
 use App\Policies\ProjectPolicy;
-use App\Policies\CustomerPolicy;
+use Customers13\Policies\CustomerPolicy;
 use App\Http\Requests\EpicRequest;
 use Basics13\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;
 use Illuminate\Support\Facades\File;
 use App\Http\Requests\ProjectRequest;
-use App\Http\Requests\CustomerRequest;
+use Customers13\Http\Requests\CustomerRequest;
 use App\Http\Requests\EpicListRequest;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\ProjectListRequest;
 use App\Transformers\EpicListTransformer;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Requests\CustomerListRequest;
+use Customers13\Http\Requests\CustomerListRequest;
 use App\Queries\Projects\ProjectListQuery;
 use Basics13\Http\Requests\RestoreRequest;
 use Basics13\Support\Validation\MaxLength;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Queries\Customers\CustomerListQuery;
+use Customers13\Queries\Customers\CustomerListQuery;
 use App\Transformers\ProjectListTransformer;
-use App\Transformers\CustomerListTransformer;
+use Customers13\Transformers\CustomerListTransformer;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Basics13\Http\Requests\TrashDestroyRequest;
@@ -156,7 +156,12 @@ class ResourceUniformityTest extends TestCase
             $shared .= File::get($path);
         }
 
-        foreach (File::allFiles(app_path('Http')) as $file) {
+        $customerRequestPath = (new ReflectionClass(CustomerRequest::class))->getFileName();
+        $this->assertIsString($customerRequestPath);
+        $httpPaths = [app_path('Http'), dirname($customerRequestPath, 2)];
+
+        foreach ($httpPaths as $httpPath) {
+            foreach (File::allFiles($httpPath) as $file) {
             $contents = (string) file_get_contents($file->getPathname());
             $matched = false;
 
@@ -169,6 +174,7 @@ class ResourceUniformityTest extends TestCase
 
             if (! $matched) {
                 $shared .= $contents;
+            }
             }
         }
 

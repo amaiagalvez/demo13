@@ -3,16 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EpicController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\EpicTrashController;
 use App\Http\Controllers\EpicCommentController;
 use App\Http\Controllers\EpicArchivedController;
 use App\Http\Controllers\ProjectTrashController;
-use App\Http\Controllers\CustomerTrashController;
 use App\Http\Controllers\ProjectArchivedController;
-use App\Http\Controllers\CustomerArchivedController;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -20,23 +17,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::get('planning', [PlanningController::class, 'index'])->name('planning');
     Route::get('timeline', [TimelineController::class, 'index'])->name('timeline');
-    Route::get('customers/archived', [CustomerArchivedController::class, 'index'])->name('customers.archived.index');
-    Route::patch('customers/archived/{customer}', [CustomerArchivedController::class, 'activate'])
-        ->whereNumber('customer')
-        ->name('customers.archived.activate');
-    Route::patch('customers/{customer}/archive', [CustomerArchivedController::class, 'archive'])
-        ->whereNumber('customer')
-        ->name('customers.archive');
-    Route::get('customers/trash', [CustomerTrashController::class, 'index'])->name('customers.trash.index');
-    Route::patch('customers/trash/{customer}', [CustomerTrashController::class, 'restore'])
-        ->whereNumber('customer')
-        ->name('customers.trash.restore');
-    Route::delete('customers/trash/{customer}', [CustomerTrashController::class, 'destroy'])
-        ->whereNumber('customer')
-        ->name('customers.trash.destroy');
-    Route::get('customers/options', [CustomerController::class, 'selectOptions'])
-        ->name('customers.options');
-    Route::resource('customers', CustomerController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('projects/archived', [ProjectArchivedController::class, 'index'])->name('projects.archived.index');
     Route::patch('projects/archived/{project}', [ProjectArchivedController::class, 'activate'])
         ->whereNumber('project')

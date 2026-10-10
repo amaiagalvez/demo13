@@ -47,23 +47,25 @@ class ConcurrentNameInsertTest extends TestCase
         $name = 'Concurrent Store '.$singular;
         $payload = $this->payloadFor($singular, $name);
         $parentId = $this->parentIdFromPayload($payload);
+        $routePrefix = substr($indexRoute, 0, -strlen('.index'));
+        $table = $singular === 'customer' ? (new Customer)->getTable() : $singular.'s';
 
         RacesNameInsert::afterUniquenessSelect(
-            $singular.'s',
+            $table,
             $name,
             fn () => $this->makeRecord($singular, ['name' => $name], parentId: $parentId),
         );
 
         $this->from(route($indexRoute))
-            ->post(route($singular.'s.store'), $payload)
+            ->post(route($routePrefix.'.store'), $payload)
             ->assertRedirect(route($indexRoute))
             ->assertSessionHasErrors([
                 'name' => __('validation.unique', ['attribute' => __('Name')]),
             ]);
 
         // Only the competitor survives: the request's own insert was rejected by the index.
-        $this->assertDatabaseCount($singular.'s', 1);
-        $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);
+        $this->assertDatabaseCount($table, 1);
+        $this->assertDatabaseHas($table, ['name' => $name, 'deleted_at' => null]);
     }
 
     /**
@@ -79,22 +81,24 @@ class ConcurrentNameInsertTest extends TestCase
         $existing = $this->makeRecord($singular, ['name' => 'Original '.$singular]);
         $name = 'Concurrent Update '.$singular;
         $payload = $this->payloadFor($singular, $name, parentId: $this->parentIdOf($existing));
+        $routePrefix = substr($indexRoute, 0, -strlen('.index'));
+        $table = $existing->getTable();
 
         RacesNameInsert::afterUniquenessSelect(
-            $singular.'s',
+            $table,
             $name,
             fn () => $this->makeRecord($singular, ['name' => $name], parentId: $this->parentIdFromPayload($payload)),
         );
 
         $this->from(route($indexRoute))
-            ->put(route($singular.'s.update', $existing), $payload)
+            ->put(route($routePrefix.'.update', $existing), $payload)
             ->assertRedirect(route($indexRoute))
             ->assertSessionHasErrors([
                 'name' => __('validation.unique', ['attribute' => __('Name')]),
             ]);
 
-        $this->assertDatabaseHas($singular.'s', ['id' => $existing->id, 'name' => 'Original '.$singular]);
-        $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);
+        $this->assertDatabaseHas($table, ['id' => $existing->id, 'name' => 'Original '.$singular]);
+        $this->assertDatabaseHas($table, ['name' => $name, 'deleted_at' => null]);
     }
 
     /**
@@ -113,19 +117,21 @@ class ConcurrentNameInsertTest extends TestCase
         $this->actingAs(User::factory()->create());
         $name = 'Concurrent Restore '.$singular;
         $deleted = $this->makeRecord($singular, ['name' => $name], trashed: true);
+        $routePrefix = substr($indexRoute, 0, -strlen('.index'));
+        $table = $deleted->getTable();
 
         RacesNameInsert::afterUniquenessSelect(
-            $singular.'s',
+            $table,
             $name,
             fn () => $this->makeRecord($singular, ['name' => $name], parentId: $this->parentIdOf($deleted)),
         );
 
-        $this->patch(route($singular.'s.trash.restore', $deleted->id))
-            ->assertRedirect(route($singular.'s.trash.index'))
+        $this->patch(route($routePrefix.'.trash.restore', $deleted->id))
+            ->assertRedirect(route($routePrefix.'.trash.index'))
             ->assertSessionHas('error', __('basics13::messages.cannot_restore_name_taken'));
 
         $this->assertSoftDeleted($deleted);
-        $this->assertDatabaseHas($singular.'s', ['name' => $name, 'deleted_at' => null]);
+        $this->assertDatabaseHas($table, ['name' => $name, 'deleted_at' => null]);
     }
 
     /**

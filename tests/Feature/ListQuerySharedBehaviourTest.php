@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Basics13\Queries\ListQueryBase;
 use App\Queries\Epics\EpicListQuery;
 use App\Queries\Projects\ProjectListQuery;
-use App\Queries\Customers\CustomerListQuery;
+use Customers13\Queries\Customers\CustomerListQuery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

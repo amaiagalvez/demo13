@@ -21,9 +21,13 @@ class ProjectFactory extends Factory
      */
     public function definition(): array
     {
+        $dates = $this->getDateRange();
+
         return [
             'name' => fake()->company(),
             'customer_id' => static::getRecord(Customer::class),
+            'start_date' => $dates['start_date'],
+            'end_date' => $dates['end_date'],
         ];
     }
 }

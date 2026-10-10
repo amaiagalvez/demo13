@@ -4,6 +4,7 @@ namespace App\Queries\Timeline;
 
 use App\Models\Epic;
 use App\Models\Project;
+use Customers13\Models\Customer;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Basics13\Queries\ListQueryBase;
@@ -148,7 +149,7 @@ final class TimelineQuery extends ListQueryBase
     private function matchingProjects(string $search): Builder
     {
         return Project::query()
-            ->join('customers as timeline_customers', 'timeline_customers.id', '=', 'projects.customer_id')
+            ->join((new Customer)->getTable().' as timeline_customers', 'timeline_customers.id', '=', 'projects.customer_id')
             ->where('projects.active', true)
             ->where(function (Builder $query) use ($search): void {
                 $this->whereMatches($query, $search, ['projects.name', 'timeline_customers.name']);
@@ -171,7 +172,7 @@ final class TimelineQuery extends ListQueryBase
     private function projectsMatchingByNameOrCustomer(string $search): Builder
     {
         return Project::query()
-            ->join('customers as timeline_customers', 'timeline_customers.id', '=', 'projects.customer_id')
+            ->join((new Customer)->getTable().' as timeline_customers', 'timeline_customers.id', '=', 'projects.customer_id')
             ->where('projects.active', true)
             ->where(function (Builder $query) use ($search): void {
                 $this->whereMatches($query, $search, ['projects.name', 'timeline_customers.name']);

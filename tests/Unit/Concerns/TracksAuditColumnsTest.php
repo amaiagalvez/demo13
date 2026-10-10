@@ -174,7 +174,7 @@ class TracksAuditColumnsTest extends TestCase
 
         $record->forceDelete();
 
-        $this->assertDatabaseMissing('customers', ['id' => $id]);
+        $this->assertDatabaseMissing('CUM_customers', ['id' => $id]);
     }
 
     /**

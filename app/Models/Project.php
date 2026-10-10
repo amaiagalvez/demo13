@@ -66,7 +66,7 @@ class Project extends Model
      */
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customers13\Models\Customer::class)->withTrashed();
+        return $this->belongsTo(\Customers13\Models\Customer::class)->withTrashed();
     }
 
     /**

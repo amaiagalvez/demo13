@@ -16,19 +16,19 @@ class ResourceNotesTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @return array<string, array{string, string, string}>
+     * @return array<string, array{string, string, string, string}>
      */
     public static function resources(): array
     {
         return [
-            'customers' => ['customers', 'customer', 'Customer notes'],
-            'projects' => ['projects', 'project', 'Project notes'],
-            'epics' => ['epics', 'epic', 'Epic notes'],
+            'customers' => ['CUM_customers', 'customers', 'customer', 'Customer notes'],
+            'projects' => ['projects', 'projects', 'project', 'Project notes'],
+            'epics' => ['epics', 'epics', 'epic', 'Epic notes'],
         ];
     }
 
     #[DataProvider('resources')]
-    public function test_notes_are_saved_and_replaced_on_update(string $resource, string $prefix, string $notes): void
+    public function test_notes_are_saved_and_replaced_on_update(string $table, string $resource, string $prefix, string $notes): void
     {
         $this->actingAs(User::factory()->create());
         $payload = $this->storePayload($resource);
@@ -36,13 +36,13 @@ class ResourceNotesTest extends TestCase
         $this->post(route($resource.'.store'), [...$payload, 'notes' => $notes])
             ->assertRedirect(route($resource.'.index'));
 
-        $id = DB::table($resource)->where('name', 'Notes record')->value('id');
-        $this->assertSame($notes, DB::table($resource)->where('id', $id)->value('notes'));
+        $id = DB::table($table)->where('name', 'Notes record')->value('id');
+        $this->assertSame($notes, DB::table($table)->where('id', $id)->value('notes'));
 
         $this->put(route($resource.'.update', $id), [...$payload, 'notes' => 'Rewritten notes'])
             ->assertRedirect(route($resource.'.index'));
 
-        $this->assertSame('Rewritten notes', DB::table($resource)->where('id', $id)->value('notes'));
+        $this->assertSame('Rewritten notes', DB::table($table)->where('id', $id)->value('notes'));
     }
 
     /**
@@ -50,7 +50,7 @@ class ResourceNotesTest extends TestCase
      * missing value, and submitting an empty field clears the notes it had.
      */
     #[DataProvider('resources')]
-    public function test_notes_are_optional_and_can_be_cleared(string $resource, string $prefix, string $notes): void
+    public function test_notes_are_optional_and_can_be_cleared(string $table, string $resource, string $prefix, string $notes): void
     {
         $this->actingAs(User::factory()->create());
         $payload = $this->storePayload($resource);
@@ -59,18 +59,18 @@ class ResourceNotesTest extends TestCase
             ->assertRedirect(route($resource.'.index'))
             ->assertSessionHasNoErrors();
 
-        $id = DB::table($resource)->where('name', 'Notes record')->value('id');
-        $this->assertNull(DB::table($resource)->where('id', $id)->value('notes'));
+        $id = DB::table($table)->where('name', 'Notes record')->value('id');
+        $this->assertNull(DB::table($table)->where('id', $id)->value('notes'));
 
         $this->put(route($resource.'.update', $id), [...$payload, 'notes' => $notes]);
         $this->put(route($resource.'.update', $id), [...$payload, 'notes' => ''])
             ->assertRedirect(route($resource.'.index'));
 
-        $this->assertNull(DB::table($resource)->where('id', $id)->value('notes'));
+        $this->assertNull(DB::table($table)->where('id', $id)->value('notes'));
     }
 
     #[DataProvider('resources')]
-    public function test_notes_longer_than_the_configured_maximum_are_rejected(string $resource, string $prefix, string $notes): void
+    public function test_notes_longer_than_the_configured_maximum_are_rejected(string $table, string $resource, string $prefix, string $notes): void
     {
         $this->actingAs(User::factory()->create());
 
@@ -82,7 +82,7 @@ class ResourceNotesTest extends TestCase
             ->assertRedirect(route($resource.'.index'))
             ->assertSessionHasErrors('notes');
 
-        $this->assertDatabaseCount($resource, 0);
+        $this->assertDatabaseCount($table, 0);
     }
 
     /**
@@ -90,7 +90,7 @@ class ResourceNotesTest extends TestCase
      * every time the form is opened.
      */
     #[DataProvider('resources')]
-    public function test_the_edit_form_is_bound_to_the_saved_notes(string $resource, string $prefix, string $notes): void
+    public function test_the_edit_form_is_bound_to_the_saved_notes(string $table, string $resource, string $prefix, string $notes): void
     {
         $this->actingAs(User::factory()->create());
 

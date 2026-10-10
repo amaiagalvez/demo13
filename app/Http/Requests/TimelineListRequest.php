@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Basics13\Http\Requests\SearchableListRequest;
 
 class TimelineListRequest extends SearchableListRequest

@@ -6,7 +6,7 @@ php_args=()
 
 for argument in "$@"; do
     if [[ "$argument" == "$workspace_root/"* ]]; then
-        php_args+=("/docker/${argument#"$workspace_root/"}")
+        php_args+=("/app-docker/${argument#"$workspace_root/"}")
     else
         php_args+=("$argument")
     fi

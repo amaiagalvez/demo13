@@ -28,7 +28,7 @@ final class ProjectSelectOptionsQuery extends ListQueryBase
                         'projects.name LIKE ? ESCAPE \''.self::LIKE_ESCAPE.'\'',
                         [$pattern],
                     )->orWhereHas('customer', fn (Builder $customerQuery) => $customerQuery->whereRaw(
-                        'customers.name LIKE ? ESCAPE \''.self::LIKE_ESCAPE.'\'',
+                        'CUM_customers.name LIKE ? ESCAPE \''.self::LIKE_ESCAPE.'\'',
                         [$pattern],
                     ));
                 });

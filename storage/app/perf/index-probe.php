@@ -9,7 +9,7 @@
  *     php storage/app/perf/index-probe.php
  */
 
-use App\Models\Customer;
+use Customers13\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Http\Kernel;
 
