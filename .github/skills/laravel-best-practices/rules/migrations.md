@@ -14,7 +14,7 @@ php artisan make:migration add_slug_to_posts_table
 Use `constrained()` when its naming conventions and default actions match the relationship. Specify the table or delete behavior when they do not.
 
 ```php
-$table->foreignId('user_id')->constrained();
+$table->foreignId('user_id')->constrained('users');
 $table->foreignId('author_id')->constrained('users');
 ```
 

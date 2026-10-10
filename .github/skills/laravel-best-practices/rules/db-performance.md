@@ -108,7 +108,7 @@ Schema without an application-specific query index:
 ```php
 Schema::create('orders', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('user_id')->constrained();
+    $table->foreignId('user_id')->constrained('users');
     $table->string('status');
     $table->timestamps();
 });
@@ -119,7 +119,7 @@ Schema optimized for `WHERE status = ? ORDER BY created_at`:
 ```php
 Schema::create('orders', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('user_id')->constrained();
+    $table->foreignId('user_id')->constrained('users');
     $table->string('status');
     $table->timestamps();
     $table->index(['status', 'created_at']);
