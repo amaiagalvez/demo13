@@ -77,7 +77,7 @@ class PackageViewsTest extends TestCase
 
     public function test_package_validation_translations_are_available_to_the_validator(): void
     {
-        optional($this->app)->setLocale('eu');
+        $this->app->setLocale('eu');
 
         $attributes = __('validation.attributes');
 

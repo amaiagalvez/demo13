@@ -217,6 +217,6 @@ class TracksAuditColumnsTest extends TestCase
      */
     private function loggedOut(): void
     {
-        optional($this->app['auth'])->forgetGuards();
+        $this->app['auth']->forgetGuards();
     }
 }
