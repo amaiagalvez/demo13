@@ -21,7 +21,7 @@ services:
             XDEBUG_CLIENT_PORT: 9000
             XDEBUG_START_WITH_REQUEST: "trigger"
             XDEBUG_SESSION: VSCODE
-            XDEBUG_MODE: "debug,develop,coverage,trace,profile"
+            XDEBUG_MODE: "debug"
             PHP_MEMORY_LIMIT: 9064M
         depends_on:
             db:

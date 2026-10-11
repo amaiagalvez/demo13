@@ -3,8 +3,8 @@
 namespace Tests\Unit\Translations;
 
 use Tests\TestCase;
-use Customers13\Models\Customer;
 use Illuminate\Validation\Rule;
+use Customers13\Models\Customer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
