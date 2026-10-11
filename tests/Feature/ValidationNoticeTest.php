@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use Basics13\Support\Validation\MaxLength;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 /**
  * The info icon next to a field label lists what the form asks of that field: the validations the
@@ -14,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
  */
 class ValidationNoticeTest extends TestCase
 {
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
 
     public function test_the_customer_name_notice_lists_every_rule_of_the_field(): void
     {
