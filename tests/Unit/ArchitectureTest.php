@@ -58,7 +58,7 @@ class ArchitectureTest extends TestCase
             );
 
             foreach (['list', 'form'] as $view) {
-                $this->assertFileExists(base_path("../packages/projects13/resources/views/{$plural}/{$view}.blade.php"));
+                $this->assertFileExists(base_path("../../packages/projects13/resources/views/{$plural}/{$view}.blade.php"));
             }
         }
     }
@@ -201,8 +201,8 @@ class ArchitectureTest extends TestCase
     public function test_views_follow_the_canonical_patterns(): void
     {
         foreach (['projects', 'epics'] as $plural) {
-            $list = (string) file_get_contents(base_path("../packages/projects13/resources/views/{$plural}/list.blade.php"));
-            $form = (string) file_get_contents(base_path("../packages/projects13/resources/views/{$plural}/form.blade.php"));
+            $list = (string) file_get_contents(base_path("../../packages/projects13/resources/views/{$plural}/list.blade.php"));
+            $form = (string) file_get_contents(base_path("../../packages/projects13/resources/views/{$plural}/form.blade.php"));
 
             $this->assertStringContainsString(
                 '<x-basics13::list.table',
@@ -243,7 +243,7 @@ class ArchitectureTest extends TestCase
     {
         $requestFiles = [
             ...(glob(app_path('Http/Requests/*.php')) ?: []),
-            ...(glob(base_path('../packages/projects13/src/Http/Requests/*.php')) ?: []),
+            ...(glob(base_path('../../packages/projects13/src/Http/Requests/*.php')) ?: []),
         ];
 
         foreach ($requestFiles as $file) {
@@ -284,7 +284,7 @@ class ArchitectureTest extends TestCase
     {
         $files = [
             ...(glob(app_path('Http/Controllers/*.php')) ?: []),
-            ...(glob(base_path('../packages/projects13/src/Http/Controllers/*.php')) ?: []),
+            ...(glob(base_path('../../packages/projects13/src/Http/Controllers/*.php')) ?: []),
         ];
 
         return array_values(array_filter(

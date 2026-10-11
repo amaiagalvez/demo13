@@ -4,7 +4,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         ports:
             - "80:80"
@@ -36,7 +36,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -66,7 +66,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -90,7 +90,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -107,7 +107,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -124,7 +124,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
             - ./dc-data/npmCache:/npmCache
         ports:
             - "3000:3000"
@@ -149,7 +149,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
             - ./dc-data/npmCache:/npmCache
         ports:
             - "3000:3000"
@@ -172,7 +172,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -197,7 +197,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -222,7 +222,7 @@ services:
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
-            - ../packages:/packages
+            - ../../packages:/packages
         working_dir: /app-docker
         environment:
             HOME: /tmp
@@ -248,7 +248,7 @@ services:
         volumes:
             - ./dc-data/mysql:/var/lib/mysql
             - ./dc-data/mysqldumps:/mysqldumps
-            - ../packages/basics13/tooling/mysql/init:/docker-entrypoint-initdb.d
+            - ../../packages/basics13/tooling/mysql/init:/docker-entrypoint-initdb.d
         healthcheck:
             test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
             interval: 10s

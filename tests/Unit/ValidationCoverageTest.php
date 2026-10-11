@@ -56,7 +56,7 @@ class ValidationCoverageTest extends TestCase
     {
         $controllerFiles = [
             ...(glob(app_path('Http/Controllers/*.php')) ?: []),
-            ...(glob(base_path('../packages/projects13/src/Http/Controllers/*.php')) ?: []),
+            ...(glob(base_path('../../packages/projects13/src/Http/Controllers/*.php')) ?: []),
         ];
 
         foreach ($controllerFiles as $file) {
@@ -114,7 +114,7 @@ class ValidationCoverageTest extends TestCase
 
         foreach ([
             app_path('Http/Requests'),
-            base_path('../packages/projects13/src/Http/Requests'),
+            base_path('../../packages/projects13/src/Http/Requests'),
             app_path('Concerns'),
         ] as $directory) {
             foreach (glob($directory.'/*.php') ?: [] as $path) {

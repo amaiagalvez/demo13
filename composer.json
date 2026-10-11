@@ -125,21 +125,21 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../packages/basics13",
+            "url": "../../packages/basics13",
             "options": {
                 "symlink": true
             }
         },
         {
             "type": "path",
-            "url": "../packages/customers13",
+            "url": "../../packages/customers13",
             "options": {
                 "symlink": true
             }
         },
         {
             "type": "path",
-            "url": "../packages/projects13",
+            "url": "../../packages/projects13",
             "options": {
                 "symlink": true
             }
