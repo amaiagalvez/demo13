@@ -3,7 +3,7 @@
 namespace Tests;
 
 use Laravel\Fortify\Features;
-use Tests\Concerns\ValidatesFormRequests;
+use Basics13\Support\Testing\ValidatesFormRequests;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase

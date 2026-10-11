@@ -1,0 +1,24 @@
+{
+	"mcpServers": {
+		"laravel-boost": {
+			"type": "local",
+			"command": "/usr/bin/docker",
+			"args": [
+				"compose",
+				"-f",
+				"projects/demo13/docker-compose.yml",
+				"exec",
+				"-T",
+				"-e",
+				"XDEBUG_MODE=off",
+				"laravel13",
+				"php",
+				"artisan",
+				"boost:mcp"
+			],
+			"tools": [
+				"*"
+			]
+		}
+	}
+}
