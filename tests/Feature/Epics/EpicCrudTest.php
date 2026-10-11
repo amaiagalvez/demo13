@@ -137,7 +137,7 @@ class EpicCrudTest extends TestCase
         $this->assertSame('Bound customer', data_get($list, 'rows.0.customer'));
         $this->assertSame(
             'Bound project (Bound customer)',
-            data_get($list, 'rows.0.actions.0.epic.project_label'),
+            data_get($list, 'rows.0.actions.0.payload.project_label'),
         );
     }
 

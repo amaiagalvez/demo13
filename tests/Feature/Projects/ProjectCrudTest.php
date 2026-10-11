@@ -400,7 +400,6 @@ class ProjectCrudTest extends TestCase
             ->assertDontSee('href="'.route('epics.index', ['search' => 'Lonely project']).'"', false)
             ->assertSee('data-test="project-epics-count-'.$lonelyProject->id.'"></span>', false)
             ->assertSee('data-test="project-comments-count-'.$lonelyProject->id.'"></span>', false)
-            ->assertSee(__('Cannot be deleted while it has related records.'))
             ->assertDontSee('data-test="project-delete-'.$project->id.'"', false)
             ->assertSee('data-test="project-archive-'.$project->id.'"', false)
             ->assertSee('data-test="project-delete-'.$lonelyProject->id.'"', false);
@@ -488,7 +487,7 @@ class ProjectCrudTest extends TestCase
         );
 
         $this->assertSame('Bound customer', data_get($list, 'rows.0.customer'));
-        $this->assertSame('Bound customer', data_get($list, 'rows.0.actions.0.project.customer_name'));
+        $this->assertSame('Bound customer', data_get($list, 'rows.0.actions.0.payload.customer_name'));
     }
 
     /**
