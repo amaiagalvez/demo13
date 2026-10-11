@@ -76,10 +76,11 @@ services:
             GIT_CONFIG_KEY_0: safe.directory
             GIT_CONFIG_VALUE_0: /app-docker
         command: bash -c "
-            rm -Rf vendor
+            set -o pipefail
+            && rm -Rf vendor
             && rm -f composer.lock
-            && composer install --no-progress
-            && composer show | grep izt"
+            && composer install --no-progress --no-interaction
+            && composer show | awk '/izt/'"
         networks:
             - frontend
 
