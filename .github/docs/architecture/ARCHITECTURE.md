@@ -17,14 +17,16 @@ deleted from a trash view.
 ## Main Modules / Domains
 
 - `customers13`: customer controllers, Form Requests, policy, queries, transformers,
-  Eloquent model, views, routes and migrations. A customer may have many projects.
+  Eloquent model, views, routes, migrations and customer development/edge-case seeders.
+  A customer may have many projects.
 - `projects13`: project and epic controllers, Form Requests, policies, queries,
   transformers, Eloquent models, factories, views, routes and migrations. Each project
   belongs to one customer; each epic belongs to one project. Epics have comments
   (author and creation time), added from the epic edit drawer. Planning and timeline
-  views are part of this package.
+  views and project/epic development/edge-case seeders are part of this package.
 - The host application retains authentication, account settings, shared shell/navigation,
-  and integration tests for the installed packages.
+  user seeding and coordination of the installed packages' development seeders, and
+  integration tests for the installed packages.
 - Authentication and account settings: Laravel Fortify, email verification, passkeys,
   two-factor authentication, profile and password management.
 

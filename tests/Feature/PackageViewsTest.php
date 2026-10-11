@@ -20,6 +20,7 @@ class PackageViewsTest extends TestCase
         $this->assertContains('Basics13\ServiceProvider', $providers, 'Basics13 ServiceProvider not loaded');
 
         $this->assertTrue(View::exists('basics13::components.list.create-action'));
+        $this->assertTrue(View::exists('basics13::components.forms.field-label'));
     }
 
     public function test_package_view_can_be_rendered(): void
@@ -44,6 +45,20 @@ class PackageViewsTest extends TestCase
 
         $this->assertStringContainsString(__('New customer'), $html);
         $this->assertStringContainsString('createCustomer()', $html);
+    }
+
+    public function test_package_field_label_component_uses_the_form_request_rules(): void
+    {
+        $html = Blade::render(<<<'BLADE'
+            <x-basics13::forms.field-label :request="\Customers13\Http\Requests\CustomerRequest::class" field="name"
+                test="customer-name-info">
+                {{ __('Name') }}
+            </x-basics13::forms.field-label>
+        BLADE);
+
+        $this->assertStringContainsString(__('Name'), $html);
+        $this->assertStringContainsString('aria-hidden="true"', $html);
+        $this->assertStringContainsString('data-test="customer-name-info"', $html);
     }
 
     public function test_package_components_can_render_nested_components(): void
@@ -77,8 +92,44 @@ class PackageViewsTest extends TestCase
             ['paginator' => new LengthAwarePaginator([], 0, 15)],
         );
 
-        $this->assertStringContainsString(__('Showing'), $html);
-        $this->assertStringContainsString(__('results'), $html);
+        $this->assertStringContainsString(
+            __('basics13::messages.pagination_summary', ['first' => 0, 'last' => 0, 'total' => 0]),
+            $html,
+        );
+    }
+
+    public function test_row_action_hints_do_not_replace_other_tooltips(): void
+    {
+        $html = Blade::render(
+            '<x-basics13::list.row-actions prefix="record" edit-handler="editRecord" :actions="$actions" />',
+            ['actions' => [
+                [
+                    'type' => 'confirm-modal',
+                    'label' => 'Archive record',
+                    'hint' => 'Archive instead of deleting',
+                    'icon' => 'archive-box',
+                    'test' => 'record-archive-1',
+                ],
+                [
+                    'type' => 'confirm-modal',
+                    'label' => 'Restore record',
+                    'icon' => 'arrow-path',
+                    'test' => 'record-restore-1',
+                ],
+                [
+                    'type' => 'form-modal',
+                    'label' => 'Edit record',
+                    'icon' => 'pencil-square',
+                    'test' => 'record-edit-1',
+                    'payload' => ['id' => 1],
+                ],
+            ]],
+        );
+
+        $this->assertStringContainsString('Archive instead of deleting', $html);
+        $this->assertStringContainsString('Restore record', $html);
+        $this->assertStringContainsString('data-test="record-edit-1"', $html);
+        $this->assertStringContainsString('data-payload="{&quot;id&quot;:1}"', $html);
     }
 
     #[DataProvider('packagePageProvider')]

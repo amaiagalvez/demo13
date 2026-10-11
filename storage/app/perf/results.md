@@ -55,18 +55,22 @@ Medición realizada siguiendo `.github/tasks/09.performancce-test-plan.md`.
 
 ```bash
 DX php artisan migrate:fresh
-DX php artisan db:seed --class="Database\Seeders\DevelopTableSeeder"   # 300 por defecto
+DX php artisan db:seed   # 100 clientes y sus proyectos/epicas
 
 DX php storage/app/perf/customer-list-bench.php 20 3   # [ejecuciones] [calentamientos]
 DX php storage/app/perf/index-probe.php
 ```
 
-Para otros perfiles se instancia el seeder con otra cantidad:
+Para otros perfiles se invocan ambos seeders con la misma cantidad. El seeder de proyectos
+requiere los clientes `Perf Customer` y al menos un usuario; crea comentarios con autores
+tomados de los primeros cinco usuarios disponibles:
 
 ```bash
 DX php -r 'require "vendor/autoload.php"; $app = require "bootstrap/app.php";
   $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-  (new Database\Seeders\DevelopTableSeeder(1000))->setContainer($app)->run();'
+  App\Models\User::factory()->count(5)->create();
+  $app->make(Customers13\Database\Seeders\DevelopCustomerSeeder::class)->run(1000);
+  $app->make(Projects13\Database\Seeders\DevelopProjectSeeder::class)->run(1000);'
 ```
 
 ## Entorno
@@ -463,7 +467,8 @@ pestañas pasarían a ser el único término O(n) (~0,3 ms por escaneo con 100.0
 
 | Archivo | Contenido |
 |---|---|
-| `database/seeders/DevelopTableSeeder.php` | Semilla de carga. Independiente, no está conectada a `DatabaseSeeder`; el número de clientes es el único parámetro (300 por defecto). |
+| `packages/customers13/src/Database/Seeders/DevelopCustomerSeeder.php` | Semilla de carga de clientes con estados activo, archivado y papelera. |
+| `packages/projects13/src/Database/Seeders/DevelopProjectSeeder.php` | Semilla de proyectos, épicas y comentarios, asociada a los clientes de carga. |
 | `storage/app/perf/customer-list-bench.php` | Medición de los tres estados del listado con sus búsquedas y páginas. |
 | `storage/app/perf/index-probe.php` | Sonda de índice candidato sobre las sentencias del listado. |
 
@@ -486,4 +491,3 @@ Verificación: `pint` sin cambios pendientes y `php artisan test --parallel` con
 **OK (414 tests, 2233 aserciones)**. `phpstan` nivel 9 sin errores en todo lo tocado por esta
 medición; los 4 errores que quedan están en `tests/Feature/ResourceActivationTest.php`, un fichero
 ajeno a este trabajo.
-

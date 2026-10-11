@@ -376,7 +376,7 @@ class ResourceActivationTest extends TestCase
         $this->get(route('epics.index'))
             ->assertSee('data-test="epic-archive-'.$epic->id.'"', false)
             ->assertDontSee('data-test="epic-delete-'.$epic->id.'"', false)
-            ->assertSee(__('Cannot be deleted while it has related records.'));
+            ->assertSee(__('basics13::messages.archive_instead_of_delete'));
 
         $this->delete(route('epics.destroy', $epic))
             ->assertRedirect(route('epics.index'))

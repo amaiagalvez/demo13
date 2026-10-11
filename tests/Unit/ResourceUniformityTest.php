@@ -38,6 +38,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Projects13\Transformers\ProjectListTransformer;
 use Customers13\Queries\Customers\CustomerListQuery;
 use Customers13\Transformers\CustomerListTransformer;
+use Basics13\Http\Controllers\ArchivedController as BasicsArchivedController;
 
 class ResourceUniformityTest extends TestCase
 {
@@ -160,10 +161,13 @@ class ResourceUniformityTest extends TestCase
         $this->assertIsString($customerRequestPath);
         $projectRequestPath = (new ReflectionClass(ProjectRequest::class))->getFileName();
         $this->assertIsString($projectRequestPath);
+        $archivedControllerPath = (new ReflectionClass(BasicsArchivedController::class))->getFileName();
+        $this->assertIsString($archivedControllerPath);
         $httpPaths = [
             app_path('Http'),
             dirname($customerRequestPath, 2),
             dirname($projectRequestPath, 2),
+            dirname($archivedControllerPath),
         ];
 
         foreach ($httpPaths as $httpPath) {
@@ -383,7 +387,7 @@ class ResourceUniformityTest extends TestCase
             $row = $resourceRows[0];
 
             $this->assertSame(
-                $row['actions'][0][$resource],
+                $row['actions'][0]['payload'],
                 $row['editPayload'],
                 "{$resource}: the row name button and the edit action must open the same form data.",
             );
@@ -454,10 +458,10 @@ class ResourceUniformityTest extends TestCase
     {
         $actions = $row['actions'];
         $this->assertCount(2, $actions);
-        $this->assertSame(['type', 'label', 'icon', 'test', $resourceKey], array_keys($actions[0]));
-        $this->assertIsArray($actions[0][$resourceKey]);
-        $this->assertSame($editPayloadKeys, array_keys($actions[0][$resourceKey]));
-        $this->assertSame([
+        $this->assertSame(['type', 'label', 'icon', 'test', 'payload'], array_keys($actions[0]));
+        $this->assertIsArray($actions[0]['payload']);
+        $this->assertSame($editPayloadKeys, array_keys($actions[0]['payload']));
+        $expectedConfirmKeys = [
             'type',
             'label',
             'icon',
@@ -468,7 +472,14 @@ class ResourceUniformityTest extends TestCase
             'confirmTitle',
             'confirmText',
             'confirmLabel',
-        ], array_keys($actions[1]));
+        ];
+
+        if ($resourceKey !== 'epic') {
+            $expectedConfirmKeys[] = 'hint';
+            $this->assertSame(__('basics13::messages.archive_instead_of_delete'), $actions[1]['hint']);
+        }
+
+        $this->assertSame($expectedConfirmKeys, array_keys($actions[1]));
     }
 
     private function factoryName(Model $model): string
