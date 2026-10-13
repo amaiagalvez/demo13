@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8e6ebd3eb65a687d0c7941346d0a2c1",
+    "content-hash": "bb95e35420f3f61be8913954c4cf711c",
     "packages": [
         {
             "name": "amaia/basics13",
@@ -60,12 +60,61 @@
             }
         },
         {
+            "name": "amaia/customer-projects13",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/customer-projects13",
+                "reference": "86d842b5e413f32735edf530191865b512dd551e"
+            },
+            "require": {
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "amaia/basics13": "^1.0",
+                "amaia/customers13": "^1.0",
+                "amaia/projects13": "^1.0",
+                "larastan/larastan": "^3.9",
+                "laravel/pint": "^1.27",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.3",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "CustomerProjects13\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "CustomerProjects13\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "App\\": "tests/Fixtures/App/",
+                    "CustomerProjects13\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Connects customers13 and projects13: a project hangs from a customer, with the selector, the validation, and the counts back on the customer lists.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "amaia/customers13",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "../../packages/customers13",
-                "reference": "263a8fde1b015407095dab3efee9d41809107bb3"
+                "reference": "aeede5a24e1bc59b36a45acd8ac8c34ac6d2cfb3"
             },
             "require": {
                 "php": "^8.3"
@@ -94,14 +143,13 @@
             "autoload-dev": {
                 "psr-4": {
                     "App\\": "tests/Fixtures/App/",
-                    "Projects13\\Models\\": "tests/Fixtures/Projects13/Models/",
                     "Customers13\\Tests\\": "tests/"
                 }
             },
             "license": [
                 "MIT"
             ],
-            "description": "Customer management for Laravel 13: CRUD, soft deletes, archive, trash, select options, and planning chips with Flux.",
+            "description": "Customer management for Laravel 13: CRUD, soft deletes, archive, trash and select options.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -113,14 +161,13 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/projects13",
-                "reference": "764f41a9dbbd71695fd82f39609380417f6e9f15"
+                "reference": "e524eb54ab85c5d384781cdd6941455e930fd064"
             },
             "require": {
                 "php": "^8.3"
             },
             "require-dev": {
                 "amaia/basics13": "^1.0",
-                "amaia/customers13": "^1.0",
                 "larastan/larastan": "^3.9",
                 "laravel/pint": "^1.27",
                 "mockery/mockery": "^1.6",

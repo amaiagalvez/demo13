@@ -5,12 +5,7 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use App\Models\User;
 use ReflectionClass;
-use Projects13\Models\Epic;
-use Projects13\Models\Project;
-use Customers13\Models\Customer;
-use Projects13\Models\EpicComment;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
@@ -18,109 +13,33 @@ class ModelSchemaParityTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Columns that are never mass assigned: primary key, timestamps, audit columns,
-     * Fortify-managed fields, DB-generated uniqueness helpers and identity columns
-     * set by route binding or authentication.
-     *
-     * @var array<int, string>
-     */
-    private const SYSTEM_COLUMNS = [
-        'id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-        'created_by',
-        'updated_by',
-        'deleted_by',
-        'active',
-        'remember_token',
-        'email_verified_at',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
-        'two_factor_confirmed_at',
-        'active_name',
-        'epic_id',
-        'user_id',
-    ];
-
-    private const MODELS = [
-        Customer::class,
-        Project::class,
-        Epic::class,
-        EpicComment::class,
-        User::class,
-    ];
-
-    public function test_fillable_attributes_exist_in_the_schema(): void
+    public function test_user_fillable_attributes_and_casts_match_the_schema(): void
     {
-        foreach (self::MODELS as $model) {
-            $columns = Schema::getColumnListing((new $model)->getTable());
+        $user = new User;
+        $columns = Schema::getColumnListing($user->getTable());
+        $attributes = (new ReflectionClass(User::class))->getAttributes(Fillable::class);
+        $fillable = $attributes[0]->getArguments()[0];
+        $systemColumns = [
+            'id', 'created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by',
+            'deleted_by', 'active', 'remember_token', 'email_verified_at',
+            'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at',
+        ];
 
-            foreach ($this->fillableAttributes($model) as $attribute) {
-                $this->assertContains(
-                    $attribute,
-                    $columns,
-                    "{$model} is fillable on [{$attribute}] but the column does not exist",
-                );
-            }
+        foreach ($fillable as $attribute) {
+            $this->assertContains($attribute, $columns);
         }
-    }
 
-    public function test_every_non_system_column_is_covered(): void
-    {
-        foreach (self::MODELS as $model) {
-            $instance = new $model;
-            $columns = Schema::getColumnListing($instance->getTable());
-            $fillable = $this->fillableAttributes($model);
-
-            foreach ($columns as $column) {
-                if (in_array($column, self::SYSTEM_COLUMNS, true)) {
-                    continue;
-                }
-
-                $this->assertContains(
-                    $column,
-                    $fillable,
-                    "{$model} column [{$column}] is not in #[Fillable]: add it there (and a validation rule) or to SYSTEM_COLUMNS if it is server-set",
-                );
-            }
+        foreach (array_diff($columns, $systemColumns) as $column) {
+            $this->assertContains($column, $fillable);
         }
-    }
 
-    public function test_casts_and_soft_deletes_match_the_schema(): void
-    {
-        foreach (self::MODELS as $model) {
-            $instance = new $model;
-            $columns = Schema::getColumnListing($instance->getTable());
-
-            foreach ($instance->getCasts() as $key => $value) {
-                $this->assertContains(
-                    $key,
-                    $columns,
-                    "{$model} casts [{$key}] but the column does not exist",
-                );
-            }
-
-            if (in_array(SoftDeletes::class, class_uses_recursive($model), true)) {
-                $this->assertContains(
-                    'deleted_at',
-                    $columns,
-                    "{$model} uses SoftDeletes but has no deleted_at column",
-                );
-            }
+        foreach (array_keys($user->getCasts()) as $column) {
+            $this->assertContains($column, $columns);
         }
-    }
 
-    /**
-     * @param  class-string  $model
-     * @return array<int, string>
-     */
-    private function fillableAttributes(string $model): array
-    {
-        $attributes = (new ReflectionClass($model))
-            ->getAttributes(Fillable::class);
-
-        return $attributes !== [] ? $attributes[0]->getArguments()[0] : [];
+        $this->assertContains('deleted_at', $columns);
+        $this->assertSoftDeleted(User::factory()->trashed()->create());
+        $this->assertFalse(User::factory()->archived()->make()->active);
+        $this->assertArrayHasKey('active', $user->getCasts());
     }
 }

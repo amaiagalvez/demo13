@@ -8,7 +8,7 @@ use RecursiveIteratorIterator;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 
-class TranslationFilesTest extends TestCase
+class InstalledCatalogTest extends TestCase
 {
     /**
      * Laravel resolves these keys through validation rules without application string literals.
@@ -63,43 +63,6 @@ class TranslationFilesTest extends TestCase
      */
     private const RESOURCES = ['Customer', 'Project', 'Epic'];
 
-    public function test_all_locales_define_the_same_keys(): void
-    {
-        $locales = $this->locales();
-        $english = array_keys($this->translations('en'));
-        sort($english);
-
-        foreach ($locales as $locale) {
-            $keys = array_keys($this->translations($locale));
-            sort($keys);
-
-            $this->assertSame($english, $keys, "lang/{$locale}.json keys differ from lang/en.json.");
-        }
-    }
-
-    public function test_translations_keep_the_placeholders_of_their_key(): void
-    {
-        foreach ($this->locales() as $locale) {
-            foreach ($this->translations($locale) as $key => $value) {
-                preg_match_all('/:[a-z_]+/', $key, $keyPlaceholders);
-
-                if ($keyPlaceholders[0] === []) {
-                    continue;
-                }
-
-                $this->assertIsString($value, "lang/{$locale}.json \"{$key}\" must be a string.");
-
-                foreach ($keyPlaceholders[0] as $placeholder) {
-                    $this->assertStringContainsString(
-                        $placeholder,
-                        $value,
-                        "lang/{$locale}.json \"{$key}\" is missing {$placeholder}.",
-                    );
-                }
-            }
-        }
-    }
-
     public function test_every_english_json_key_is_used_by_application_sources(): void
     {
         $sources = [];
@@ -153,10 +116,14 @@ class TranslationFilesTest extends TestCase
         $directories = [
             'app',
             'resources',
-            '../../packages/customers13/src',
-            '../../packages/customers13/resources',
-            '../../packages/projects13/src',
-            '../../packages/projects13/resources',
+            'vendor/amaia/basics13/src',
+            'vendor/amaia/basics13/resources',
+            'vendor/amaia/customers13/src',
+            'vendor/amaia/customers13/resources',
+            'vendor/amaia/projects13/src',
+            'vendor/amaia/projects13/resources',
+            'vendor/amaia/customer-projects13/src',
+            'vendor/amaia/customer-projects13/resources',
             'vendor/laravel/framework/src',
             'vendor/laravel/fortify/src',
             'vendor/laravel/passkeys/src',
@@ -211,31 +178,11 @@ class TranslationFilesTest extends TestCase
     }
 
     /**
-     * @return list<string>
-     */
-    private function locales(): array
-    {
-        $files = glob(dirname(__DIR__, 3).'/lang/*.json');
-
-        if ($files === false || $files === []) {
-            self::fail('No locale files were found in lang/.');
-        }
-
-        $locales = array_map(
-            static fn (string $file): string => pathinfo($file, PATHINFO_FILENAME),
-            $files,
-        );
-        sort($locales);
-
-        return $locales;
-    }
-
-    /**
      * @return array<string, mixed>
      */
     private function translations(string $locale): array
     {
-        $json = file_get_contents(dirname(__DIR__, 3)."/lang/{$locale}.json");
+        $json = file_get_contents(dirname(__DIR__, 3)."/vendor/amaia/basics13/resources/lang/{$locale}.json");
 
         if ($json === false) {
             self::fail("lang/{$locale}.json could not be read.");

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
+<phpunit bootstrap="vendor/amaia/customer-projects13/tests/browser-bootstrap.php"
+         backupGlobals="false"
          beStrictAboutTestsThatDoNotTestAnything="false"
          colors="true"
          processIsolation="false"
@@ -10,6 +11,7 @@
     <testsuites>
         <testsuite name="Browser Test Suite">
             <directory suffix="Test.php">./tests/Browser</directory>
+            <directory suffix="Test.php">./vendor/amaia/customer-projects13/tests/Browser</directory>
         </testsuite>
     </testsuites>
 </phpunit>
