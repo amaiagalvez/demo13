@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/basics13",
-                "reference": "c727fb8ad150edab02097301e48e1486bf19cd82"
+                "reference": "405c684c238d099bb9e32091d3e8ab8a2b9778c8"
             },
             "require": {
                 "laravel/boost": "^2.10",
@@ -66,7 +66,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/customer-projects13",
-                "reference": "27976c37728efbeabeacc5a1127515629e881b8e"
+                "reference": "5956441fb7de60948c85f7b36125cf1f6a798558"
             },
             "require": {
                 "php": "^8.3"
@@ -116,7 +116,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/customers13",
-                "reference": "7d662589a4a34e61a0816f4f42721712a359d827"
+                "reference": "11f30df850867cae07127f839ec4daafdf57987b"
             },
             "require": {
                 "php": "^8.3"
@@ -124,6 +124,7 @@
             "require-dev": {
                 "amaia/basics13": "^1.0",
                 "larastan/larastan": "^3.9",
+                "laravel/dusk": "^8.7",
                 "laravel/pint": "^1.27",
                 "mockery/mockery": "^1.6",
                 "orchestra/testbench": "^11.3",
@@ -163,7 +164,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/projects13",
-                "reference": "b65fc7167ede4ab8e6f8c5b353ee380d6d2f5925"
+                "reference": "698167188bc0aa629e6a7ebac40c92995186318f"
             },
             "require": {
                 "php": "^8.3"
