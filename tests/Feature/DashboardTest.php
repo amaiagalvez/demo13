@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\User;
+use Basics13\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class DashboardTest extends TestCase
