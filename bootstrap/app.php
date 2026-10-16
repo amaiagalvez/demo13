@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
-use App\Http\Middleware\EnsureUserIsActive;
+use Basics13\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;

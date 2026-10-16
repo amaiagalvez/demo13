@@ -14,7 +14,6 @@
         "amaia/customers13": "*",
         "amaia/projects13": "*",
         "amaia/customer-projects13": "*",
-        "laravel/fortify": "^1.37.2",
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.1"
     },

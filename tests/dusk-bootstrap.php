@@ -7,5 +7,6 @@ if (! is_file($autoload)) {
 }
 
 $loader = require $autoload;
+$loader->addPsr4('Basics13\\Tests\\', __DIR__.'/../vendor/amaia/basics13/tests/');
 $loader->addPsr4('CustomerProjects13\\Tests\\', __DIR__.'/../vendor/amaia/customer-projects13/tests/');
 $loader->addPsr4('Customers13\\Tests\\', __DIR__.'/../vendor/amaia/customers13/tests/');

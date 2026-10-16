@@ -33,7 +33,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dusk
-        user: "${DC_UID:-1000}:${DC_GID:-1000}"
+        user: "0:0"
         volumes:
             - ./:/app-docker
             - ../../packages:/packages

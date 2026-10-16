@@ -4,14 +4,15 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 export default defineConfig({
+    resolve: {
+        dedupe: ['@laravel/passkeys'],
+    },
     plugins: lazyPlugins(() => [
         laravel({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                /* @chisel-passkeys */
                 'resources/js/passkeys.js',
-                /* @end-chisel-passkeys */
             ],
             refresh: true,
             fonts: [

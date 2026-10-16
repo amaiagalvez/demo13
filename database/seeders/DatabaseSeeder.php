@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Basics13\Models\User;
 use Illuminate\Database\Seeder;
+use Basics13\Database\Seeders\UserSeeder;
 use Projects13\Database\Seeders\DevelopProjectSeeder;
 use Projects13\Database\Seeders\EdgeCaseProjectSeeder;
 use Customers13\Database\Seeders\DevelopCustomerSeeder;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use Basics13\Models\User;
 
 return [
 

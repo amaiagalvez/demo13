@@ -11,6 +11,7 @@
     <testsuites>
         <testsuite name="Browser Test Suite">
             <directory suffix="Test.php">./tests/Browser</directory>
+            <directory suffix="Test.php">./vendor/amaia/basics13/tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/customer-projects13/tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/customers13/tests/Browser</directory>
         </testsuite>

@@ -28,7 +28,7 @@ return [
     |--------------------------------------------------------------------------
     | Log Viewer allowed emails
     |--------------------------------------------------------------------------
-    | Project specific: the `viewLogViewer` gate in AppServiceProvider only lets
+    | The `viewLogViewer` gate in Basics13\ServiceProvider only lets
     | these accounts in, so access is never granted to every logged in user.
     |
     */
