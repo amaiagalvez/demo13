@@ -2,13 +2,7 @@
 
 namespace Database\Seeders;
 
-use Basics13\Models\User;
 use Illuminate\Database\Seeder;
-use Basics13\Database\Seeders\UserSeeder;
-use Projects13\Database\Seeders\DevelopProjectSeeder;
-use Projects13\Database\Seeders\EdgeCaseProjectSeeder;
-use Customers13\Database\Seeders\DevelopCustomerSeeder;
-use Customers13\Database\Seeders\EdgeCaseCustomerSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
@@ -17,16 +11,12 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment() !== 'production') {
-            $this->call(UserSeeder::class);
-            User::factory()->count(5)->create();
+        // To load in production
+        //
 
-            $this->call([
-                DevelopCustomerSeeder::class,
-                DevelopProjectSeeder::class,
-                EdgeCaseCustomerSeeder::class,
-                EdgeCaseProjectSeeder::class,
-            ]);
+        // To load in local
+        if (app()->environment() !== 'production') {
+            $this->call(DevelopDatabaseSeeder::class);
         }
     }
 }

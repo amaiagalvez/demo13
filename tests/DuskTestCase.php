@@ -10,12 +10,12 @@ abstract class DuskTestCase extends \Basics13\Support\Testing\DuskTestCase
     {
         parent::setUp();
 
-        self::assertSame('laravel_test', config('database.connections.mysql.database'));
+        self::assertSame('laravel_dusk', config('database.connections.mysql.database'));
     }
 
     protected function getEnvironmentSetUp(Application $app): void
     {
         $app['config']->set('database.default', 'mysql');
-        $app['config']->set('database.connections.mysql.database', 'laravel_test');
+        $app['config']->set('database.connections.mysql.database', 'laravel_dusk');
     }
 }
