@@ -11,9 +11,9 @@
     "require": {
         "php": "^8.3",
         "amaia/basics13": "*",
-        "amaia/customers13": "*",
+        "amaia/entities13": "*",
         "amaia/projects13": "*",
-        "amaia/customer-projects13": "*",
+        "amaia/entity-projects13": "*",
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.1"
     },
@@ -131,7 +131,7 @@
         },
         {
             "type": "path",
-            "url": "../../packages/customers13",
+            "url": "../../packages/entities13",
             "options": {
                 "symlink": true
             }
@@ -145,7 +145,7 @@
         },
         {
             "type": "path",
-            "url": "../../packages/customer-projects13",
+            "url": "../../packages/entity-projects13",
             "options": {
                 "symlink": true
             }

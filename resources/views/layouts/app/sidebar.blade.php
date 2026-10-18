@@ -20,13 +20,13 @@
                     :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="users" :href="route('customers.index')"
-                    :current="request()->routeIs('customers.*')" wire:navigate>
-                    {{ __('Customers') }}
+                <flux:sidebar.item icon="users" :href="route('entities.index')"
+                    :current="request()->routeIs('entities.*')" wire:navigate>
+                    {{ __('Entities') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="tag" :href="route('customer-types.index')"
-                    :current="request()->routeIs('customer-types.*')" wire:navigate>
-                    {{ __('Customer types') }}
+                <flux:sidebar.item icon="tag" :href="route('entity-types.index')"
+                    :current="request()->routeIs('entity-types.*')" wire:navigate>
+                    {{ __('Entity types') }}
                 </flux:sidebar.item>
                 <flux:sidebar.item icon="briefcase" :href="route('projects.index')"
                     :current="request()->routeIs('projects.*')" wire:navigate>

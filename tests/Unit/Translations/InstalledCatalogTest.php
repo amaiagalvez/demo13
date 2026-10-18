@@ -53,7 +53,7 @@ class InstalledCatalogTest extends TestCase
     ];
 
     /**
-     * Customers, projects and epics share the outcome wording of their lifecycle actions, so a
+     * Entities, projects and epics share the outcome wording of their lifecycle actions, so a
      * resource name in one of these keys would mean translating the very same sentence again.
      */
     private const OUTCOME_PATTERN = '/\b(created|updated|restored|deleted|moved to trash)\b/';
@@ -61,7 +61,7 @@ class InstalledCatalogTest extends TestCase
     /**
      * @var list<string>
      */
-    private const RESOURCES = ['Customer', 'Project', 'Epic'];
+    private const RESOURCES = ['Entity', 'Project', 'Epic'];
 
     public function test_every_english_json_key_is_used_by_application_sources(): void
     {
@@ -80,7 +80,7 @@ class InstalledCatalogTest extends TestCase
             }
         }
 
-        $this->assertSame([], $unusedKeys, 'Unused lang/en.json keys: '.implode(', ', $unusedKeys));
+        $this->assertSame([], $unusedKeys, 'Unused lang/en.json keys: ' . implode(', ', $unusedKeys));
     }
 
     public function test_outcome_messages_do_not_name_the_resource_they_describe(): void
@@ -93,7 +93,7 @@ class InstalledCatalogTest extends TestCase
             }
 
             foreach (self::RESOURCES as $resource) {
-                if (str_starts_with($key, $resource.' ')) {
+                if (str_starts_with($key, $resource . ' ')) {
                     $resourceSpecificKeys[] = $key;
                 }
             }
@@ -102,7 +102,7 @@ class InstalledCatalogTest extends TestCase
         $this->assertSame(
             [],
             $resourceSpecificKeys,
-            'Outcome messages must stay generic so every resource can reuse them: '.implode(', ', $resourceSpecificKeys),
+            'Outcome messages must stay generic so every resource can reuse them: ' . implode(', ', $resourceSpecificKeys),
         );
     }
 
@@ -118,12 +118,12 @@ class InstalledCatalogTest extends TestCase
             'resources',
             'vendor/amaia/basics13/src',
             'vendor/amaia/basics13/resources',
-            'vendor/amaia/customers13/src',
-            'vendor/amaia/customers13/resources',
+            'vendor/amaia/entities13/src',
+            'vendor/amaia/entities13/resources',
             'vendor/amaia/projects13/src',
             'vendor/amaia/projects13/resources',
-            'vendor/amaia/customer-projects13/src',
-            'vendor/amaia/customer-projects13/resources',
+            'vendor/amaia/entity-projects13/src',
+            'vendor/amaia/entity-projects13/resources',
             'vendor/laravel/framework/src',
             'vendor/laravel/fortify/src',
             'vendor/laravel/passkeys/src',
@@ -182,7 +182,7 @@ class InstalledCatalogTest extends TestCase
      */
     private function translations(string $locale): array
     {
-        $json = file_get_contents(dirname(__DIR__, 3)."/vendor/amaia/basics13/resources/lang/{$locale}.json");
+        $json = file_get_contents(dirname(__DIR__, 3) . "/vendor/amaia/basics13/resources/lang/{$locale}.json");
 
         if ($json === false) {
             self::fail("lang/{$locale}.json could not be read.");

@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Basics13\Database\Seeders\BasicsDevelopSeeder;
 use Projects13\Database\Seeders\ProjectsDevelopSeeder;
-use Customers13\Database\Seeders\CustomersDevelopSeeder;
+use entities13\Database\Seeders\EntitiesDevelopSeeder;
 
 class DevelopDatabaseSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class DevelopDatabaseSeeder extends Seeder
 
             $this->call([
                 BasicsDevelopSeeder::class,
-                CustomersDevelopSeeder::class,
+                EntitiesDevelopSeeder::class,
                 ProjectsDevelopSeeder::class,
             ]);
         }

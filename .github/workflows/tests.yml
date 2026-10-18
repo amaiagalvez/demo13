@@ -97,8 +97,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          repository: amaiagalvez/customers13
-          path: packages/customers13
+          repository: amaiagalvez/entities13
+          path: packages/entities13
 
       - name: Checkout domain packages
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,8 +111,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          repository: amaiagalvez/customer-projects13
-          path: packages/customer-projects13
+          repository: amaiagalvez/entity-projects13
+          path: packages/entity-projects13
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -230,8 +230,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          repository: amaiagalvez/customers13
-          path: packages/customers13
+          repository: amaiagalvez/entities13
+          path: packages/entities13
 
       - name: Checkout domain packages
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -244,8 +244,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          repository: amaiagalvez/customer-projects13
-          path: packages/customer-projects13
+          repository: amaiagalvez/entity-projects13
+          path: packages/entity-projects13
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -307,8 +307,8 @@ jobs:
           cat /tmp/laravel.log
           exit 1
 
-      # phpunit.dusk.xml also collects the browser suites shipped by customers13 and
-      # customer-projects13 through vendor/amaia/*/tests/Browser, so this covers them too.
+      # phpunit.dusk.xml also collects the browser suites shipped by entities13 and
+      # entity-projects13 through vendor/amaia/*/tests/Browser, so this covers them too.
       - name: Run Dusk
         run: php artisan dusk
 
