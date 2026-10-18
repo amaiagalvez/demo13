@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/basics13",
-                "reference": "99a058bcbd94e2c7c5858fe2c801b13c6834d26c"
+                "reference": "915adf0c8dce827b027907b59a8dd038b8d878ff"
             },
             "require": {
                 "laravel/boost": "^2.10",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/customer-projects13",
-                "reference": "a428ce6c7a83253665588169773efcf6da9d9b31"
+                "reference": "14afd9d4bee5a19e95cf9d6cb4c1726ac77ad328"
             },
             "require": {
                 "php": "^8.3"
@@ -121,7 +121,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/customers13",
-                "reference": "8f335f70396d12ed83e0b47b7350cb91baf0f574"
+                "reference": "529d20a59b80ca369d820153765c3eadf9603e1b"
             },
             "require": {
                 "php": "^8.3"
@@ -171,7 +171,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/projects13",
-                "reference": "9eda4e4eb52f4e8ec2d03b8a803dd533e4b4c1c8"
+                "reference": "bf0296dcaff115fee2f2563c574303483437ca69"
             },
             "require": {
                 "php": "^8.3"
@@ -1293,16 +1293,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "3.1.0",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "a3059ba1a84c9139c4ae03cf0f45bea276c97c74"
+                "reference": "cdc139396207a5eba10c242d241fb014cb098390"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/a3059ba1a84c9139c4ae03cf0f45bea276c97c74",
-                "reference": "a3059ba1a84c9139c4ae03cf0f45bea276c97c74",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/cdc139396207a5eba10c242d241fb014cb098390",
+                "reference": "cdc139396207a5eba10c242d241fb014cb098390",
                 "shasum": ""
             },
             "require": {
@@ -1392,7 +1392,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/3.1.0"
+                "source": "https://github.com/guzzle/psr7/tree/3.2.0"
             },
             "funding": [
                 {
@@ -1408,7 +1408,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-24T11:02:13+00:00"
+            "time": "2026-10-17T23:57:19+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -2237,16 +2237,16 @@
         },
         {
             "name": "league/commonmark",
-            "version": "2.10.3",
+            "version": "2.10.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "6efbd9c472b91db0a3350fcd601c8332c2382e1f"
+                "reference": "40821b7606d8d946bac57dbd2290076c722e3a65"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/6efbd9c472b91db0a3350fcd601c8332c2382e1f",
-                "reference": "6efbd9c472b91db0a3350fcd601c8332c2382e1f",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/40821b7606d8d946bac57dbd2290076c722e3a65",
+                "reference": "40821b7606d8d946bac57dbd2290076c722e3a65",
                 "shasum": ""
             },
             "require": {
@@ -2340,7 +2340,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-21T13:07:34+00:00"
+            "time": "2026-10-17T19:59:50+00:00"
         },
         {
             "name": "league/config",
