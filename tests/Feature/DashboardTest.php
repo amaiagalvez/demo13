@@ -24,4 +24,14 @@ class DashboardTest extends TestCase
         $response = $this->get(route('dashboard'));
         $response->assertOk();
     }
+
+    public function test_the_menu_links_to_the_account_resource(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $response = $this->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee(route('users.index'), false);
+    }
 }

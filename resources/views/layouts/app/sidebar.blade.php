@@ -44,6 +44,10 @@
                     :current="request()->routeIs('timeline')" wire:navigate>
                     {{ __('Timeline') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="user-circle" :href="route('users.index')"
+                    :current="request()->routeIs('users.*')" wire:navigate>
+                    {{ __('Users') }}
+                </flux:sidebar.item>
             </flux:sidebar.group>
         </flux:sidebar.nav>
 
