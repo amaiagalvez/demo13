@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Basics13\Database\Seeders\BasicsDevelopSeeder;
-use Projects13\Database\Seeders\ProjectsDevelopSeeder;
 use entities13\Database\Seeders\EntitiesDevelopSeeder;
+use Projects13\Database\Seeders\ProjectsDevelopSeeder;
 
 class DevelopDatabaseSeeder extends Seeder
 {

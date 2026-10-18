@@ -80,7 +80,7 @@ class InstalledCatalogTest extends TestCase
             }
         }
 
-        $this->assertSame([], $unusedKeys, 'Unused lang/en.json keys: ' . implode(', ', $unusedKeys));
+        $this->assertSame([], $unusedKeys, 'Unused lang/en.json keys: '.implode(', ', $unusedKeys));
     }
 
     public function test_outcome_messages_do_not_name_the_resource_they_describe(): void
@@ -93,7 +93,7 @@ class InstalledCatalogTest extends TestCase
             }
 
             foreach (self::RESOURCES as $resource) {
-                if (str_starts_with($key, $resource . ' ')) {
+                if (str_starts_with($key, $resource.' ')) {
                     $resourceSpecificKeys[] = $key;
                 }
             }
@@ -102,7 +102,7 @@ class InstalledCatalogTest extends TestCase
         $this->assertSame(
             [],
             $resourceSpecificKeys,
-            'Outcome messages must stay generic so every resource can reuse them: ' . implode(', ', $resourceSpecificKeys),
+            'Outcome messages must stay generic so every resource can reuse them: '.implode(', ', $resourceSpecificKeys),
         );
     }
 
@@ -182,7 +182,7 @@ class InstalledCatalogTest extends TestCase
      */
     private function translations(string $locale): array
     {
-        $json = file_get_contents(dirname(__DIR__, 3) . "/vendor/amaia/basics13/resources/lang/{$locale}.json");
+        $json = file_get_contents(dirname(__DIR__, 3)."/vendor/amaia/basics13/resources/lang/{$locale}.json");
 
         if ($json === false) {
             self::fail("lang/{$locale}.json could not be read.");
