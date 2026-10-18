@@ -24,6 +24,10 @@
                     :current="request()->routeIs('customers.*')" wire:navigate>
                     {{ __('Customers') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="tag" :href="route('customer-types.index')"
+                    :current="request()->routeIs('customer-types.*')" wire:navigate>
+                    {{ __('Customer types') }}
+                </flux:sidebar.item>
                 <flux:sidebar.item icon="briefcase" :href="route('projects.index')"
                     :current="request()->routeIs('projects.*')" wire:navigate>
                     {{ __('Projects') }}
