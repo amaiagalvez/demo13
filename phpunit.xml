@@ -5,10 +5,10 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="Unit">
+        <testsuite name="Unit" bootstrap="tests/bootstrap-unit.php">
             <directory>tests/Unit</directory>
         </testsuite>
-        <testsuite name="Feature">
+        <testsuite name="Feature" bootstrap="tests/bootstrap-feature.php">
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>

@@ -21,7 +21,7 @@ services:
             XDEBUG_CLIENT_PORT: 9000
             XDEBUG_START_WITH_REQUEST: "trigger"
             XDEBUG_SESSION: VSCODE
-            XDEBUG_MODE: "debug"
+            XDEBUG_MODE: "${XDEBUG_MODE:-off}"
             PHP_MEMORY_LIMIT: 9064M
         depends_on:
             db:
@@ -33,7 +33,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dusk
-        user: "0:0"
+        user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
             - ../../packages:/packages
@@ -76,11 +76,10 @@ services:
             GIT_CONFIG_KEY_0: safe.directory
             GIT_CONFIG_VALUE_0: /app-docker
         command: bash -c "
-            set -o pipefail
-            && rm -Rf vendor
+            rm -Rf vendor
             && rm -f composer.lock
-            && composer install --no-progress --no-interaction
-            && composer show | awk '/izt/'"
+            && composer install --no-progress
+            && composer show | grep izt"
         networks:
             - frontend
 

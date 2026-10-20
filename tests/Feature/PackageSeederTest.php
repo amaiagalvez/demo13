@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use entities13\Models\Entity;
+use Entities13\Models\Entity;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
