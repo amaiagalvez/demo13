@@ -79,7 +79,7 @@ services:
             rm -Rf vendor
             && rm -f composer.lock
             && composer install --no-progress
-            && composer show | grep izt"
+            && composer show | grep amaia"
         networks:
             - frontend
 

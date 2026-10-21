@@ -4,7 +4,6 @@ namespace Tests;
 
 use Illuminate\Support\Env;
 use Symfony\Component\Process\Process;
-use Facebook\WebDriver\Edge\EdgeOptions;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use PHPUnit\Framework\Attributes\BeforeClass;
@@ -58,6 +57,8 @@ abstract class DuskTestCase extends BaseTestCase
 
     /**
      * Get screen size configuration.
+     *
+     * @return array{width: int, height: int}
      */
     protected static function getScreenSize(): array
     {
@@ -174,6 +175,8 @@ abstract class DuskTestCase extends BaseTestCase
 
     /**
      * Start GeckoDriver for Firefox.
+     *
+     * @param  array<int, string>  $arguments
      */
     protected static function startGeckoDriver(array $arguments = []): void
     {
@@ -204,11 +207,11 @@ abstract class DuskTestCase extends BaseTestCase
      */
     protected function driver(): RemoteWebDriver
     {
-        if (! is_string(self::$browserBinary) || self::$browserBinary === '') {
+        if (self::$browserBinary === '') {
             static::fail('Browser binary path must be configured for '.self::$browser);
         }
 
-        if (! is_string(self::$driverUrl) || self::$driverUrl === '') {
+        if (self::$driverUrl === '') {
             static::fail('Driver URL must be configured for '.self::$browser);
         }
 
@@ -280,15 +283,7 @@ abstract class DuskTestCase extends BaseTestCase
         $options = new FirefoxOptions;
 
         // Set Firefox binary using the correct API
-        if (method_exists($options, 'setBinary')) {
-            $options->setBinary(self::$browserBinary);
-        } else {
-            // Fallback: set via capability
-            $options->setCapability('moz:firefoxOptions', [
-                'binary' => self::$browserBinary,
-                'args' => [],
-            ]);
-        }
+        $options->setOption('binary', self::$browserBinary);
 
         $args = [
             '--width='.self::$screenSize['width'],
@@ -309,10 +304,11 @@ abstract class DuskTestCase extends BaseTestCase
 
     /**
      * Create Edge capabilities with configured options.
+     * Edge uses Chrome DevTools protocol, so we use ChromeOptions.
      */
     protected function createEdgeCapabilities(): DesiredCapabilities
     {
-        $options = new EdgeOptions;
+        $options = new ChromeOptions;
         $options->setBinary(self::$browserBinary);
 
         $args = collect([
@@ -333,8 +329,8 @@ abstract class DuskTestCase extends BaseTestCase
 
         $options->addArguments($args->merge(self::$additionalArgs)->all());
 
-        return DesiredCapabilities::edge()->setCapability(
-            EdgeOptions::CAPABILITY,
+        return DesiredCapabilities::microsoftEdge()->setCapability(
+            ChromeOptions::CAPABILITY,
             $options
         );
     }
@@ -391,6 +387,8 @@ abstract class DuskTestCase extends BaseTestCase
 
     /**
      * Get current screen size (for test assertions/reporting).
+     *
+     * @return array{width: int, height: int}
      */
     public static function getCurrentScreenSize(): array
     {
