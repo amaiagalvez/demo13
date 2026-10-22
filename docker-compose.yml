@@ -1,6 +1,6 @@
 services:
     laravel13:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
         volumes:
             - ./:/app-docker
@@ -60,7 +60,7 @@ services:
             - frontend
 
     laravel13-composer:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         profiles: ["composer"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
@@ -84,7 +84,7 @@ services:
             - frontend
 
     laravel13-reformat:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         profiles: ["reformat"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
@@ -101,7 +101,7 @@ services:
             - frontend
 
     laravel13-review:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         profiles: ["review"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
@@ -166,7 +166,7 @@ services:
             - frontend
 
     laravel13-migrate-all:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         profiles: ["migrate-all"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
@@ -191,7 +191,7 @@ services:
             - frontend
 
     laravel13-migrate:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         profiles: ["migrate"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
@@ -216,7 +216,7 @@ services:
             - frontend
 
     laravel13-phpunit:
-        image: webdevops/php-apache-dev:${DC_PHP:-8.4}
+        image: webdevops/php-apache-dev:${DC_PHP:-8.5}
         profiles: ["phpunit"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"

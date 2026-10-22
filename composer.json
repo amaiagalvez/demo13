@@ -9,7 +9,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "amaia/basics13": "*",
         "amaia/entities13": "*",
         "amaia/projects13": "*",
@@ -22,6 +22,7 @@
         "fakerphp/faker": "^1.24",
         "fruitcake/laravel-debugbar": "^4.4",
         "larastan/larastan": "^3.9",
+        "laravel/boost": "^2.10",
         "laravel/dusk": "^8.7",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
