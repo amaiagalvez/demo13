@@ -9,5 +9,8 @@ import {
 window.$ = window.jQuery = $;
 select2(window, $);
 
+// Charts load ApexCharts on first use, in their own chunk, so pages without one never fetch it.
+window.loadApexCharts = () => import('apexcharts').then((module) => module.default);
+
 initializeEntitySelects();
 observeEntitySelects();
