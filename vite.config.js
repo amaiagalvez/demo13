@@ -20,6 +20,10 @@ export default defineConfig({
                     weights: [400, 500, 600],
                     preload: false,
                 }),
+                bunny('Space Grotesk', {
+                    weights: [500, 600, 700],
+                    preload: false,
+                }),
             ],
         }),
         tailwindcss(),

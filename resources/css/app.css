@@ -18,6 +18,8 @@
     --font-sans:
         "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    /* Page titles, card titles and large figures. */
+    --font-display: "Space Grotesk", var(--font-sans);
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -50,6 +52,36 @@
     --color-accent: var(--color-brand-700);
     --color-accent-content: var(--color-brand-700);
     --color-accent-foreground: var(--color-white);
+}
+
+/*
+ * Elevation shadows. Kept out of @theme because Tailwind inlines theme shadows into each utility,
+ * so a dark override would never reach them; the utilities read these variables instead.
+ */
+@layer theme {
+    :root {
+        --elevation-card: 0 18px 44px -22px rgb(16 22 40 / 0.2), 0 2px 10px rgb(16 22 40 / 0.06);
+        --elevation-raised: 0 14px 36px -14px rgb(16 22 40 / 0.22), 0 4px 12px -6px rgb(16 22 40 / 0.12);
+        --elevation-overlay: 0 28px 64px -20px rgb(16 22 40 / 0.28), 0 8px 20px -8px rgb(16 22 40 / 0.16);
+    }
+
+    .dark {
+        --elevation-card: 0 16px 44px -18px rgb(0 0 0 / 0.65), 0 2px 10px rgb(0 0 0 / 0.35);
+        --elevation-raised: 0 14px 36px -14px rgb(0 0 0 / 0.7), 0 4px 12px -6px rgb(0 0 0 / 0.45);
+        --elevation-overlay: 0 18px 48px -10px rgb(0 0 0 / 0.65);
+    }
+}
+
+@utility shadow-card {
+    box-shadow: var(--elevation-card);
+}
+
+@utility shadow-raised {
+    box-shadow: var(--elevation-raised);
+}
+
+@utility shadow-overlay {
+    box-shadow: var(--elevation-overlay);
 }
 
 @layer theme {
