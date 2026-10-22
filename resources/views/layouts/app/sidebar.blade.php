@@ -14,20 +14,14 @@
             <flux:sidebar.collapse class="lg:hidden" />
         </flux:sidebar.header>
 
+        {{-- Grouped by task: day-to-day work first, reference data next, administration last. --}}
         <flux:sidebar.nav>
-            <flux:sidebar.group :heading="__('Platform')" class="grid">
-                <flux:sidebar.item icon="home" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
-                </flux:sidebar.item>
-                <flux:sidebar.item icon="users" :href="route('entities.index')"
-                    :current="request()->routeIs('entities.*')" wire:navigate>
-                    {{ __('Entities') }}
-                </flux:sidebar.item>
-                <flux:sidebar.item icon="tag" :href="route('entity-types.index')"
-                    :current="request()->routeIs('entity-types.*')" wire:navigate>
-                    {{ __('Entity types') }}
-                </flux:sidebar.item>
+            <flux:sidebar.item icon="home" :href="route('dashboard')"
+                :current="request()->routeIs('dashboard')" wire:navigate>
+                {{ __('Dashboard') }}
+            </flux:sidebar.item>
+
+            <flux:sidebar.group :heading="__('Work')" class="grid">
                 <flux:sidebar.item icon="briefcase" :href="route('projects.index')"
                     :current="request()->routeIs('projects.*')" wire:navigate>
                     {{ __('Projects') }}
@@ -40,10 +34,24 @@
                     :current="request()->routeIs('planning')" wire:navigate>
                     {{ __('Planning') }}
                 </flux:sidebar.item>
-                <flux:sidebar.item icon="calendar-date-range" :href="route('timeline')"
+                <flux:sidebar.item icon="bars-3-bottom-left" :href="route('timeline')"
                     :current="request()->routeIs('timeline')" wire:navigate>
                     {{ __('Timeline') }}
                 </flux:sidebar.item>
+            </flux:sidebar.group>
+
+            <flux:sidebar.group :heading="__('Data')" class="grid">
+                <flux:sidebar.item icon="users" :href="route('entities.index')"
+                    :current="request()->routeIs('entities.*')" wire:navigate>
+                    {{ __('Entities') }}
+                </flux:sidebar.item>
+                <flux:sidebar.item icon="tag" :href="route('entity-types.index')"
+                    :current="request()->routeIs('entity-types.*')" wire:navigate>
+                    {{ __('Entity types') }}
+                </flux:sidebar.item>
+            </flux:sidebar.group>
+
+            <flux:sidebar.group :heading="__('Administration')" class="grid">
                 <flux:sidebar.item icon="user-circle" :href="route('users.index')"
                     :current="request()->routeIs('users.*')" wire:navigate>
                     {{ __('Users') }}

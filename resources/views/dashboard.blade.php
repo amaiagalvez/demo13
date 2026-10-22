@@ -28,7 +28,7 @@
                 <div class="flex items-center gap-4">
                     <span
                         class="flex size-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 transition-colors group-hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:group-hover:bg-zinc-700">
-                        <flux:icon.rectangle-stack class="size-6" aria-hidden="true" />
+                        <flux:icon.flag class="size-6" aria-hidden="true" />
                     </span>
                     <flux:heading size="lg">{{ __('Epics') }}</flux:heading>
                 </div>

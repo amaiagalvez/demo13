@@ -94,6 +94,11 @@
     }
 }
 
+/* Current sidebar item: a soft accent wash instead of Flux's white card. */
+[data-flux-sidebar-item][data-current] {
+    @apply border-transparent bg-brand-50 text-brand-700 shadow-none dark:bg-brand-400/10 dark:text-brand-300;
+}
+
 @layer base {
     *,
     ::after,
