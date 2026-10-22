@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
+use Basics13\Http\Middleware\SetUserLocale;
 use Basics13\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             },
             subdomains: false,
         );
-        $middleware->web(append: [EnsureUserIsActive::class]);
+        $middleware->web(append: [EnsureUserIsActive::class, SetUserLocale::class]);
         $middleware->prependToPriorityList(
             before: AuthenticatesRequests::class,
             prepend: EnsureUserIsActive::class,

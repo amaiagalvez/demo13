@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Basics13\Models\User;
+use Basics13\Enums\Language;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 class DashboardTest extends TestCase
@@ -23,6 +24,15 @@ class DashboardTest extends TestCase
 
         $response = $this->get(route('dashboard'));
         $response->assertOk();
+    }
+
+    public function test_the_dashboard_is_shown_in_the_user_language(): void
+    {
+        $this->actingAs(User::factory()->language(Language::FR)->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('lang="fr"', false);
     }
 
     public function test_the_dashboard_shows_the_projects_summary(): void
