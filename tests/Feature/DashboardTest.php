@@ -25,6 +25,19 @@ class DashboardTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_the_dashboard_shows_the_projects_summary(): void
+    {
+        $this->actingAs(User::factory()->create(['name' => 'Ane Etxeberria']));
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-test="dashboard-welcome"', false)
+            ->assertSee(__('Hello, :name', ['name' => 'Ane Etxeberria']))
+            ->assertSee('data-test="dashboard-due-this-month"', false)
+            ->assertSee('data-test="dashboard-deadlines"', false)
+            ->assertSee('data-test="dashboard-latest-comments"', false);
+    }
+
     public function test_the_menu_links_to_the_account_resource(): void
     {
         $this->actingAs(User::factory()->create());
