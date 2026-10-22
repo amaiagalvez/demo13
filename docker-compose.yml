@@ -118,7 +118,7 @@ services:
             - frontend
 
     laravel13-npm-all:
-        image: node:${DC_NODE:-24-bullseye}
+        image: node:${DC_NODE:-26-trixie}
         profiles: ["npm-all"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
@@ -143,7 +143,7 @@ services:
             - frontend
 
     laravel13-npm:
-        image: node:${DC_NODE:-24-bullseye}
+        image: node:${DC_NODE:-26-trixie}
         profiles: ["npm"]
         entrypoint: [""]
         user: "${DC_UID:-1000}:${DC_GID:-1000}"
