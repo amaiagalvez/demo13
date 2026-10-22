@@ -51,12 +51,37 @@
                 </flux:sidebar.item>
             </flux:sidebar.group>
 
-            <flux:sidebar.group :heading="__('Administration')" class="grid">
-                <flux:sidebar.item icon="user-circle" :href="route('users.index')"
-                    :current="request()->routeIs('users.*')" wire:navigate>
-                    {{ __('Users') }}
-                </flux:sidebar.item>
-            </flux:sidebar.group>
+            {{-- Each entry shows only to whoever holds the permission its page asks for. --}}
+            @php
+                $seesUsers = auth()->user()->can('viewAny', config('auth.providers.users.model'));
+                $seesRoles = auth()->user()->can('viewAny', \Basics13\Models\Role::class);
+            @endphp
+            @if ($seesUsers || $seesRoles)
+                <flux:sidebar.group :heading="__('Administration')" class="grid">
+                    @if ($seesUsers)
+                        <flux:sidebar.item icon="user-circle" :href="route('users.index')"
+                            :current="request()->routeIs('users.*') && ! request()->routeIs('users.permissions-summary.*')"
+                            wire:navigate data-test="nav-users">
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if ($seesRoles)
+                        <flux:sidebar.item icon="shield-check" :href="route('roles.index')"
+                            :current="request()->routeIs('roles.*')" wire:navigate data-test="nav-roles">
+                            {{ __('Roles') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="key" :href="route('permissions.index')"
+                            :current="request()->routeIs('permissions.*')" wire:navigate data-test="nav-permissions">
+                            {{ __('Permissions') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="table-cells" :href="route('users.permissions-summary.index')"
+                            :current="request()->routeIs('users.permissions-summary.*')" wire:navigate
+                            data-test="nav-permissions-summary">
+                            {{ __('Permissions summary') }}
+                        </flux:sidebar.item>
+                    @endif
+                </flux:sidebar.group>
+            @endif
         </flux:sidebar.nav>
 
         <flux:spacer />

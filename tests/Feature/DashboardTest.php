@@ -48,13 +48,35 @@ class DashboardTest extends TestCase
             ->assertSee('data-test="dashboard-latest-comments"', false);
     }
 
-    public function test_the_menu_links_to_the_account_resource(): void
+    public function test_the_menu_links_to_the_administration_pages_the_user_may_open(): void
     {
+        $this->actingAs(User::factory()->admin()->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-test="nav-users"', false)
+            ->assertSee(route('users.index'), false)
+            ->assertSee(route('roles.index'), false)
+            ->assertSee(route('permissions.index'), false)
+            ->assertSee(route('users.permissions-summary.index'), false);
+    }
+
+    public function test_the_menu_hides_what_the_user_has_no_permission_for(): void
+    {
+        $this->actingAs(User::factory()->withPermissions(['users.view'])->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-test="nav-users"', false)
+            ->assertDontSee('data-test="nav-roles"', false)
+            ->assertDontSee('data-test="nav-permissions"', false)
+            ->assertDontSee('data-test="nav-permissions-summary"', false);
+
         $this->actingAs(User::factory()->create());
 
-        $response = $this->get(route('dashboard'));
-
-        $response->assertOk();
-        $response->assertSee(route('users.index'), false);
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('data-test="nav-users"', false)
+            ->assertDontSee(__('Administration'));
     }
 }

@@ -156,6 +156,8 @@ class InstalledCatalogTest extends TestCase
             'resources',
             'vendor/amaia/basics13/src',
             'vendor/amaia/basics13/resources',
+            // Permission labels are translated by slug, and the slugs are seeded by migrations.
+            'vendor/amaia/basics13/database/migrations',
             'vendor/amaia/entities13/src',
             'vendor/amaia/entities13/resources',
             'vendor/amaia/projects13/src',
