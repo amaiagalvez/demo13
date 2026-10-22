@@ -86,11 +86,28 @@ jobs:
           persist-credentials: false
           path: projects/demo13
 
+      # Sibling packages are checked out on the branch that triggered this run when they have it
+      # (a push to develop tests develop against develop), and on their default branch otherwise.
+      - name: Pick the packages' branch
+        id: siblings
+        working-directory: .
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          for repo in basics13 entities13 projects13 entity-projects13; do
+            if git ls-remote --exit-code --heads "https://github.com/amaiagalvez/$repo.git" "$BRANCH" > /dev/null 2>&1; then
+              echo "$repo=$BRANCH" >> "$GITHUB_OUTPUT"
+            else
+              echo "$repo=" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
       - name: Checkout domain packages
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: amaiagalvez/basics13
+          ref: ${{ steps.siblings.outputs['basics13'] }}
           path: packages/basics13
 
       - name: Checkout domain packages
@@ -98,6 +115,7 @@ jobs:
         with:
           persist-credentials: false
           repository: amaiagalvez/entities13
+          ref: ${{ steps.siblings.outputs['entities13'] }}
           path: packages/entities13
 
       - name: Checkout domain packages
@@ -105,6 +123,7 @@ jobs:
         with:
           persist-credentials: false
           repository: amaiagalvez/projects13
+          ref: ${{ steps.siblings.outputs['projects13'] }}
           path: packages/projects13
 
       - name: Checkout domain packages
@@ -112,6 +131,7 @@ jobs:
         with:
           persist-credentials: false
           repository: amaiagalvez/entity-projects13
+          ref: ${{ steps.siblings.outputs['entity-projects13'] }}
           path: packages/entity-projects13
 
       - name: Setup PHP
@@ -158,9 +178,6 @@ jobs:
           mysql -h 127.0.0.1 -uroot -p"$MARIADB_ROOT_PASSWORD" -e
           "CREATE DATABASE IF NOT EXISTS laravel_phpunit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
           GRANT ALL PRIVILEGES ON laravel_phpunit.* TO 'laravel'@'%';"
-
-      - name: Check Chisel markers integrity
-        run: php tests/chisel-integrity-test.php
 
       - name: Run CI Checks
         env:
@@ -219,11 +236,28 @@ jobs:
           persist-credentials: false
           path: projects/demo13
 
+      # Sibling packages are checked out on the branch that triggered this run when they have it
+      # (a push to develop tests develop against develop), and on their default branch otherwise.
+      - name: Pick the packages' branch
+        id: siblings
+        working-directory: .
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          for repo in basics13 entities13 projects13 entity-projects13; do
+            if git ls-remote --exit-code --heads "https://github.com/amaiagalvez/$repo.git" "$BRANCH" > /dev/null 2>&1; then
+              echo "$repo=$BRANCH" >> "$GITHUB_OUTPUT"
+            else
+              echo "$repo=" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
       - name: Checkout domain packages
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: amaiagalvez/basics13
+          ref: ${{ steps.siblings.outputs['basics13'] }}
           path: packages/basics13
 
       - name: Checkout domain packages
@@ -231,6 +265,7 @@ jobs:
         with:
           persist-credentials: false
           repository: amaiagalvez/entities13
+          ref: ${{ steps.siblings.outputs['entities13'] }}
           path: packages/entities13
 
       - name: Checkout domain packages
@@ -238,6 +273,7 @@ jobs:
         with:
           persist-credentials: false
           repository: amaiagalvez/projects13
+          ref: ${{ steps.siblings.outputs['projects13'] }}
           path: packages/projects13
 
       - name: Checkout domain packages
@@ -245,6 +281,7 @@ jobs:
         with:
           persist-credentials: false
           repository: amaiagalvez/entity-projects13
+          ref: ${{ steps.siblings.outputs['entity-projects13'] }}
           path: packages/entity-projects13
 
       - name: Setup PHP

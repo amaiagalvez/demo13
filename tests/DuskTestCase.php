@@ -255,13 +255,13 @@ abstract class DuskTestCase extends BaseTestCase
                 'userAgent' => $this->getMobileUserAgent(),
             ]);
         } else {
-            $args->merge([
+            $args = $args->merge([
                 $this->shouldStartMaximized() ? '--start-maximized' : '',
             ])->filter();
         }
 
         if (self::$headless) {
-            $args->merge([
+            $args = $args->merge([
                 '--headless=new',
                 '--disable-gpu',
             ]);
@@ -321,7 +321,7 @@ abstract class DuskTestCase extends BaseTestCase
         ]);
 
         if (self::$headless) {
-            $args->merge([
+            $args = $args->merge([
                 '--headless=new',
                 '--disable-gpu',
             ]);
