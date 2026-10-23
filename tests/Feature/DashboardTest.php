@@ -58,7 +58,32 @@ class DashboardTest extends TestCase
             ->assertSee(route('users.index'), false)
             ->assertSee(route('roles.index'), false)
             ->assertSee(route('permissions.index'), false)
-            ->assertSee(route('users.permissions-summary.index'), false);
+            ->assertSee(route('users.permissions-summary.index'), false)
+            ->assertSee(route('sessions.index'), false)
+            ->assertSee(route('configuration.index'), false);
+    }
+
+    public function test_the_session_list_alone_shows_the_administration_group(): void
+    {
+        $this->actingAs(User::factory()->withPermissions(['sessions.view'])->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(__('Administration'))
+            ->assertSee('data-test="nav-sessions"', false)
+            ->assertDontSee('data-test="nav-configuration"', false)
+            ->assertDontSee('data-test="nav-users"', false);
+    }
+
+    public function test_the_configuration_alone_shows_the_administration_group(): void
+    {
+        $this->actingAs(User::factory()->withPermissions(['settings.view'])->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(__('Administration'))
+            ->assertSee('data-test="nav-configuration"', false)
+            ->assertDontSee('data-test="nav-sessions"', false);
     }
 
     public function test_the_menu_hides_what_the_user_has_no_permission_for(): void

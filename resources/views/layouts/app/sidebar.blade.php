@@ -55,8 +55,10 @@
             @php
                 $seesUsers = auth()->user()->can('viewAny', config('auth.providers.users.model'));
                 $seesRoles = auth()->user()->can('viewAny', \Basics13\Models\Role::class);
+                $seesSessions = auth()->user()->can('viewAny', \Basics13\Models\SessionLog::class);
+                $seesConfiguration = auth()->user()->can('viewAny', \Basics13\Models\Setting::class);
             @endphp
-            @if ($seesUsers || $seesRoles)
+            @if ($seesUsers || $seesRoles || $seesSessions || $seesConfiguration)
                 <flux:sidebar.group :heading="__('Administration')" class="grid">
                     @if ($seesUsers)
                         <flux:sidebar.item icon="user-circle" :href="route('users.index')"
@@ -78,6 +80,18 @@
                             :current="request()->routeIs('users.permissions-summary.*')" wire:navigate
                             data-test="nav-permissions-summary">
                             {{ __('Permissions summary') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if ($seesSessions)
+                        <flux:sidebar.item icon="finger-print" :href="route('sessions.index')"
+                            :current="request()->routeIs('sessions.*')" wire:navigate data-test="nav-sessions">
+                            {{ __('Sessions') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if ($seesConfiguration)
+                        <flux:sidebar.item icon="adjustments-horizontal" :href="route('configuration.index')"
+                            :current="request()->routeIs('configuration.*')" wire:navigate data-test="nav-configuration">
+                            {{ __('Application configuration') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
