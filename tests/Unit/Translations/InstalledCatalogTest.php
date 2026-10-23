@@ -22,6 +22,7 @@ class InstalledCatalogTest extends TestCase
         'validation.attributes',
         'Delete record?',
         'Everything',
+        'Export to Excel',
         'List views',
         'Must be later than :field.',
         'Must be on or after :field.',
