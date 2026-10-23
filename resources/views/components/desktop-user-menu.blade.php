@@ -1,14 +1,20 @@
-<flux:dropdown position="bottom" align="start">
-    <flux:sidebar.profile
+{{-- Top bar user menu; without an avatar image Flux shows the initials in a circle. --}}
+<flux:dropdown position="bottom" align="end">
+    <flux:profile
+        circle
+        :avatar="auth()->user()->avatar ?? null"
         :name="auth()->user()->name"
         :initials="auth()->user()->initials()"
-        icon:trailing="chevrons-up-down"
+        :chevron="false"
         data-test="sidebar-menu-button"
     />
 
-    <flux:menu>
-        <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+    <flux:menu class="min-w-64">
+        <div class="flex items-center gap-3 px-2 py-2 text-start text-sm">
             <flux:avatar
+                circle
+                size="lg"
+                :src="auth()->user()->avatar ?? null"
                 :name="auth()->user()->name"
                 :initials="auth()->user()->initials()"
             />
@@ -40,22 +46,23 @@
         @endif
 
         <flux:menu.separator />
-        <flux:menu.radio.group>
-            <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                {{ __('Settings') }}
+        <flux:menu.item :href="route('profile.edit')" icon="cog-6-tooth" wire:navigate>
+            {{ __('Settings') }}
+        </flux:menu.item>
+
+        <flux:menu.separator />
+        <form method="POST" action="{{ route('logout') }}" class="w-full">
+            @csrf
+            <flux:menu.item
+                as="button"
+                type="submit"
+                variant="danger"
+                icon="arrow-right-start-on-rectangle"
+                class="w-full cursor-pointer"
+                data-test="desktop-logout-button"
+            >
+                {{ __('Log out') }}
             </flux:menu.item>
-            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                @csrf
-                <flux:menu.item
-                    as="button"
-                    type="submit"
-                    icon="arrow-right-start-on-rectangle"
-                    class="w-full cursor-pointer"
-                    data-test="desktop-logout-button"
-                >
-                    {{ __('Log out') }}
-                </flux:menu.item>
-            </form>
-        </flux:menu.radio.group>
+        </form>
     </flux:menu>
 </flux:dropdown>

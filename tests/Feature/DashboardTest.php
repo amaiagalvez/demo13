@@ -35,14 +35,25 @@ class DashboardTest extends TestCase
             ->assertSee('lang="fr"', false);
     }
 
-    public function test_the_dashboard_shows_the_projects_summary(): void
+    public function test_the_dashboard_only_greets_the_user(): void
     {
         $this->actingAs(User::factory()->create(['name' => 'Ane Etxeberria']));
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('data-test="dashboard-welcome"', false)
             ->assertSee(__('Hello, :name', ['name' => 'Ane Etxeberria']))
+            ->assertSee(route('work.dashboard'), false)
+            ->assertDontSee('data-test="dashboard-welcome"', false);
+    }
+
+    public function test_the_work_dashboard_shows_the_projects_summary(): void
+    {
+        $this->actingAs(User::factory()->create(['name' => 'Ane Etxeberria']));
+
+        $this->get(route('work.dashboard'))
+            ->assertOk()
+            ->assertDontSee(__('Hello, :name', ['name' => 'Ane Etxeberria']))
+            ->assertSee('data-test="dashboard-welcome"', false)
             ->assertSee('data-test="dashboard-due-this-month"', false)
             ->assertSee('data-test="dashboard-deadlines"', false)
             ->assertSee('data-test="dashboard-latest-comments"', false);
@@ -70,6 +81,7 @@ class DashboardTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertSee(__('Administration'))
+            ->assertSee('data-test="nav-admin-dashboard"', false)
             ->assertSee('data-test="nav-sessions"', false)
             ->assertDontSee('data-test="nav-configuration"', false)
             ->assertDontSee('data-test="nav-users"', false);
@@ -83,7 +95,18 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee(__('Administration'))
             ->assertSee('data-test="nav-configuration"', false)
-            ->assertDontSee('data-test="nav-sessions"', false);
+            ->assertDontSee('data-test="nav-sessions"', false)
+            ->assertDontSee('data-test="nav-admin-dashboard"', false);
+    }
+
+    public function test_the_administration_dashboard_marks_only_its_own_entry(): void
+    {
+        $this->actingAs(User::factory()->withPermissions(['sessions.view'])->create());
+
+        $html = $this->get(route('sessions.dashboard'))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<a [^>]*data-current="data-current"[^>]*data-test="nav-admin-dashboard"/', (string) $html);
+        $this->assertDoesNotMatchRegularExpression('/<a [^>]*data-current="data-current"[^>]*data-test="nav-sessions"/', (string) $html);
     }
 
     public function test_the_menu_hides_what_the_user_has_no_permission_for(): void

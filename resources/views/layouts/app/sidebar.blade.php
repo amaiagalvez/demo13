@@ -22,6 +22,10 @@
             </flux:sidebar.item>
 
             <flux:sidebar.group :heading="__('Work')" class="grid">
+                <flux:sidebar.item icon="squares-2x2" :href="route('work.dashboard')"
+                    :current="request()->routeIs('work.dashboard')" wire:navigate data-test="nav-work-dashboard">
+                    {{ __('Work dashboard') }}
+                </flux:sidebar.item>
                 <flux:sidebar.item icon="briefcase" :href="route('projects.index')"
                     :current="request()->routeIs('projects.*')" wire:navigate>
                     {{ __('Projects') }}
@@ -55,16 +59,29 @@
             @php
                 $seesUsers = auth()->user()->can('viewAny', config('auth.providers.users.model'));
                 $seesRoles = auth()->user()->can('viewAny', \Basics13\Models\Role::class);
+                $seesUserTypes = auth()->user()->can('viewAny', \Basics13\Models\UserType::class);
                 $seesSessions = auth()->user()->can('viewAny', \Basics13\Models\SessionLog::class);
                 $seesConfiguration = auth()->user()->can('viewAny', \Basics13\Models\Setting::class);
             @endphp
-            @if ($seesUsers || $seesRoles || $seesSessions || $seesConfiguration)
+            @if ($seesUsers || $seesUserTypes || $seesRoles || $seesSessions || $seesConfiguration)
                 <flux:sidebar.group :heading="__('Administration')" class="grid">
+                    @if ($seesSessions)
+                        <flux:sidebar.item icon="chart-bar" :href="route('sessions.dashboard')"
+                            :current="request()->routeIs('sessions.dashboard')" wire:navigate data-test="nav-admin-dashboard">
+                            {{ __('Administration dashboard') }}
+                        </flux:sidebar.item>
+                    @endif
                     @if ($seesUsers)
                         <flux:sidebar.item icon="user-circle" :href="route('users.index')"
                             :current="request()->routeIs('users.*') && ! request()->routeIs('users.permissions-summary.*')"
                             wire:navigate data-test="nav-users">
                             {{ __('Users') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if ($seesUserTypes)
+                        <flux:sidebar.item icon="tag" :href="route('user-types.index')"
+                            :current="request()->routeIs('user-types.*')" wire:navigate data-test="nav-user-types">
+                            {{ __('User types') }}
                         </flux:sidebar.item>
                     @endif
                     @if ($seesRoles)
@@ -84,7 +101,8 @@
                     @endif
                     @if ($seesSessions)
                         <flux:sidebar.item icon="finger-print" :href="route('sessions.index')"
-                            :current="request()->routeIs('sessions.*')" wire:navigate data-test="nav-sessions">
+                            :current="request()->routeIs('sessions.*') && ! request()->routeIs('sessions.dashboard')" wire:navigate
+                            data-test="nav-sessions">
                             {{ __('Sessions') }}
                         </flux:sidebar.item>
                     @endif
@@ -98,77 +116,16 @@
             @endif
         </flux:sidebar.nav>
 
-        <flux:spacer />
-
-        <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
     </flux:sidebar>
 
-    <!-- Mobile User Menu -->
+    {{-- Top bar: sidebar toggle on mobile, user menu on every size. --}}
     <flux:header
-        class="border-b border-zinc-200 bg-zinc-50/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 lg:hidden">
+        sticky class="border-b border-zinc-200 bg-zinc-50/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
         <flux:spacer />
 
-        <flux:dropdown position="top" align="end">
-            <flux:profile :initials="auth()->user()->initials()" icon-trailing="chevron-down" />
-
-            <flux:menu>
-                <flux:menu.radio.group>
-                    <div class="p-0 text-sm font-normal">
-                        <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                            <flux:avatar :name="auth()->user()->name"
-                                :initials="auth()->user()->initials()" />
-
-                            <div class="grid flex-1 text-start text-sm leading-tight">
-                                <flux:heading class="truncate {{ session()->has('impersonator_id') ? 'text-red-600 dark:text-red-400 font-semibold' : '' }}">
-                                    {{ auth()->user()->name }}
-                                    @if (session()->has('impersonator_id'))
-                                        <span class="ml-2 text-xs text-red-500 dark:text-red-300">({{ __('basics13::messages.impersonating_as') }})</span>
-                                    @endif
-                                </flux:heading>
-                                <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
-                            </div>
-                        </div>
-                    </div>
-                </flux:menu.radio.group>
-
-                @if (session()->has('impersonator_id'))
-                    <flux:menu.separator />
-                    <form method="POST" action="{{ route('impersonation.leave') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item
-                            as="button"
-                            type="submit"
-                            icon="arrow-left"
-                            class="w-full cursor-pointer bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30"
-                            data-test="leave-impersonation-button"
-                        >
-                            {{ __('basics13::messages.leave_impersonation') }}
-                        </flux:menu.item>
-                    </form>
-                @endif
-
-                <flux:menu.separator />
-
-                <flux:menu.radio.group>
-                    <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                        {{ __('Settings') }}
-                    </flux:menu.item>
-                </flux:menu.radio.group>
-
-                <flux:menu.separator />
-
-                <form method="POST" action="{{ route('logout') }}" class="w-full">
-                    @csrf
-                    <flux:menu.item as="button" type="submit"
-                        icon="arrow-right-start-on-rectangle" class="w-full cursor-pointer"
-                        data-test="mobile-logout-button">
-                        {{ __('Log out') }}
-                    </flux:menu.item>
-                </form>
-            </flux:menu>
-        </flux:dropdown>
+        <x-desktop-user-menu />
     </flux:header>
 
     {{ $slot }}
