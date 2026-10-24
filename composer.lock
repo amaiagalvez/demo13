@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "371fc3ca42c0cbada251522f033a51f9",
+    "content-hash": "444042c630d96446a9b3a199fcb23756",
     "packages": [
         {
             "name": "amaia/basics13",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/basics13",
-                "reference": "1006ce0f6dde181a5ba9e8b5eb80251f8cddf980"
+                "reference": "65ed10b66b3aff811e8638fc69f0498304078f01"
             },
             "require": {
                 "laravel/fortify": "^1.37.2",
@@ -70,7 +70,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/entities13",
-                "reference": "d2568aaf4e42d6a7d7e21ce2bd800653929b9c19"
+                "reference": "84ad4f9d877a07d2ddac2df3305d88d00e3932aa"
             },
             "require": {
                 "php": "^8.5"
@@ -120,7 +120,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/entity-projects13",
-                "reference": "6a4ad63bd6c54b9285f30c5c9367997e7eab9a9e"
+                "reference": "0e2857bc05cbecc2b28160634544e5ca25f818f0"
             },
             "require": {
                 "php": "^8.5"
@@ -170,7 +170,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/projects13",
-                "reference": "3d8e8835d7bcb84b1351940db3d9d76bc2032e17"
+                "reference": "57889255fd5b72de6e39d607e635a81d9f9b054a"
             },
             "require": {
                 "php": "^8.5"

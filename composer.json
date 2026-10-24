@@ -10,10 +10,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
-        "amaia/basics13": "*",
-        "amaia/entities13": "*",
-        "amaia/projects13": "*",
-        "amaia/entity-projects13": "*",
+        "amaia/basics13": "^1.0",
+        "amaia/entities13": "^1.0",
+        "amaia/projects13": "^1.0",
+        "amaia/entity-projects13": "^1.0",
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.1"
     },
