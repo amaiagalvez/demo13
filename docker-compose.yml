@@ -239,7 +239,7 @@ services:
 
     db:
         image: mariadb:11.7
-        command: --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --sql-mode=""
+        command: --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
         environment:
             MYSQL_ROOT_PASSWORD: tormenta
             MYSQL_DATABASE: laravel
@@ -270,10 +270,10 @@ services:
         networks:
             - frontend
 
-    mailhog:
-        image: mailhog/mailhog:v1.0.1
+    mailpit:
+        image: axllent/mailpit:v1.27
         ports:
-            - "127.0.0.1:${MAILHOG_PORT:-8025}:8025"
+            - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
         networks:
             - frontend
 

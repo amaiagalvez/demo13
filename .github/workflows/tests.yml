@@ -166,6 +166,9 @@ jobs:
           DB_DATABASE: laravel
         run: composer setup
 
+      - name: Audit dependencies
+        run: composer audit --no-interaction --abort-on-unfixable
+
       # @vite renders on every page, so the manifest has to exist before the PHP suite runs.
       - name: Install node dependencies
         run: npm ci
