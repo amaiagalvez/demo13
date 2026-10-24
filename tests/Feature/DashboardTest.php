@@ -127,4 +127,27 @@ class DashboardTest extends TestCase
             ->assertDontSee('data-test="nav-users"', false)
             ->assertDontSee(__('Administration'));
     }
+
+    public function test_the_super_admin_menu_keeps_every_entry_the_browser_tests_use(): void
+    {
+        $this->actingAs(User::factory()->superAdmin()->create());
+
+        $response = $this->get(route('dashboard'))->assertOk();
+
+        foreach (['work-dashboard', 'admin-dashboard', 'users', 'user-types', 'roles', 'permissions', 'permissions-summary', 'sessions', 'configuration'] as $key) {
+            $response->assertSee('data-test="nav-'.$key.'"', false);
+        }
+    }
+
+    public function test_a_delegated_manager_sees_only_the_pages_they_may_open(): void
+    {
+        $this->actingAs(User::factory()->withPermissions(['users.view_own'])->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-test="nav-work-dashboard"', false)
+            ->assertSee('data-test="nav-users"', false)
+            ->assertDontSee('data-test="nav-projects"', false)
+            ->assertDontSee('data-test="nav-roles"', false);
+    }
 }
