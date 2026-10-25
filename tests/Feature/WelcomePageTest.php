@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Http;
+namespace Tests\Feature;
 
 use Tests\TestCase;
 
