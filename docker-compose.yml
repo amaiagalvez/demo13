@@ -22,7 +22,7 @@ services:
             XDEBUG_START_WITH_REQUEST: "trigger"
             XDEBUG_SESSION: VSCODE
             XDEBUG_MODE: "${XDEBUG_MODE:-off}"
-            PHP_MEMORY_LIMIT: 9064M
+            PHP_MEMORY_LIMIT: 512M
         depends_on:
             db:
                 condition: service_healthy
