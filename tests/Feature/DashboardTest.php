@@ -42,7 +42,7 @@ class DashboardTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertSee(__('Hello, :name', ['name' => 'Ane Etxeberria']))
-            ->assertSee(route('work.dashboard'), false)
+            ->assertDontSee(route('work.dashboard'), false)
             ->assertDontSee('data-test="dashboard-welcome"', false);
     }
 
@@ -80,7 +80,7 @@ class DashboardTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee(__('Administration'))
+            ->assertSee(__('Management'))
             ->assertSee('data-test="nav-admin-dashboard"', false)
             ->assertSee('data-test="nav-sessions"', false)
             ->assertDontSee('data-test="nav-configuration"', false)
@@ -93,7 +93,7 @@ class DashboardTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee(__('Administration'))
+            ->assertSee(__('Management'))
             ->assertSee('data-test="nav-configuration"', false)
             ->assertDontSee('data-test="nav-sessions"', false)
             ->assertDontSee('data-test="nav-admin-dashboard"', false);
@@ -125,7 +125,7 @@ class DashboardTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertDontSee('data-test="nav-users"', false)
-            ->assertDontSee(__('Administration'));
+            ->assertDontSee(__('Management'));
     }
 
     public function test_the_super_admin_menu_keeps_every_entry_the_browser_tests_use(): void
@@ -145,9 +145,18 @@ class DashboardTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('data-test="nav-work-dashboard"', false)
+            ->assertDontSee('data-test="nav-work-dashboard"', false)
             ->assertSee('data-test="nav-users"', false)
             ->assertDontSee('data-test="nav-projects"', false)
             ->assertDontSee('data-test="nav-roles"', false);
+    }
+
+    public function test_the_work_dashboard_link_needs_projects_view(): void
+    {
+        $this->actingAs(User::factory()->withPermissions(['projects.view'])->create());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-test="nav-work-dashboard"', false);
     }
 }

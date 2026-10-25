@@ -46,7 +46,7 @@ class PackageSeederTest extends TestCase
 
         $this->assertSame($counts, $this->accessRowCounts());
         $this->assertEqualsCanonicalizing(
-            ['administration', 'data', 'work', 'locations', 'files13'],
+            ['basics13', 'entities13', 'files13', 'locations13', 'projects13'],
             DB::table('BAS_menus')->whereNull('parent_key')->pluck('key')->all(),
         );
         $this->assertTrue(Role::query()->where('slug', 'admin')->firstOrFail()->permissions()
