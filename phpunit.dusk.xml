@@ -13,6 +13,7 @@
             <directory suffix="Test.php">./tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/basics13/tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/locations13/tests/Browser</directory>
+            <directory suffix="Test.php">./vendor/amaia/files13/tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/entity-projects13/tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/entities13/tests/Browser</directory>
             <directory suffix="Test.php">./vendor/amaia/projects13/tests/Browser</directory>

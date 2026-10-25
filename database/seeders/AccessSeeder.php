@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Basics13\Database\Seeders\BasicsAccessSeeder;
 use Entities13\Database\Seeders\EntitiesAccessSeeder;
 use Projects13\Database\Seeders\ProjectsAccessSeeder;
+use Files13\Database\Seeders\FilesAccessSeeder;
 use Locations13\Database\Seeders\LocationsAccessSeeder;
 
 /**
@@ -21,6 +22,7 @@ class AccessSeeder extends Seeder
             EntitiesAccessSeeder::class,
             ProjectsAccessSeeder::class,
             LocationsAccessSeeder::class,
+            FilesAccessSeeder::class,
         ]);
     }
 }

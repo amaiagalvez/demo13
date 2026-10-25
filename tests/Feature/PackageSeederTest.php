@@ -46,11 +46,11 @@ class PackageSeederTest extends TestCase
 
         $this->assertSame($counts, $this->accessRowCounts());
         $this->assertEqualsCanonicalizing(
-            ['administration', 'data', 'work', 'locations'],
+            ['administration', 'data', 'work', 'locations', 'files13'],
             DB::table('BAS_menus')->whereNull('parent_key')->pluck('key')->all(),
         );
         $this->assertTrue(Role::query()->where('slug', 'admin')->firstOrFail()->permissions()
-            ->whereIn('slug', ['users.manage', 'entities.manage', 'projects.manage', 'towns.manage'])->count() === 4);
+            ->whereIn('slug', ['users.manage', 'entities.manage', 'projects.manage', 'towns.manage', 'files.manage'])->count() === 5);
     }
 
     /**

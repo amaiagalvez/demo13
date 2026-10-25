@@ -12,6 +12,7 @@
         "php": "^8.5",
         "amaia/basics13": "^1.0",
         "amaia/entities13": "^1.0",
+        "amaia/files13": "^1.0",
         "amaia/locations13": "^1.0",
         "amaia/projects13": "^1.0",
         "amaia/entity-projects13": "^1.0",
@@ -154,6 +155,13 @@
         {
             "type": "path",
             "url": "../../packages/locations13",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../../packages/files13",
             "options": {
                 "symlink": true
             }

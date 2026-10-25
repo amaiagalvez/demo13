@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e73970fa439d733b57d24409924c3c48",
+    "content-hash": "4f5229164b371ba2a361d41ee094fe19",
     "packages": [
         {
             "name": "amaia/basics13",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/basics13",
-                "reference": "28337a74253c4d7a536ada63abcf2f1a46fb8ab2"
+                "reference": "d6405767b28cd48982ff49929bab7d875ab501ff"
             },
             "require": {
                 "laravel/fortify": "^1.37.2",
@@ -70,7 +70,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/entities13",
-                "reference": "b968455d5e30546451a44f05c1425875185d70b0"
+                "reference": "cbdc02fe8ed3b2b553e4713f8fda171d03624852"
             },
             "require": {
                 "php": "^8.5"
@@ -120,7 +120,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/entity-projects13",
-                "reference": "93e55a31f641cc8e345fafb2e693ae408d19f2b4"
+                "reference": "f05b0ae72d04ca8f1e2188c38f2b062565f124d1"
             },
             "require": {
                 "php": "^8.5"
@@ -165,12 +165,63 @@
             }
         },
         {
+            "name": "amaia/files13",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/files13",
+                "reference": "6fbe7ae817819ad74eff3459cc15839bf641601c"
+            },
+            "require": {
+                "php": "^8.5"
+            },
+            "require-dev": {
+                "amaia/basics13": "^1.0",
+                "amaia/locations13": "^1.0",
+                "larastan/larastan": "^3.9",
+                "laravel/dusk": "^8.7",
+                "laravel/pint": "^1.27",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.3",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Files13\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Files13\\Database\\Factories\\": "database/factories/",
+                    "Files13\\Database\\Seeders\\": "database/seeders/",
+                    "Files13\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "App\\": "tests/Fixtures/App/",
+                    "Files13\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Case file management for Laravel 13: files, phases, documents, OnlyOffice editing and their catalogs.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "amaia/locations13",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "../../packages/locations13",
-                "reference": "99e1168d2a68a45519d87b0d0e29d5ec58b081cd"
+                "reference": "e0ee22060dd77bf041976dc4a172fb72b6290cc8"
             },
             "require": {
                 "php": "^8.5"
@@ -178,6 +229,7 @@
             "require-dev": {
                 "amaia/basics13": "^1.0",
                 "larastan/larastan": "^3.9",
+                "laravel/dusk": "^8.7",
                 "laravel/pint": "^1.27",
                 "mockery/mockery": "^1.6",
                 "orchestra/testbench": "^11.3",
@@ -219,7 +271,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/projects13",
-                "reference": "21755d4cc1c26db63b429d4d7bb5e115fff0c4e0"
+                "reference": "053b2edbdb79157645696ee5e1b8c9afbf72b50d"
             },
             "require": {
                 "php": "^8.5"
