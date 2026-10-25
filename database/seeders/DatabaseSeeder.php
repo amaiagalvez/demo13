@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Basics13\Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
@@ -12,7 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // To load in production
-        //
+        $this->call(EmailTemplateSeeder::class);
 
         // To load in local
         if (app()->environment() !== 'production') {
