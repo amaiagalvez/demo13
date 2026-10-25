@@ -48,7 +48,7 @@ class DashboardTest extends TestCase
 
     public function test_the_work_dashboard_shows_the_projects_summary(): void
     {
-        $this->actingAs(User::factory()->create(['name' => 'Ane Etxeberria']));
+        $this->actingAs(User::factory()->withPermissions(['projects.view'])->create(['name' => 'Ane Etxeberria']));
 
         $this->get(route('work.dashboard'))
             ->assertOk()
