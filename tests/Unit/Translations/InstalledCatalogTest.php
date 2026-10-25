@@ -83,12 +83,15 @@ class InstalledCatalogTest extends TestCase
      * @var list<string>
      */
     private const APP_SPECIFIC_KEYS = [
+        'A super-admin account already exists.',
         'Deactivate',
         'Deactivate record?',
+        'Only the super-admin edits a system role.',
         'Reactivate',
         'Reactivate record?',
         'Record deactivated successfully.',
         'Record reactivated successfully.',
+        'Super-admin account created.',
     ];
 
     /**
@@ -157,8 +160,8 @@ class InstalledCatalogTest extends TestCase
             'resources',
             'vendor/amaia/basics13/src',
             'vendor/amaia/basics13/resources',
-            // Permission labels are translated by slug, and the slugs are seeded by migrations.
-            'vendor/amaia/basics13/database/migrations',
+            // Permission labels are translated by slug, and the slugs are seeded by the access seeder.
+            'vendor/amaia/basics13/database/seeders',
             'vendor/amaia/entities13/src',
             'vendor/amaia/entities13/resources',
             'vendor/amaia/projects13/src',

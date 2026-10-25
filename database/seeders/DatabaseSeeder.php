@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // To load in production
+        $this->call(AccessSeeder::class);
         $this->call(EmailTemplateSeeder::class);
 
         // To load in local

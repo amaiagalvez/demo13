@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Basics13\Models\Role;
 use Entities13\Models\Entity;
+use Database\Seeders\AccessSeeder;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,5 +36,31 @@ class PackageSeederTest extends TestCase
         $this->assertDatabaseHas('ENT_entity_types', ['name_eu' => 'Bezero mota erabilia']);
         $this->assertDatabaseHas('PRO_projects', ['name' => 'Project without epics 0']);
         $this->assertDatabaseHas('PRO_epics', ['name' => 'Epic without comments 0']);
+    }
+
+    public function test_access_is_seeded_and_seeding_again_duplicates_nothing(): void
+    {
+        $this->seed(AccessSeeder::class);
+        $counts = $this->accessRowCounts();
+        $this->seed(AccessSeeder::class);
+
+        $this->assertSame($counts, $this->accessRowCounts());
+        $this->assertEqualsCanonicalizing(
+            ['administration', 'data', 'work', 'locations'],
+            DB::table('BAS_menus')->whereNull('parent_key')->pluck('key')->all(),
+        );
+        $this->assertTrue(Role::query()->where('slug', 'admin')->firstOrFail()->permissions()
+            ->whereIn('slug', ['users.manage', 'entities.manage', 'projects.manage', 'towns.manage'])->count() === 4);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function accessRowCounts(): array
+    {
+        return array_map(
+            static fn (string $table): int => DB::table($table)->count(),
+            ['BAS_permissions', 'BAS_roles', 'BAS_permission_role', 'BAS_menus', 'BAS_menu_permission'],
+        );
     }
 }

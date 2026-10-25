@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Support\Env;
+use Database\Seeders\AccessSeeder;
 use Symfony\Component\Process\Process;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use Facebook\WebDriver\Chrome\ChromeOptions;
@@ -26,6 +27,15 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
  */
 abstract class DuskTestCase extends BaseTestCase
 {
+    /**
+     * `migrate:fresh` of DatabaseMigrations seeds the roles, permissions and menus, as `db:seed`
+     * does in the application.
+     */
+    protected bool $seed = true;
+
+    /** @var class-string */
+    protected string $seeder = AccessSeeder::class;
+
     /** @var string Current browser being tested */
     protected static string $browser = 'chrome';
 
