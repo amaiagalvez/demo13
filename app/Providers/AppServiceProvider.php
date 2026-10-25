@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Http\Middleware\TrustProxies;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,22 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->trustConfiguredProxies();
+    }
+
+    /**
+     * Trust the reverse proxies listed in TRUSTED_PROXIES. Without them no forwarded address is used.
+     */
+    protected function trustConfiguredProxies(): void
+    {
+        $proxies = array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) config('app.trusted_proxies')),
+        )));
+
+        if ($proxies !== []) {
+            TrustProxies::at($proxies);
+        }
     }
 
     /**

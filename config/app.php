@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted Proxies
+    |--------------------------------------------------------------------------
+    |
+    | The addresses (comma separated) of the reverse proxies whose forwarded client address the
+    | application believes. Empty means no proxy is trusted. The OnlyOffice address check reads the
+    | client address, so behind a proxy this must list that proxy.
+    |
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
