@@ -49,8 +49,8 @@ class PackageSeederTest extends TestCase
             ['basics13', 'entities13', 'files13', 'locations13', 'projects13'],
             DB::table('BAS_menus')->whereNull('parent_key')->pluck('key')->all(),
         );
-        $this->assertTrue(Role::query()->where('slug', 'admin')->firstOrFail()->permissions()
-            ->whereIn('slug', ['users.manage', 'entities.manage', 'projects.manage', 'towns.manage', 'files.manage'])->count() === 5);
+        $this->assertSame(5, Role::query()->where('slug', 'admin')->firstOrFail()->permissions()
+            ->whereIn('slug', ['users.manage', 'entities.manage', 'projects.manage', 'towns.manage', 'files.manage'])->count());
     }
 
     /**

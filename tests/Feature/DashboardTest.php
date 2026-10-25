@@ -104,9 +104,15 @@ class DashboardTest extends TestCase
         $this->actingAs(User::factory()->withPermissions(['sessions.view'])->create());
 
         $html = $this->get(route('sessions.dashboard'))->assertOk()->getContent();
+        // The whole opening tag of each link, whatever the order of its attributes.
+        $linkTag = static fn (string $test): string => preg_match('/<a\b[^>]*\bdata-test="'.$test.'"[^>]*>/', (string) $html, $match) ? $match[0] : '';
 
-        $this->assertMatchesRegularExpression('/<a [^>]*data-current="data-current"[^>]*data-test="nav-admin-dashboard"/', (string) $html);
-        $this->assertDoesNotMatchRegularExpression('/<a [^>]*data-current="data-current"[^>]*data-test="nav-sessions"/', (string) $html);
+        $current = ' data-current="data-current"';
+
+        $this->assertNotSame('', $linkTag('nav-admin-dashboard'), 'The administration dashboard link is missing from the menu.');
+        $this->assertStringContainsString($current, $linkTag('nav-admin-dashboard'));
+        $this->assertNotSame('', $linkTag('nav-sessions'), 'The sessions link is missing from the menu.');
+        $this->assertStringNotContainsString($current, $linkTag('nav-sessions'));
     }
 
     public function test_the_menu_hides_what_the_user_has_no_permission_for(): void
