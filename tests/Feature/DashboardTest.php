@@ -131,7 +131,7 @@ class DashboardTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertDontSee('data-test="nav-users"', false)
-            ->assertDontSee(__('Management'));
+            ->assertDontSee('data-test="nav-group-basics13"', false);
     }
 
     public function test_the_super_admin_menu_keeps_every_entry_the_browser_tests_use(): void

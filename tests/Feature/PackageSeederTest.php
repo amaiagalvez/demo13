@@ -14,21 +14,40 @@ class PackageSeederTest extends TestCase
 {
     use RefreshDatabase;
 
+    // Volumes the package seeders create for the performance fixture.
+    private const ENTITY_COUNT = 101;
+
+    private const ENTITY_TYPE_COUNT = 25;
+
+    private const ENTITY_ENTITY_TYPE_COUNT = 2;
+
+    private const PROJECT_COUNT = 306;
+
+    private const EPIC_COUNT = 1203;
+
+    private const EPIC_COMMENT_COUNT = 3600;
+
+    private const ACTIVE_PERF_ENTITY_COUNT = 60;
+
+    private const ARCHIVED_PERF_ENTITY_COUNT = 25;
+
+    private const TRASHED_PERF_ENTITY_COUNT = 15;
+
     public function test_database_seeder_coordinates_the_package_seeders(): void
     {
         $this->assertSame('laravel_phpunit', DB::scalar('SELECT DATABASE()'));
 
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertDatabaseCount('ENT_entities', 101);
-        $this->assertDatabaseCount('ENT_entity_types', 25);
-        $this->assertDatabaseCount('ENT_entity_entity_type', 2);
-        $this->assertDatabaseCount('PRO_projects', 306);
-        $this->assertDatabaseCount('PRO_epics', 1203);
-        $this->assertDatabaseCount('PRO_epic_comments', 3600);
-        $this->assertSame(60, Entity::query()->where('name', 'like', 'Perf Entity %')->where('active', true)->count());
-        $this->assertSame(25, Entity::query()->where('name', 'like', 'Perf Entity %')->where('active', false)->count());
-        $this->assertSame(15, Entity::onlyTrashed()->where('name', 'like', 'Perf Entity %')->count());
+        $this->assertDatabaseCount('ENT_entities', self::ENTITY_COUNT);
+        $this->assertDatabaseCount('ENT_entity_types', self::ENTITY_TYPE_COUNT);
+        $this->assertDatabaseCount('ENT_entity_entity_type', self::ENTITY_ENTITY_TYPE_COUNT);
+        $this->assertDatabaseCount('PRO_projects', self::PROJECT_COUNT);
+        $this->assertDatabaseCount('PRO_epics', self::EPIC_COUNT);
+        $this->assertDatabaseCount('PRO_epic_comments', self::EPIC_COMMENT_COUNT);
+        $this->assertSame(self::ACTIVE_PERF_ENTITY_COUNT, Entity::query()->where('name', 'like', 'Perf Entity %')->where('active', true)->count());
+        $this->assertSame(self::ARCHIVED_PERF_ENTITY_COUNT, Entity::query()->where('name', 'like', 'Perf Entity %')->where('active', false)->count());
+        $this->assertSame(self::TRASHED_PERF_ENTITY_COUNT, Entity::onlyTrashed()->where('name', 'like', 'Perf Entity %')->count());
         $this->assertDatabaseHas('ENT_entities', ['name' => 'Perf Entity 00001']);
         $this->assertDatabaseHas('ENT_entity_types', ['name_eu' => 'Perf Bezero Mota 00001']);
         $this->assertDatabaseHas('PRO_projects', ['name' => 'Perf Project 00001']);
