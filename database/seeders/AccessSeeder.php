@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Files13\Database\Seeders\FilesAccessSeeder;
 use Basics13\Database\Seeders\BasicsAccessSeeder;
 use Entities13\Database\Seeders\EntitiesAccessSeeder;
 use Projects13\Database\Seeders\ProjectsAccessSeeder;
-use Files13\Database\Seeders\FilesAccessSeeder;
 use Locations13\Database\Seeders\LocationsAccessSeeder;
 
 /**
