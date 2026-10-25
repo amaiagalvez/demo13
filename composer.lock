@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "444042c630d96446a9b3a199fcb23756",
+    "content-hash": "e73970fa439d733b57d24409924c3c48",
     "packages": [
         {
             "name": "amaia/basics13",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/basics13",
-                "reference": "65ed10b66b3aff811e8638fc69f0498304078f01"
+                "reference": "28337a74253c4d7a536ada63abcf2f1a46fb8ab2"
             },
             "require": {
                 "laravel/fortify": "^1.37.2",
@@ -70,7 +70,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/entities13",
-                "reference": "84ad4f9d877a07d2ddac2df3305d88d00e3932aa"
+                "reference": "b968455d5e30546451a44f05c1425875185d70b0"
             },
             "require": {
                 "php": "^8.5"
@@ -120,7 +120,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/entity-projects13",
-                "reference": "0e2857bc05cbecc2b28160634544e5ca25f818f0"
+                "reference": "93e55a31f641cc8e345fafb2e693ae408d19f2b4"
             },
             "require": {
                 "php": "^8.5"
@@ -165,12 +165,12 @@
             }
         },
         {
-            "name": "amaia/projects13",
+            "name": "amaia/locations13",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
-                "url": "../../packages/projects13",
-                "reference": "57889255fd5b72de6e39d607e635a81d9f9b054a"
+                "url": "../../packages/locations13",
+                "reference": "99e1168d2a68a45519d87b0d0e29d5ec58b081cd"
             },
             "require": {
                 "php": "^8.5"
@@ -178,6 +178,56 @@
             "require-dev": {
                 "amaia/basics13": "^1.0",
                 "larastan/larastan": "^3.9",
+                "laravel/pint": "^1.27",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.3",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Locations13\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Locations13\\Database\\Factories\\": "database/factories/",
+                    "Locations13\\Database\\Seeders\\": "database/seeders/",
+                    "Locations13\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "App\\": "tests/Fixtures/App/",
+                    "Locations13\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Location management for Laravel 13: countries, states, communities, districts, towns with postal codes and neighbourhoods.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "amaia/projects13",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/projects13",
+                "reference": "21755d4cc1c26db63b429d4d7bb5e115fff0c4e0"
+            },
+            "require": {
+                "php": "^8.5"
+            },
+            "require-dev": {
+                "amaia/basics13": "^1.0",
+                "larastan/larastan": "^3.9",
+                "laravel/dusk": "^8.7",
                 "laravel/pint": "^1.27",
                 "mockery/mockery": "^1.6",
                 "orchestra/testbench": "^11.3",

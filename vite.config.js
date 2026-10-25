@@ -7,6 +7,10 @@ export default defineConfig({
     resolve: {
         dedupe: ['@laravel/passkeys'],
     },
+    build: {
+        // ApexCharts (~950 kB) is lazy-loaded in its own chunk and cannot be split further.
+        chunkSizeWarningLimit: 1000,
+    },
     plugins: lazyPlugins(() => [
         laravel({
             input: [

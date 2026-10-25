@@ -23,6 +23,8 @@ class LeaveImpersonationTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($superAdmin, $target): void {
             $browser->loginAs($superAdmin)
                 ->visit('/users')
+                ->click("[data-test='user-more-{$target->getKey()}']")
+                ->waitFor("[data-test='user-impersonate-{$target->getKey()}']")
                 ->click("[data-test='user-impersonate-{$target->getKey()}']")
                 ->waitFor('dialog[open] [data-test="user-confirm-submit"]')
                 ->click('dialog[open] [data-test="user-confirm-submit"]')
