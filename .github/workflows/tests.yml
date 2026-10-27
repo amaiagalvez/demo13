@@ -1,6 +1,6 @@
 name: tests
 
-# The application lives in its own repository. demo13 consumes the four domain packages as
+# The application lives in its own repository. demo13 consumes the six domain packages as
 # Composer `path` repositories under ../../packages/*, so every job checks them out as siblings
 # in the same layout used locally; that keeps the lock file and the symlinks valid.
 
@@ -94,7 +94,7 @@ jobs:
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          for repo in basics13 entities13 projects13 entity-projects13; do
+          for repo in basics13 entities13 files13 locations13 projects13 entity-projects13; do
             if git ls-remote --exit-code --heads "https://github.com/amaiagalvez/$repo.git" "$BRANCH" > /dev/null 2>&1; then
               echo "$repo=$BRANCH" >> "$GITHUB_OUTPUT"
             else
@@ -117,6 +117,22 @@ jobs:
           repository: amaiagalvez/entities13
           ref: ${{ steps.siblings.outputs['entities13'] }}
           path: packages/entities13
+
+      - name: Checkout domain packages
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: amaiagalvez/files13
+          ref: ${{ steps.siblings.outputs['files13'] }}
+          path: packages/files13
+
+      - name: Checkout domain packages
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: amaiagalvez/locations13
+          ref: ${{ steps.siblings.outputs['locations13'] }}
+          path: packages/locations13
 
       - name: Checkout domain packages
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -247,7 +263,7 @@ jobs:
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          for repo in basics13 entities13 projects13 entity-projects13; do
+          for repo in basics13 entities13 files13 locations13 projects13 entity-projects13; do
             if git ls-remote --exit-code --heads "https://github.com/amaiagalvez/$repo.git" "$BRANCH" > /dev/null 2>&1; then
               echo "$repo=$BRANCH" >> "$GITHUB_OUTPUT"
             else
@@ -270,6 +286,22 @@ jobs:
           repository: amaiagalvez/entities13
           ref: ${{ steps.siblings.outputs['entities13'] }}
           path: packages/entities13
+
+      - name: Checkout domain packages
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: amaiagalvez/files13
+          ref: ${{ steps.siblings.outputs['files13'] }}
+          path: packages/files13
+
+      - name: Checkout domain packages
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: amaiagalvez/locations13
+          ref: ${{ steps.siblings.outputs['locations13'] }}
+          path: packages/locations13
 
       - name: Checkout domain packages
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
